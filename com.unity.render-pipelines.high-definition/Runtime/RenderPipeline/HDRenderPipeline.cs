@@ -2003,6 +2003,22 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 hdCamera.xr.StartSinglePass(cmd, camera, renderContext);
 
+#if (ENABLE_RAYTRACING)
+                {
+                    HDRaytracingEnvironment rtEnvironement = m_RayTracingManager.CurrentEnvironment();
+                    HDRaytracingLightCluster lightCluster = m_RayTracingManager.RequestLightCluster(hdCamera);
+                    cmd.SetGlobalBuffer(HDShaderIDs._RaytracingLightCluster, lightCluster.GetCluster());
+                    cmd.SetGlobalBuffer(HDShaderIDs._LightDatasRT, lightCluster.GetLightDatas());
+                    cmd.SetGlobalVector(HDShaderIDs._MinClusterPos, lightCluster.GetMinClusterPos());
+                    cmd.SetGlobalVector(HDShaderIDs._MaxClusterPos, lightCluster.GetMaxClusterPos());
+                    cmd.SetGlobalInt(HDShaderIDs._LightPerCellCount, rtEnvironement.maxNumLightsPercell);
+                    cmd.SetGlobalInt(HDShaderIDs._PunctualLightCountRT, lightCluster.GetPunctualLightCount());
+                    cmd.SetGlobalInt(HDShaderIDs._AreaLightCountRT, lightCluster.GetAreaLightCount());
+
+                    HDRaytracingLightProbeBakeManager.Bake(hdCamera.camera, cmd);
+                }
+#endif
+
                 RenderDeferredLighting(hdCamera, cmd);
 
                 RenderForwardOpaque(cullingResults, hdCamera, renderContext, cmd);
