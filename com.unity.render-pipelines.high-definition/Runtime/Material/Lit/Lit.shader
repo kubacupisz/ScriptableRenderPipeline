@@ -385,7 +385,7 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
-            #pragma multi_compile _ USE_RTPV_RASTER
+            #pragma multi_compile _ USE_RTPV_RASTER_ON USE_RTPV_RASTER_OFF
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
@@ -401,7 +401,7 @@ Shader "HDRP/Lit"
             #define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST
         #endif
 
-            #ifdef USE_RTPV_RASTER
+            #ifdef USE_RTPV_RASTER_ON
             #   include "Packages/com.unity.ddgi/IrradianceField.hlsl"
             #endif
 
@@ -700,7 +700,7 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
-            #pragma multi_compile _ USE_RTPV_RASTER
+            #pragma multi_compile _ USE_RTPV_RASTER_ON USE_RTPV_RASTER_OFF
 
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
@@ -737,7 +737,7 @@ Shader "HDRP/Lit"
 
             #define HAS_LIGHTLOOP
 
-            #ifdef USE_RTPV_RASTER
+            #ifdef USE_RTPV_RASTER_ON
             #   include "Packages/com.unity.ddgi/IrradianceField.hlsl"
             #endif
 
