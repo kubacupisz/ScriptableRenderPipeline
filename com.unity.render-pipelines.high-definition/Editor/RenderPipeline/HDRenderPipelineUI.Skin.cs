@@ -52,6 +52,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         static readonly GUIContent k_SupportRaytracing = EditorGUIUtility.TrTextContent("Realtime Raytracing");
         static readonly GUIContent k_SupportRaytracingNeedsDX12 = EditorGUIUtility.TrTextContent("Realtime Raytracing", "Realtime raytracing requires DX12, please select that graphics API in Player settings.");
         static readonly GUIContent k_SupportRaytracingNeedsHardware = EditorGUIUtility.TrTextContent("Realtime Raytracing", "Realtime raytracing requires DX12 and hardware support.");
+        static readonly GUIContent k_SupportProbeVolumeContent = EditorGUIUtility.TrTextContent("Probe Volume Diffuse Global Illumination", "When enabled, HDRP allocates Shader variants and memory for probe volume based GI. This allows you to use probe volumes in your Unity Project.");
+
 
         const string k_CacheErrorFormat = "This configuration will lead to more than 2 GB reserved for this cache at runtime! ({0} requested) Only {1} element will be reserved instead.";
         const string k_CacheInfoFormat = "Reserving {0} in memory at runtime.";
@@ -133,7 +135,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             { k_SupportTransparentBackface         , shaderVariantDrawback },
             { k_SupportTransparentDepthPrepass     , shaderVariantDrawback },
             { k_SupportTransparentDepthPostpass    , shaderVariantDrawback },
-            { k_SupportRaytracing                  , string.Format("{0}, {1}", memoryDrawback, lotShaderVariantDrawback) }
+            { k_SupportRaytracing                  , string.Format("{0}, {1}", memoryDrawback, lotShaderVariantDrawback) },
+            { k_SupportProbeVolumeContent          , memoryDrawback }
         };
 
         static Dictionary<SupportedLitShaderMode, string> k_SupportLitShaderModeDrawbacks = new Dictionary<SupportedLitShaderMode, string>

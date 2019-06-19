@@ -37,6 +37,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public bool volumetricHistoryIsValid   = false; // Contains garbage otherwise
         public int  colorPyramidHistoryMipCount = 0;
         public VolumetricLightingSystem.VBufferParameters[] vBufferParams; // Double-buffered
+        public ProbeVolumeSystem.ProbeVolumeSystemParameters probeVolumeSystemParams;
 
         public Matrix4x4[]  viewMatrixStereo;
         public Matrix4x4[]  projMatrixStereo;
@@ -258,7 +259,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         // Pass all the systems that may want to update per-camera data here.
         // That way you will never update an HDCamera and forget to update the dependent system.
-        public void Update(FrameSettings currentFrameSettings, VolumetricLightingSystem vlSys, MSAASamples msaaSamples)
+        public void Update(FrameSettings currentFrameSettings, VolumetricLightingSystem vlSys, ProbeVolumeSystem pvSys, MSAASamples msaaSamples)
         {
             // store a shortcut on HDAdditionalCameraData (done here and not in the constructor as
             // we don't create HDCamera at every frame and user can change the HDAdditionalData later (Like when they create a new scene).
@@ -304,6 +305,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     // Reinit the system.
                     colorPyramidHistoryIsValid = false;
                     vlSys.DeinitializePerCameraData(this);
+                    pvSys.DeinitializePerCameraData(this);
 
                     // The history system only supports the "nuke all" option.
                     m_HistoryRTSystem.Dispose();
@@ -316,6 +318,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     }
 
                     vlSys.InitializePerCameraData(this, numVolumetricBuffersRequired);
+                    pvSys.InitializePerCameraData(this);
 
                     // Mark as init.
                     numColorPyramidBuffersAllocated = numColorPyramidBuffersRequired;
@@ -590,6 +593,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (vlSys != null)
             {
                 vlSys.UpdatePerCameraData(this);
+            }
+
+            if (pvSys != null)
+            {
+                pvSys.UpdatePerCameraData(this);
             }
 
             UpdateVolumeParameters();

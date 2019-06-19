@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public SerializedProperty increaseResolutionOfVolumetrics;
         public SerializedProperty supportLightLayers;
         public SerializedProperty supportedLitShaderMode;
-        
+
         public SerializedProperty supportDecals;
         public bool supportMSAA => MSAASampleCount.GetEnumValue<UnityEngine.Rendering.MSAASamples>() != UnityEngine.Rendering.MSAASamples.None;
         public SerializedProperty MSAASampleCount;
@@ -30,6 +30,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public SerializedProperty supportTransparentBackface;
         public SerializedProperty supportTransparentDepthPrepass;
         public SerializedProperty supportTransparentDepthPostpass;
+        public SerializedProperty supportProbeVolume;
 
 
         public SerializedGlobalLightLoopSettings lightLoopSettings;
@@ -51,9 +52,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             increaseResolutionOfVolumetrics = root.Find((RenderPipelineSettings s) => s.increaseResolutionOfVolumetrics);
             supportLightLayers              = root.Find((RenderPipelineSettings s) => s.supportLightLayers);
             supportedLitShaderMode          = root.Find((RenderPipelineSettings s) => s.supportedLitShaderMode);
-            
+
             supportDecals                   = root.Find((RenderPipelineSettings s) => s.supportDecals);
-            MSAASampleCount                 = root.Find((RenderPipelineSettings s) => s.msaaSampleCount);                        
+            MSAASampleCount                 = root.Find((RenderPipelineSettings s) => s.msaaSampleCount);
             supportMotionVectors            = root.Find((RenderPipelineSettings s) => s.supportMotionVectors);
             supportRuntimeDebugDisplay      = root.Find((RenderPipelineSettings s) => s.supportRuntimeDebugDisplay);
             supportDitheringCrossFade       = root.Find((RenderPipelineSettings s) => s.supportDitheringCrossFade);
@@ -61,6 +62,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             supportTransparentBackface      = root.Find((RenderPipelineSettings s) => s.supportTransparentBackface);
             supportTransparentDepthPrepass  = root.Find((RenderPipelineSettings s) => s.supportTransparentDepthPrepass);
             supportTransparentDepthPostpass = root.Find((RenderPipelineSettings s) => s.supportTransparentDepthPostpass);
+            supportProbeVolume              = root.Find((RenderPipelineSettings s) => s.supportProbeVolume);
 
             supportRayTracing               = root.Find((RenderPipelineSettings s) => s.supportRayTracing);
 

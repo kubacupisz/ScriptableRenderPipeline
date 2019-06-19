@@ -82,6 +82,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public bool supportRuntimeDebugDisplay;
         public bool supportDitheringCrossFade;
         public bool supportRayTracing;
+        public bool supportProbeVolume;
 
         public GlobalLightLoopSettings lightLoopSettings;
         public HDShadowInitParameters hdShadowInitParams;
