@@ -146,7 +146,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             EnvironmentAndArea = 6,
             EnvironmentAndAreaAndPunctual = 7,
             Decal = 8,
-            DensityVolumes = 16
+            DensityVolumes = 16,
+            ProbeVolumes = 32
         };
 
         internal const int k_MaxCacheSize = 2000000000; //2 GigaByte
