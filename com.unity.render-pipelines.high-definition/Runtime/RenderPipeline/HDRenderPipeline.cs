@@ -1785,6 +1785,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 // The pass requires the volume properties, the light list and the shadows, and can run async.
                 m_VolumetricLightingSystem.VolumetricLightingPass(hdCamera, cmd, m_FrameCount);
 
+                // Render probe volumes
+                m_ProbeVolumeSystem.ProbeVolumeLightingPass(hdCamera, cmd, m_FrameCount);
+
                 SetMicroShadowingSettings(cmd);
 
                 if (hdCamera.frameSettings.SSAORunsAsync())

@@ -203,5 +203,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
+        public void ProbeVolumeLightingPass(HDCamera hdCamera, CommandBuffer cmd, uint frameIndex)
+        {
+            if (!hdCamera.frameSettings.IsEnabled(FrameSettingsField.ProbeVolume))
+                return;
+        }
+
     } // class ProbeVolumeSystem
 } // namespace UnityEngine.Experimental.Rendering.HDPipeline

@@ -119,18 +119,20 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         public ProbeVolumeArtistParameters parameters = new ProbeVolumeArtistParameters(Color.white);
 
+        public Action OnTextureUpdated;
+
         //Gather and Update any parameters that may have changed
         public void PrepareParameters()
         {
         }
 
-        // private void NotifyUpdatedTexure()
-        // {
-        //     if (OnTextureUpdated != null)
-        //     {
-        //         OnTextureUpdated();
-        //     }
-        // }
+        private void NotifyUpdatedTexure()
+        {
+            if (OnTextureUpdated != null)
+            {
+                OnTextureUpdated();
+            }
+        }
 
         protected void Awake()
         {
