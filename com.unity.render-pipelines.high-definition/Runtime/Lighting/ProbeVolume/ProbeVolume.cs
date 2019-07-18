@@ -84,6 +84,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             ProbeVolumeEngineData data = new ProbeVolumeEngineData();
 
+            data.debugColor.x = this.debugColor.r;
+            data.debugColor.y = this.debugColor.g;
+            data.debugColor.z = this.debugColor.b;
+
             // Clamp to avoid NaNs.
             Vector3 positiveFade = this.positiveFade;
             Vector3 negativeFade = this.negativeFade;

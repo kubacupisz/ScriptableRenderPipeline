@@ -13,7 +13,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         VisualizeCascade,
         VisualizeShadowMasks,
         IndirectDiffuseOcclusion,
-        IndirectSpecularOcclusion
+        IndirectSpecularOcclusion,
+        ProbeVolume
     }
 
     [GenerateHLSL]

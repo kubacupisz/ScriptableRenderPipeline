@@ -21,6 +21,7 @@
     uint _AreaLightCount;
     uint _EnvLightCount;
     uint _EnvProxyCount;
+    uint _ProbeVolumeCount;
     int _EnvLightSkyEnabled;
     int _DirectionalShadowIndex;
     float _MicroShadowOpacity;
@@ -40,4 +41,6 @@
     uint _CookieSizePOT;
     int _RaytracedAreaShadow;
     int _RaytracedIndirectDiffuse;
+
+
 #endif
