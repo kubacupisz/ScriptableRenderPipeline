@@ -20,6 +20,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public float distanceFadeStart;
         public float distanceFadeEnd;
 
+        public Vector4 scaleBias;
+
         public Vector3 positiveFade
         {
             get
@@ -69,6 +71,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             this.advancedFade = false;
             this.distanceFadeStart = 10000.0f;
             this.distanceFadeEnd = 10000.0f;
+            this.scaleBias = Vector4.zero;
         }
 
         public void Constrain()
@@ -97,6 +100,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             data.rcpDistFadeLen = 1.0f / distFadeLen;
             data.endTimesRcpDistFadeLen = this.distanceFadeEnd * data.rcpDistFadeLen;
 
+            data.scaleBias = this.scaleBias;
+
             return data;
         }
 
@@ -106,6 +111,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     [AddComponentMenu("Rendering/Probe Volume")]
     public class ProbeVolume : MonoBehaviour
     {
+        public Texture ProbeVolumeTexture { get; set; }
+
         enum Version
         {
             First,
