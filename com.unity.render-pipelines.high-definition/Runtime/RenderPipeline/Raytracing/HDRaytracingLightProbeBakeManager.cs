@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace UnityEngine.Experimental.Rendering.HighDefinition
 {
@@ -7,10 +8,16 @@ namespace UnityEngine.Experimental.Rendering.HighDefinition
 
     public static class HDRaytracingLightProbeBakeManager
     {
-        public static event System.Action<Camera, CommandBuffer> bakeLightProbes;
-        public static void Bake(Camera camera, CommandBuffer cmdBuffer)
+        public static event System.Action<Camera, CommandBuffer> preRenderLightProbes;
+        public static void PreRender(Camera camera, CommandBuffer cmdBuffer)
         {
-            bakeLightProbes?.Invoke(camera, cmdBuffer);
+            preRenderLightProbes?.Invoke(camera, cmdBuffer);
+        }
+
+        public static event System.Action<Camera, CommandBuffer, Texture> bakeLightProbes;
+        public static void Bake(Camera camera, CommandBuffer cmdBuffer, Texture skyTexture)
+        {
+            bakeLightProbes?.Invoke(camera, cmdBuffer, skyTexture);
         }
     }
 #endif

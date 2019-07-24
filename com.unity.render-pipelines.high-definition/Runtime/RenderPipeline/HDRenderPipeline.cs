@@ -1755,6 +1755,7 @@ namespace UnityEngine.Rendering.HighDefinition
             else
                 cmd.SetGlobalTexture(HDShaderIDs._SkyTexture, CoreUtils.magentaCubeTextureArray);
 
+            UnityEngine.Experimental.Rendering.HighDefinition.HDRaytracingLightProbeBakeManager.PreRender(hdCamera.camera, cmd);
 
             if (GL.wireframe)
             {
@@ -2022,7 +2023,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
 #if ENABLE_RAYTRACING
                 m_RaytracingRenderer.Render(hdCamera, cmd, m_CameraColorBuffer, renderContext, cullingResults);
-                UnityEngine.Experimental.Rendering.HighDefinition.HDRaytracingLightProbeBakeManager.Bake(hdCamera.camera, cmd);
+                UnityEngine.Experimental.Rendering.HighDefinition.HDRaytracingLightProbeBakeManager.Bake(hdCamera.camera, cmd, m_SkyManager.skyReflection);
 #endif
                 // Render pre refraction objects
                 RenderForwardTransparent(cullingResults, hdCamera, true, renderContext, cmd);
