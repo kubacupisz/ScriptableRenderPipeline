@@ -41,6 +41,13 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
     rayIntersection.t = travelDistance;
     rayIntersection.cone.width += travelDistance * rayIntersection.cone.spreadAngle;
 
+#ifdef ENABLE_RTPV
+    if (!fragInput.isFrontFace)
+    {
+        rayIntersection.color = float3(0.0, 0.0, 0.0);
+        return;
+    }
+#endif
     // Compute the bsdf data
     BSDFData bsdfData =  ConvertSurfaceDataToBSDFData(posInput.positionSS, surfaceData);
 
