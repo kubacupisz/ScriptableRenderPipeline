@@ -304,7 +304,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 maxClusterPos.y = Mathf.Max(m_LightVolumesCPUArray[lightIdx].position.y + m_LightVolumesCPUArray[lightIdx].range.y, maxClusterPos.y);
                 maxClusterPos.z = Mathf.Max(m_LightVolumesCPUArray[lightIdx].position.z + m_LightVolumesCPUArray[lightIdx].range.z, maxClusterPos.z);
             }
-
+#if false
             minClusterPos.x = minClusterPos.x < clusterCenter.x - settings.cameraClusterRange.value ? clusterCenter.x - settings.cameraClusterRange.value : minClusterPos.x;
             minClusterPos.y = minClusterPos.y < clusterCenter.y - settings.cameraClusterRange.value ? clusterCenter.y - settings.cameraClusterRange.value : minClusterPos.y;
             minClusterPos.z = minClusterPos.z < clusterCenter.z - settings.cameraClusterRange.value ? clusterCenter.z - settings.cameraClusterRange.value : minClusterPos.z;
@@ -312,7 +312,16 @@ namespace UnityEngine.Rendering.HighDefinition
             maxClusterPos.x = maxClusterPos.x > clusterCenter.x + settings.cameraClusterRange.value ? clusterCenter.x + settings.cameraClusterRange.value : maxClusterPos.x;
             maxClusterPos.y = maxClusterPos.y > clusterCenter.y + settings.cameraClusterRange.value ? clusterCenter.y + settings.cameraClusterRange.value : maxClusterPos.y;
             maxClusterPos.z = maxClusterPos.z > clusterCenter.z + settings.cameraClusterRange.value ? clusterCenter.z + settings.cameraClusterRange.value : maxClusterPos.z;
+#else
+            minClusterPos.x = minClusterPos.x < clusterCenter.x - settings.cameraClusterRange.value ? minClusterPos.x : clusterCenter.x - settings.cameraClusterRange.value;
+            minClusterPos.y = minClusterPos.y < clusterCenter.y - settings.cameraClusterRange.value ? minClusterPos.y : clusterCenter.y - settings.cameraClusterRange.value;
+            minClusterPos.z = minClusterPos.z < clusterCenter.z - settings.cameraClusterRange.value ? minClusterPos.z : clusterCenter.z - settings.cameraClusterRange.value;
 
+            maxClusterPos.x = maxClusterPos.x > clusterCenter.x + settings.cameraClusterRange.value ? maxClusterPos.x : clusterCenter.x + settings.cameraClusterRange.value;
+            maxClusterPos.y = maxClusterPos.y > clusterCenter.y + settings.cameraClusterRange.value ? maxClusterPos.y : clusterCenter.y + settings.cameraClusterRange.value;
+            maxClusterPos.z = maxClusterPos.z > clusterCenter.z + settings.cameraClusterRange.value ? maxClusterPos.z : clusterCenter.z + settings.cameraClusterRange.value;
+
+#endif
             // Compute the cell size per dimension
             clusterCellSize = (maxClusterPos - minClusterPos);
             clusterCellSize.x /= 64.0f;
