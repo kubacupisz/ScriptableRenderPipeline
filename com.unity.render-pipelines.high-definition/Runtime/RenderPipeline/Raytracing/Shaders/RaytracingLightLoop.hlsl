@@ -1,7 +1,7 @@
 // This allows us to either use the light cluster to pick which lights should be used, or use all the lights available
 // #define USE_LIGHT_CLUSTER 
 
-#if defined( USE_RTPV ) && defined( RT_SUN_OCC )
+#if defined( ENABLE_RTPV ) && defined( RT_SUN_OCC )
 RaytracingAccelerationStructure raytracingAccelStruct;
 #endif
 
@@ -101,7 +101,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
     // Initialize the contactShadow and contactShadowFade fields
     InitContactShadow(posInput, context);
     
-#if defined( USE_RTPV ) && defined( RT_SUN_OCC )
+#if defined( ENABLE_RTPV ) && defined( RT_SUN_OCC )
     // Evaluate sun shadows.
     if (_DirectionalShadowIndex >= 0)
     {
