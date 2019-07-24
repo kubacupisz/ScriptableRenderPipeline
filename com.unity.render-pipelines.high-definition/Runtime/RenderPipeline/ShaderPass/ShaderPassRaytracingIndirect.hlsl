@@ -1,6 +1,10 @@
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingFragInputs.hlsl"
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingSampling.hlsl"
 
+#ifdef ENABLE_RTPV
+#   include "Packages/com.unity.ddgi/IrradianceField.hlsl"
+#endif
+
 // Generic function that handles the reflection code
 [shader("closesthit")]
 void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, AttributeData attributeData : SV_IntersectionAttributes)
@@ -17,11 +21,6 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
     float3 viewWS = -rayIntersection.incidentDirection;
     float3 pointWSPos = GetAbsolutePositionWS(fragInput.positionRWS);
 
-    // Make sure to add the additional travel distance
-    float travelDistance = length(GetAbsolutePositionWS(fragInput.positionRWS) - rayIntersection.origin);
-    rayIntersection.t = travelDistance;
-    rayIntersection.cone.width += travelDistance * rayIntersection.cone.spreadAngle;
-
     PositionInputs posInput;
     posInput.positionWS = fragInput.positionRWS;
     posInput.positionSS = uint2(0, 0);
@@ -30,6 +29,17 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
     SurfaceData surfaceData;
     BuiltinData builtinData;
     GetSurfaceDataFromIntersection(fragInput, viewWS, posInput, currentvertex, rayIntersection.cone, surfaceData, builtinData);
+
+    // Make sure to add the additional travel distance
+#ifdef ENABLE_RTPV
+    //DDGI, move intersection point away from surface along surface normal by small amount.
+    float3 rayHitLocation = pointWSPos + (surfaceData.normalWS * 0.01f);
+    float travelDistance = min(IFmaxDistance, length(rayHitLocation - rayIntersection.origin));
+#else
+    float travelDistance = length(rayHitLocation - rayIntersection.origin);
+#endif
+    rayIntersection.t = travelDistance;
+    rayIntersection.cone.width += travelDistance * rayIntersection.cone.spreadAngle;
 
     // Compute the bsdf data
     BSDFData bsdfData =  ConvertSurfaceDataToBSDFData(posInput.positionSS, surfaceData);
