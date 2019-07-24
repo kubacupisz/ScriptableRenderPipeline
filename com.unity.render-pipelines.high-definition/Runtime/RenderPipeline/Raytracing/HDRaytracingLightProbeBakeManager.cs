@@ -8,14 +8,14 @@ namespace UnityEngine.Experimental.Rendering.HighDefinition
 
     public static class HDRaytracingLightProbeBakeManager
     {
-        public static event System.Action<Camera, CommandBuffer> preRenderLightProbes;
-        public static void PreRender(Camera camera, CommandBuffer cmdBuffer)
+        public static event System.Action<HDCamera, CommandBuffer> preRenderLightProbes;
+        public static void PreRender(HDCamera camera, CommandBuffer cmdBuffer)
         {
             preRenderLightProbes?.Invoke(camera, cmdBuffer);
         }
 
-        public static event System.Action<Camera, CommandBuffer, Texture> bakeLightProbes;
-        public static void Bake(Camera camera, CommandBuffer cmdBuffer, Texture skyTexture)
+        public static event System.Action<HDCamera, CommandBuffer, Texture> bakeLightProbes;
+        public static void Bake(HDCamera camera, CommandBuffer cmdBuffer, Texture skyTexture)
         {
             bakeLightProbes?.Invoke(camera, cmdBuffer, skyTexture);
         }
