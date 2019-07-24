@@ -803,6 +803,7 @@ Shader "HDRP/Lit"
             #pragma multi_compile _ DIFFUSE_LIGHTING_ONLY
             #pragma multi_compile _ MULTI_BOUNCE_INDIRECT
             #pragma multi_compile _ USE_RTPV
+            #pragma multi_compile _ RT_SUN_OCC
 
             // We use the low shadow maps for raytracing
             #define SHADOW_LOW
