@@ -1755,7 +1755,9 @@ namespace UnityEngine.Rendering.HighDefinition
             else
                 cmd.SetGlobalTexture(HDShaderIDs._SkyTexture, CoreUtils.magentaCubeTextureArray);
 
+#if ENABLE_RAYTRACING
             UnityEngine.Experimental.Rendering.HighDefinition.HDRaytracingLightProbeBakeManager.PreRender(hdCamera.camera, cmd);
+#endif
 
             if (GL.wireframe)
             {
