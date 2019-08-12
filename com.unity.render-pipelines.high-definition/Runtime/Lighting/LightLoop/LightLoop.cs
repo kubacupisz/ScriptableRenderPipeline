@@ -137,6 +137,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             ColorAndEdge
         };
 
+        // Warning: These must stay in sync with LightCategory.
+        // Specifically, TileClusterCategoryDebug is used as a bitmask in the debug shader applied as:
+        // (1 << lightCatagory) & tileClusterCategoryDebug
         public enum TileClusterCategoryDebug : int
         {
             Punctual = 1,
@@ -146,9 +149,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             EnvironmentAndPunctual = 5,
             EnvironmentAndArea = 6,
             EnvironmentAndAreaAndPunctual = 7,
-            Decal = 8,
-            DensityVolumes = 16,
-            ProbeVolumes = 32
+            ProbeVolumes = 8,
+            Decal = 16,
+            DensityVolumes = 32
         };
 
         internal const int k_MaxCacheSize = 2000000000; //2 GigaByte

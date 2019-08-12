@@ -28,7 +28,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
         private List<ProbeVolume> volumes = null;
-        private ProbeVolume[] volumesArray = null;
         private bool volumesArrayIsDirty = true;
 
         public void RegisterVolume(ProbeVolume volume)
@@ -37,7 +36,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 return;
 
             volumes.Add(volume);
-            volumesArrayIsDirty = true;
         }
 
         public void DeRegisterVolume(ProbeVolume volume)
@@ -49,7 +47,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             volumesArrayIsDirty = true;
         }
 
-        public ProbeVolume[] PrepareProbeVolumeData(CommandBuffer cmd, Camera currentCam)
+        public List<ProbeVolume> PrepareProbeVolumeData(CommandBuffer cmd, Camera currentCam)
         {
             foreach (ProbeVolume volume in volumes)
             {
