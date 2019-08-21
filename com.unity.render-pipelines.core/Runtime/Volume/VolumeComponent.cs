@@ -27,7 +27,9 @@ namespace UnityEngine.Rendering
 
         public string displayName { get; protected set; } = "";
 
-        internal ReadOnlyCollection<VolumeParameter> parameters { get; private set; }
+//custom-begin: malte: made public, to allow custom stacks for custom type subsets
+        public ReadOnlyCollection<VolumeParameter> parameters { get; private set; }
+//custom-end
 
 #pragma warning disable 414
         [SerializeField]
@@ -72,10 +74,13 @@ namespace UnityEngine.Rendering
                 var toParam = parameters[i];
 
                 // Keep track of the override state for debugging purpose
-                stateParam.overrideState = toParam.overrideState;
-
+//custom-begin: malte: allow partial overrides from many volumes in priority order
                 if (toParam.overrideState)
+                {
+                    stateParam.overrideState = toParam.overrideState;
                     stateParam.Interp(stateParam, toParam, interpFactor);
+                }
+//custom-end
             }
         }
 

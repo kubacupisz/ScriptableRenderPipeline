@@ -30,7 +30,9 @@ namespace UnityEngine.Rendering
             return ((VolumeParameter<T>) this).value;
         }
 
-        internal abstract void SetValue(VolumeParameter parameter);
+//custom-begin: malte: made public, to allow custom stacks for custom type subsets
+        public abstract void SetValue(VolumeParameter parameter);
+//custom-end
 
         // This is used in case you need to access fields/properties that can't be accessed in the
         // constructor of a ScriptableObject (VolumeParameter are generally declared and inited in
@@ -99,7 +101,9 @@ namespace UnityEngine.Rendering
             m_Value = x;
         }
 
-        internal override void SetValue(VolumeParameter parameter)
+//custom-begin: malte: made public, to allow custom stacks for custom type subsets
+        public override void SetValue(VolumeParameter parameter)
+//custom-end
         {
             m_Value = parameter.GetValue<T>();
         }

@@ -5,6 +5,10 @@ namespace UnityEngine.Rendering
     [ExecuteAlways]
     public class Volume : MonoBehaviour
     {
+//custom-begin: malte: context reference for exposed property resolver
+        public Object context;
+//custom-end
+
         [Tooltip("A global volume is applied to the whole scene.")]
         public bool isGlobal = false;
 

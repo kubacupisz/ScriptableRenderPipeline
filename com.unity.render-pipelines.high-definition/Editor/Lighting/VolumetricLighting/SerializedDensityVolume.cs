@@ -7,6 +7,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public SerializedProperty densityParams;
         public SerializedProperty albedo;
         public SerializedProperty meanFreePath;
+//custom-begin: exponential fog 
+        public SerializedProperty exponent;
+//custom-end
 
         public SerializedProperty volumeTexture;
         public SerializedProperty textureScroll;
@@ -35,6 +38,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             albedo = densityParams.FindPropertyRelative("albedo");
             meanFreePath = densityParams.FindPropertyRelative("meanFreePath");
+//custom-begin: exponential fog 
+            exponent = densityParams.FindPropertyRelative("exponent");
+//custom-end
 
             volumeTexture = densityParams.FindPropertyRelative("volumeMask");
             textureScroll = densityParams.FindPropertyRelative("textureScrollingSpeed");

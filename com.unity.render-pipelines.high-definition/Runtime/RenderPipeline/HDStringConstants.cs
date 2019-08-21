@@ -446,6 +446,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _HeightFogExponents             = Shader.PropertyToID("_HeightFogExponents");
         public static readonly int _EnableDistantFog               = Shader.PropertyToID("_EnableDistantFog");
         public static readonly int _GlobalFogAnisotropy            = Shader.PropertyToID("_GlobalFogAnisotropy");
+//custom-begin: outscattering tweak
+        public static readonly int _Extinction                     = Shader.PropertyToID("_Extinction");
+//custom-end
         public static readonly int _CornetteShanksConstant         = Shader.PropertyToID("_CornetteShanksConstant");
         public static readonly int _VBufferResolution              = Shader.PropertyToID("_VBufferResolution");
         public static readonly int _VBufferSliceCount              = Shader.PropertyToID("_VBufferSliceCount");
@@ -712,5 +715,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _LowResTransparent              = Shader.PropertyToID("_LowResTransparent");
 
 
+//custom-begin: screen space dither mask
+        public static readonly int _ScreenSpaceDitherMask = Shader.PropertyToID("_ScreenSpaceDitherMask");
+        public static readonly int _ScreenSpaceDitherMask_AnimRepeat = Shader.PropertyToID("_ScreenSpaceDitherMask_AnimRepeat");
+//custom-end
     }
 }

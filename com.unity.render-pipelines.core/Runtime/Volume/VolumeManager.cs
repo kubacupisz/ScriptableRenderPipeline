@@ -207,6 +207,10 @@ namespace UnityEngine.Rendering
             }
         }
 
+//custom-begin: malte: static ref to current override's context
+        public static Object overridingContext;
+//custom-end
+
         // Update the global state - should be called once per frame per transform/layer mask combo
         // in the update loop before rendering
         public void Update(Transform trigger, LayerMask layerMask)
@@ -241,6 +245,9 @@ namespace UnityEngine.Rendering
                 // Global volumes always have influence
                 if (volume.isGlobal)
                 {
+//custom-begin: malte: static ref to current override's context
+                    overridingContext = volume.context;
+//custom-end
                     OverrideData(stack, volume.profileRef.components, Mathf.Clamp01(volume.weight));
                     continue;
                 }
@@ -283,14 +290,26 @@ namespace UnityEngine.Rendering
                 float interpFactor = 1f;
 
                 if (blendDistSqr > 0f)
-                    interpFactor = 1f - (closestDistanceSqr / blendDistSqr);
+//custom-begin: malte: smoothstep blend
+                    interpFactor = Mathf.SmoothStep(1f, 0f, closestDistanceSqr / blendDistSqr);
+//custom-end
+
+//custom-begin: malte: static ref to current override's context
+                overridingContext = volume.context;
+//custom-end
 
                 // No need to clamp01 the interpolation factor as it'll always be in [0;1[ range
                 OverrideData(stack, volume.profileRef.components, interpFactor * Mathf.Clamp01(volume.weight));
             }
+
+//custom-begin: malte: static ref to current override's context
+            overridingContext = null;
+//custom-end
         }
 
-        List<Volume> GrabVolumes(LayerMask mask)
+//custom-begin: malte: debugging/visualizing volumes
+        public List<Volume> GrabVolumes(LayerMask mask)
+//custom-end
         {
             List<Volume> list;
 

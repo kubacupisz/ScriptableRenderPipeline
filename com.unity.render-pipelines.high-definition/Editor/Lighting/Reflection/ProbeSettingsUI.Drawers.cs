@@ -29,8 +29,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
 
                 GUI.enabled = hd.currentPlatformRenderPipelineSettings.supportLightLayers;
-                PropertyFieldWithFlagToggleIfDisplayed(ProbeSettingsFields.lightingLightLayer, serialized.lightingLightLayer, EditorGUIUtility.TrTextContent("Light Layer", "Specifies the Light Layer the Reflection Probe uses to capture its view of the Scene. The Probe only uses Lights on the Light Layer you specify."), @override.probe, displayedFields.probe, overridableFields.probe);
-
+//custom-begin: fix light layers on probes
+                //PropertyFieldWithFlagToggleIfDisplayed(ProbeSettingsFields.lightingLightLayer, serialized.lightingLightLayer, EditorGUIUtility.TrTextContent("Light Layer", "Specifies the Light Layer the Reflection Probe uses to capture its view of the Scene. The Probe only uses Lights on the Light Layer you specify."), @override.probe, displayedFields.probe, overridableFields.probe);
+                PropertyFieldWithFlagToggleIfDisplayed(ProbeSettingsFields.lightingLightLayer, serialized.lightingLightLayer, EditorGUIUtility.TrTextContent("Light Layer", "Specifies the Light Layer the Reflection Probe uses to capture its view of the Scene. The Probe only uses Lights on the Light Layer you specify."), @override.probe, displayedFields.probe, overridableFields.probe, (p, l) => p.intValue = (int)(LightLayerEnum)EditorGUILayout.EnumFlagsField(l, (LightLayerEnum)p.intValue, false));
+//custom-end:
                 GUI.enabled = true;
                 PropertyFieldWithFlagToggleIfDisplayed(ProbeSettingsFields.lightingMultiplier, serialized.lightingMultiplier, EditorGUIUtility.TrTextContent("Multiplier", "Sets the multiplier value that reflective Materials apply to the results from the Reflection Probe."), @override.probe, displayedFields.probe, overridableFields.probe);
                 PropertyFieldWithFlagToggleIfDisplayed(ProbeSettingsFields.lightingWeight, serialized.lightingWeight, EditorGUIUtility.TrTextContent("Weight", "Sets the weight of this Reflection Probe. When multiple Probes both affect the same area of a reflective Material, the Material uses the Weight of each Probe to determine their contribution to the reflective effect."), @override.probe, displayedFields.probe, overridableFields.probe);

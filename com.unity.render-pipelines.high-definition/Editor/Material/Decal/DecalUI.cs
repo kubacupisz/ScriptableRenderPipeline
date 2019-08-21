@@ -46,6 +46,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 new GUIContent("Mask Map", "Mask map - Ambient Occlusion(G), Opacity(B), Smoothness(A)"), // Decal.MaskBlendFlags.AO | Decal.MaskBlendFlags.Smoothness:
                 new GUIContent("Mask Map", "Mask map - Metal(R), Ambient Occlusion(G), Opacity(B), Smoothness(A)") // Decal.MaskBlendFlags.Metal | Decal.MaskBlendFlags.AO | Decal.MaskBlendFlags.Smoothness:
             };
+
+//custom-begin: add decal mode for blurring normal buffer
+            public static GUIContent blurNormalsText = new GUIContent("Blur Normal Buffer", "Enable to blur normal buffer to edge of decal");
+//custom-end:
         }
 
         enum BlendSource
@@ -144,6 +148,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         protected MaterialProperty emissiveColorHDR = null;
         protected const string kEmissiveColorHDR = "_EmissiveColorHDR";
 
+//custom-begin: add decal mode for blurring normal buffer
+        protected MaterialProperty blurNormalsMode = new MaterialProperty();
+        protected const string kBlurNormalsMode = "_BlurNormalsMode";
+//custom-end:
+
         protected MaterialEditor m_MaterialEditor;
 
         void FindMaterialProperties(MaterialProperty[] props)
@@ -177,6 +186,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             emissiveColorLDR = FindProperty(kEmissiveColorLDR, props);
             emissiveColorHDR = FindProperty(kEmissiveColorHDR, props);
 
+//custom-begin: add decal mode for blurring normal buffer
+            blurNormalsMode = FindProperty(kBlurNormalsMode, props);
+//custom-end:
+
             // always instanced
             SerializedProperty instancing = m_MaterialEditor.serializedObject.FindProperty("m_EnableInstancingVariants");
             instancing.boolValue = true;
@@ -192,9 +205,19 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             CoreUtils.SetKeyword(material, "_NORMALMAP", material.GetTexture(kNormalMap));
             CoreUtils.SetKeyword(material, "_MASKMAP", material.GetTexture(kMaskMap));
             CoreUtils.SetKeyword(material, "_EMISSIVEMAP", material.GetTexture(kEmissiveColorMap));
+//custom-begin: add decal mode for blurring normal buffer
+            CoreUtils.SetKeyword(material, "_BLURNORMALBUFFER", material.GetFloat(kBlurNormalsMode) == 1.0f);
+//custom-end:
 
             material.SetInt(kDecalStencilWriteMask, (int)HDRenderPipeline.StencilBitMask.Decals);
             material.SetInt(kDecalStencilRef, (int)HDRenderPipeline.StencilBitMask.Decals);
+//custom-begin: add decal mode for blurring normal buffer
+            if (material.GetFloat(kBlurNormalsMode) == 1.0f)
+            {
+                material.SetInt(kDecalStencilWriteMask, (int)HDRenderPipeline.StencilBitMask.Decals | (int)HDRenderPipeline.StencilBitMask.DecalsBlurNormalBuffer);
+                material.SetInt(kDecalStencilRef, (int)HDRenderPipeline.StencilBitMask.Decals | (int)HDRenderPipeline.StencilBitMask.DecalsBlurNormalBuffer);
+            }
+//custom-end:
             material.SetShaderPassEnabled(HDShaderPassNames.s_MeshDecalsMStr, false);
             material.SetShaderPassEnabled(HDShaderPassNames.s_MeshDecalsAOStr, false);
             material.SetShaderPassEnabled(HDShaderPassNames.s_MeshDecalsMAOStr, false);
@@ -361,6 +384,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                                 m_MaterialEditor.TexturePropertySingleLine(Styles.emissiveText, emissiveColorMap, emissiveColorHDR);
                             }
                         }
+
+//custom-begin: add decal mode for blurring normal buffer
+                        m_MaterialEditor.ShaderProperty(blurNormalsMode, Styles.blurNormalsText);
+//custom-end:
 
                         EditorGUI.indentLevel--;
 

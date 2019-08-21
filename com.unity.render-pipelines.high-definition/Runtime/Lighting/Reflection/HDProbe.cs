@@ -6,6 +6,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     [ExecuteAlways]
     public abstract partial class HDProbe : MonoBehaviour
     {
+//custom-begin: bake realtime probe
+        public bool opRealtimeToBaked;
+//custom-end:
+
         [Serializable]
         public struct RenderData
         {

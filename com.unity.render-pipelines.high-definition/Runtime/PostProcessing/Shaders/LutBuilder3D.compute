@@ -239,5 +239,14 @@ void MAIN(uint3 dispatchThreadId : SV_DispatchThreadID)
     float3 gradedColor = ColorGrade(colorLutSpace);
     gradedColor = Tonemap(gradedColor);
 
+//custom-begin: support for external lut grading
+    #if defined(USE_SOURCE_LUT)
+    {
+        float3 externalLut = _LogLut3D.Load(uint4(dispatchThreadId, 0)).rgb;
+        gradedColor = lerp(gradedColor, externalLut, _LogLut3D_Params.x);
+    }
+    #endif
+//custom-end:
+
     _OutputTexture[dispatchThreadId] = float4(max(gradedColor, 0.0), 1.0);
 }

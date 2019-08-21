@@ -13,7 +13,13 @@ float3 GetVertexDisplacement(float3 positionRWS, float3 normalWS, float2 texCoor
 }
 
 // Note: positionWS can be either in camera relative space or not
+//custom-begin: corridor warp
+#if defined(WARP) || defined(WARP2)
+void ApplyVertexModification(AttributesMesh input, float3 normalWS, inout float3 positionRWS, float4 time, int paramFrame = 0)
+#else
 void ApplyVertexModification(AttributesMesh input, float3 normalWS, inout float3 positionRWS, float4 time)
+#endif
+//custom-end:
 {
 #if defined(_VERTEX_DISPLACEMENT)
 
@@ -43,7 +49,15 @@ void ApplyVertexModification(AttributesMesh input, float3 normalWS, inout float3
     #else
         float4(0.0, 0.0, 0.0, 0.0)
     #endif
+//custom-begin: corridor warp
+#if defined(WARP)
+        ) * CorridorWarpVertexDisplacement(paramFrame, input.uv0, input.uv1, input.uv2);
+#elif defined(WARP2)
+        ) * CorridorWarpVertexDisplacement2(paramFrame, input.uv0, input.uv1, input.uv2);
+#else
         );
+#endif
+//custom-end:
 #endif
 
 #ifdef _VERTEX_WIND

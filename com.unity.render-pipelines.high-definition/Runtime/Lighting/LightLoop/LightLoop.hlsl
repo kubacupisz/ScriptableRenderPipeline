@@ -70,6 +70,11 @@ void ApplyDebug(LightLoopContext lightLoopContext, PositionInputs posInput, BSDF
 }
 
 void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BSDFData bsdfData, BuiltinData builtinData, uint featureFlags,
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+                LIGHTLOOP_LIGHT_TRANSFORM_DATA lightTransformData,
+#endif
+//custom-end: lightloop light transform
                 out float3 diffuseLighting,
                 out float3 specularLighting)
 {
@@ -79,6 +84,11 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
     context.contactShadow    = InitContactShadow(posInput);
     context.shadowValue      = 1;
     context.sampleReflection = 0;
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+    context.lightTransformData = lightTransformData;
+#endif
+//custom-end: lightloop light transform
 
     // First of all we compute the shadow value of the directional light to reduce the VGPR pressure
     if (featureFlags & LIGHTFEATUREFLAGS_DIRECTIONAL)

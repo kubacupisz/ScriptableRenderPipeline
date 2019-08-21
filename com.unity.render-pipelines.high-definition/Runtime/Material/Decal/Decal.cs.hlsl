@@ -15,6 +15,7 @@
 #define DBUFFERHTILEBIT_DIFFUSE (1)
 #define DBUFFERHTILEBIT_NORMAL (2)
 #define DBUFFERHTILEBIT_MASK (4)
+#define DBUFFERHTILEBIT_BLUR (8)
 
 // Generated from UnityEngine.Experimental.Rendering.HDPipeline.Decal+DecalSurfaceData
 // PackingRules = Exact

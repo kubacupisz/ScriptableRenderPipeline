@@ -242,7 +242,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
-        public void RenderShadows(ScriptableRenderContext renderContext, CommandBuffer cmd, ShadowDrawingSettings dss)
+//custom-begin: shadow callback
+        public void RenderShadows(ScriptableRenderContext renderContext, CommandBuffer cmd, ShadowDrawingSettings dss, Action<Matrix4x4, CommandBuffer> onBeforeShadows)
+//custom-end
         {
             if (m_ShadowRequests.Count == 0)
                 return;
@@ -275,6 +277,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetGlobalMatrix(HDShaderIDs._ViewProjMatrix, viewProjection);
                 cmd.SetGlobalMatrix(HDShaderIDs._InvViewProjMatrix, viewProjection.inverse);
                 cmd.SetGlobalVectorArray(HDShaderIDs._ShadowClipPlanes, shadowRequest.frustumPlanes);
+
+//custom-begin: shadow callback
+                var viewMat = shadowRequest.viewAbsolute;
+                var projMat = shadowRequest.deviceProjectionYFlip;
+                var shadowFrustum = projMat * viewMat;
+                onBeforeShadows?.Invoke(shadowFrustum, cmd);
+//custom-end
 
                 // TODO: remove this execute when DrawShadows will use a CommandBuffer
                 renderContext.ExecuteCommandBuffer(cmd);

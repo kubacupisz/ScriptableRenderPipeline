@@ -112,6 +112,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 layerLabelColors[2].normal.textColor = layerColors[2];
                 layerLabelColors[3].normal.textColor = layerColors[3];
             }
+
+//custom-begin: slope mask feature
+            public readonly GUIContent slopeMaskModeText = EditorGUIUtility.TrTextContent("Slope Mask Mode", "The Slope Mask is multiplied with the mask .");
+            public readonly GUIContent slopeAngleText = EditorGUIUtility.TrTextContent("Slope Angle", "Slope under the angle value are part of the mask. Negative Value invert the mask");
+            public readonly GUIContent slopeBiasText = EditorGUIUtility.TrTextContent("Slope Bias", "Used to smooth the Slope Mask");
+            public readonly GUIContent slopeMaskIntensityText = EditorGUIUtility.TrTextContent("Slope Mask Influence", "Slope Mask Influence.");
+            public readonly GUIContent slopeReferenceDirText = EditorGUIUtility.TrTextContent("Slope Reference Direction", "The direction used to compute the slope");
+            public readonly GUIContent slopeSmoothNormalText = EditorGUIUtility.TrTextContent("Smooth Main Layer Normal for Slope", "Smooth the main layer normal map for the slope mask generation");
+//custom-end: slope mask feature
         }
 
         static StylesLayer s_Styles = null;
@@ -179,6 +188,22 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         MaterialProperty heightTransition = null;
         const string kHeightTransition = "_HeightTransition";
 
+//custom-begin: slope mask feature
+        // Slope mask
+        MaterialProperty slopeMaskMode = null;
+        const string kSlopeMaskMode = "_SlopeMaskMode";
+        MaterialProperty slopeReferenceDir = null;
+        const string kSlopeReferenceDir = "_SlopeReferenceDir";
+        MaterialProperty slopeSmoothNormal = null;
+        const string KSlopeSmoothNormal = "_SlopeSmoothNormal";
+        MaterialProperty[] slopeAngle = new MaterialProperty[kMaxLayerCount - 1];
+        const string kSlopeAngle = "_SlopeAngle";
+        MaterialProperty[] slopeBias = new MaterialProperty[kMaxLayerCount - 1];
+        const string kSlopeBias = "_SlopeBias";
+        MaterialProperty[] slopeMaskIntensity = new MaterialProperty[kMaxLayerCount - 1];
+        const string kSlopeMaskIntensity = "_SlopeMaskIntensity";
+//custom-end: slope mask feature
+
         bool m_UseHeightBasedBlend;
 
         protected override void FindMaterialProperties(MaterialProperty[] props)
@@ -190,6 +215,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             layerMaskMap = FindProperty(kLayerMaskMap, props);
             layerInfluenceMaskMap = FindProperty(kLayerInfluenceMaskMap, props);
             vertexColorMode = FindProperty(kVertexColorMode, props);
+//custom-begin: slope mask feature
+            slopeMaskMode = FindProperty(kSlopeMaskMode, props);
+            slopeReferenceDir = FindProperty(kSlopeReferenceDir, props);
+            slopeSmoothNormal = FindProperty(KSlopeSmoothNormal, props);
+//custom-end: slope mask feature
             objectScaleAffectTile = FindProperty(kObjectScaleAffectTile, props);
             UVBlendMask = FindProperty(kUVBlendMask, props);
             UVMappingMaskBlendMask = FindProperty(kUVMappingMaskBlendMask, props);
@@ -210,6 +240,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     inheritBaseNormal[i - 1] = FindProperty(string.Format("{0}{1}", kInheritBaseNormal, i), props);
                     inheritBaseHeight[i - 1] = FindProperty(string.Format("{0}{1}", kInheritBaseHeight, i), props);
                     inheritBaseColor[i - 1] = FindProperty(string.Format("{0}{1}", kInheritBaseColor, i), props);
+
+//custom-begin: slope mask feature
+                    // Slope mask
+                    slopeAngle[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeAngle, i), props);
+                    slopeBias[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeBias, i), props);
+                    slopeMaskIntensity[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeMaskIntensity, i), props);
+//custom-end: slope mask feature
                 }
             }
             
@@ -360,6 +397,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         void DrawLayeringOptions(bool mainLayerInfluenceEnable, uint expended, int layerIndex)
         {
+//custom-begin: slope mask feature
+            bool slopeMaskModeEnable = slopeMaskMode.floatValue > 0.0f;
+//custom-end:
+
             // do layering option (if main layer (0) check if there is any content before drawing the foldout)
             if (layerIndex > 0 || layerIndex == 0 && !useMainLayerInfluence.hasMixedValue && useMainLayerInfluence.floatValue != 0.0f)
             {
@@ -380,10 +421,28 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                                 // We always display it as it can be tricky to know when per pixel displacement is enabled or not
                                 m_MaterialEditor.ShaderProperty(inheritBaseHeight[layerIndex - 1], styles.inheritBaseHeightText);
                             }
+
+//custom-begin: slope mask feature
+                            if (slopeMaskModeEnable)
+                            {
+                                EditorGUILayout.Space();
+                                m_MaterialEditor.ShaderProperty(slopeAngle[layerIndex - 1], styles.slopeAngleText);
+                                m_MaterialEditor.ShaderProperty(slopeBias[layerIndex - 1], styles.slopeBiasText);
+                                m_MaterialEditor.ShaderProperty(slopeMaskIntensity[layerIndex - 1], styles.slopeMaskIntensityText);
+                            }
+//custom-end:
                         }
                         else
                         {
                             m_MaterialEditor.TexturePropertySingleLine(styles.layerInfluenceMapMaskText, layerInfluenceMaskMap);
+
+//custom-begin: slope mask feature
+                            if (header.expanded)
+                            {
+                                m_MaterialEditor.ShaderProperty(slopeReferenceDir, styles.slopeReferenceDirText);
+                                m_MaterialEditor.ShaderProperty(slopeSmoothNormal, styles.slopeSmoothNormalText);
+                            }
+//custom-end:
                         }
                     }
                 }
@@ -470,6 +529,16 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     EditorGUI.indentLevel--;
 
                     m_MaterialEditor.ShaderProperty(vertexColorMode, styles.vertexColorModeText);
+
+//custom-begin: slope mask feature
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUI.showMixedValue = slopeMaskMode.hasMixedValue;
+                    bool slopeMaskModeEnable = EditorGUILayout.Toggle(styles.slopeMaskModeText, slopeMaskMode.floatValue > 0.0f);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        slopeMaskMode.floatValue = slopeMaskModeEnable ? 1.0f : 0.0f;
+                    }
+//custom-end: slope mask feature
 
                     EditorGUI.BeginChangeCheck();
                     EditorGUI.showMixedValue = useMainLayerInfluence.hasMixedValue;
@@ -754,6 +823,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 CoreUtils.SetKeyword(material, "_LAYER_MASK_VERTEX_COLOR_MUL", false);
                 CoreUtils.SetKeyword(material, "_LAYER_MASK_VERTEX_COLOR_ADD", false);
             }
+
+//custom-begin: slope mask feature
+            CoreUtils.SetKeyword(material, "_LAYER_MASK_SLOPE_MASK_MUL", material.GetFloat(kSlopeMaskMode) != 0.0f);
+//custom-end: slope mask feature
 
             bool useHeightBasedBlend = material.GetFloat(kUseHeightBasedBlend) != 0.0f;
             CoreUtils.SetKeyword(material, "_HEIGHT_BASED_BLEND", useHeightBasedBlend);

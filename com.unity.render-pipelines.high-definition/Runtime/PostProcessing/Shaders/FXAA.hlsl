@@ -1,4 +1,4 @@
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+﻿#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
 #define FXAA_HDR_MAPUNMAP   0
 #define FXAA_SPAN_MAX       (8.0)

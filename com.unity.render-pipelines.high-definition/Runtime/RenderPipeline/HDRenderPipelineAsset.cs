@@ -91,7 +91,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         public ref FrameSettings GetDefaultFrameSettings(FrameSettingsRenderType type)
         {
-            switch(type)
+            switch (type)
             {
                 case FrameSettingsRenderType.Camera:
                     return ref m_RenderingPathDefaultCameraFrameSettings;
@@ -129,6 +129,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // Store the various RenderPipelineSettings for each platform (for now only one)
         [SerializeField, FormerlySerializedAs("renderPipelineSettings")]
         RenderPipelineSettings m_RenderPipelineSettings = RenderPipelineSettings.@default;
+
+//custom-begin: Volumetrics quality override
+        public bool VolumetricLightingForceHighQuality { get; set; }
+//custom-end:
 
         // Return the current use RenderPipelineSettings (i.e for the current platform)
         public RenderPipelineSettings currentPlatformRenderPipelineSettings => m_RenderPipelineSettings;
@@ -241,6 +245,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
+        /*MERGETODO reenable in new build
         public override Shader terrainDetailLitShader
         {
             get
@@ -264,6 +269,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 return renderPipelineEditorResources == null ? null : renderPipelineEditorResources.shaders.terrainDetailGrassBillboardShader;
             }
         }
+        */
 
         // Note: This function is HD specific
         public Material GetDefaultDecalMaterial()

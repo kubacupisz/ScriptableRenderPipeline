@@ -12,6 +12,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public ClampedFloatParameter anisotropy             = new ClampedFloatParameter(0.0f, -1.0f, 1.0f);
         public ClampedFloatParameter globalLightProbeDimmer = new ClampedFloatParameter(1.0f, 0.0f, 1.0f);
         public BoolParameter         enableDistantFog       = new BoolParameter(false);
+//custom-begin: extinction tweak
+        public ClampedFloatParameter extinction             = new ClampedFloatParameter(1.0f, 0.0f, 1.0f);
+//custom-end
 
         public override void PushShaderParameters(HDCamera hdCamera, CommandBuffer cmd)
         {
@@ -38,6 +41,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetGlobalFloat( HDShaderIDs._HeightFogBaseHeight, crBaseHeight);
             cmd.SetGlobalFloat( HDShaderIDs._GlobalFogAnisotropy, anisotropy.value);
             cmd.SetGlobalInt(   HDShaderIDs._EnableDistantFog,    enableDistantFog.value ? 1 : 0);
+//custom-begin: extinction tweak
+            cmd.SetGlobalFloat( HDShaderIDs._Extinction, extinction.value);
+//custom-end
         }
 
         public static void PushNeutralShaderParameters(CommandBuffer cmd)
@@ -49,6 +55,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetGlobalFloat( HDShaderIDs._HeightFogBaseHeight, 0.0f);
             cmd.SetGlobalFloat( HDShaderIDs._GlobalFogAnisotropy, 0.0f);
             cmd.SetGlobalInt(   HDShaderIDs._EnableDistantFog,    0);
+//custom-begin: extinction tweak
+            cmd.SetGlobalFloat( HDShaderIDs._Extinction, 1);
+//custom-end
         }
     }
 }

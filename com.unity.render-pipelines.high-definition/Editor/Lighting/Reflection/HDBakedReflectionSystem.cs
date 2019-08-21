@@ -372,9 +372,18 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 probe.SetTexture(ProbeSettings.Mode.Baked, bakedTexture);
                 AssignRenderData(probe, bakedTexturePath);
                 EditorUtility.SetDirty(probe);
+
+//custom-begin: bake realtime probe
+                if (probe.mode == ProbeSettings.Mode.Realtime && probe.opRealtimeToBaked)
+                {
+                    probe.opRealtimeToBaked = false;
+                    probe.SetTexture(ProbeSettings.Mode.Custom, bakedTexture);
+                    probe.mode = ProbeSettings.Mode.Custom;
+                }
+//custom-end:
             }
             AssetDatabase.StopAssetEditing();
-
+            
             cubeRT.Release();
             planarRT.Release();
 
@@ -515,7 +524,15 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 case ProbeSettings.ProbeType.ReflectionProbe:
                     {
                         var positionSettings = ProbeCapturePositionSettings.ComputeFrom(probe, null);
-                        HDRenderUtilities.Render(probe.settings, positionSettings, cubeRT,
+//custom-begin: bake realtime probe
+                        if (probe.mode == ProbeSettings.Mode.Realtime && probe.opRealtimeToBaked)
+                        {
+                            HDBakingUtilities.CreateParentDirectoryIfMissing(targetFile);
+                            HDTextureUtilities.WriteTextureFileToDisk(probe.realtimeTexture, targetFile);
+                        }
+                        else
+                        {
+                            HDRenderUtilities.Render(probe.settings, positionSettings, cubeRT,
                             forceFlipY: true,
                             forceInvertBackfaceCulling: true, // Cubemap have an RHS standard, so we need to invert the face culling
                             (uint)StaticEditorFlags.ReflectionProbeStatic
@@ -524,6 +541,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                         if (Provider.isActive && HDEditorUtils.IsAssetPath(targetFile))
                             Checkout(targetFile, CheckoutMode.Both);
                         HDTextureUtilities.WriteTextureFileToDisk(cubeRT, targetFile);
+                        }
+//custom-end:
                         break;
                     }
                 case ProbeSettings.ProbeType.PlanarProbe:
@@ -579,6 +598,15 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                             ? TextureImporterCompression.Compressed
                             : TextureImporterCompression.Uncompressed;
                         importer.textureShape = TextureImporterShape.TextureCube;
+//custom-begin: need to clear out any lingering importer settings
+                        var tis = new TextureImporterSettings();
+                        importer.ReadTextureSettings(tis);
+                        tis.cubemapConvolution = TextureImporterCubemapConvolution.None;
+                        tis.seamlessCubemap = false;
+                        tis.wrapMode = TextureWrapMode.Repeat;
+                        tis.aniso = 1;
+                        importer.SetTextureSettings(tis);
+//custom-end:
                         importer.SaveAndReimport();
                         break;
                     }

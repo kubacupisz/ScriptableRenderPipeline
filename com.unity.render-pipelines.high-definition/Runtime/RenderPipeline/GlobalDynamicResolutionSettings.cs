@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace UnityEngine.Experimental.Rendering.HDPipeline
 {

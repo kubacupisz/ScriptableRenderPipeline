@@ -15,6 +15,9 @@ Shader "HDRP/Lit"
 
         _Metallic("_Metallic", Range(0.0, 1.0)) = 0
         _Smoothness("Smoothness", Range(0.0, 1.0)) = 0.5
+//custom-begin: View angle dependent smoothness tweak
+        _SmoothnessViewAngleOffset("Smoothness View Angle Offset", Range(0.0, 1.0)) = 0.0
+//custom-end:
         _MaskMap("MaskMap", 2D) = "white" {}
         _SmoothnessRemapMin("SmoothnessRemapMin", Float) = 0.0
         _SmoothnessRemapMax("SmoothnessRemapMax", Float) = 1.0
@@ -317,6 +320,11 @@ Shader "HDRP/Lit"
     //-------------------------------------------------------------------------------------
     // Include
     //-------------------------------------------------------------------------------------
+
+//custom-begin: Lattice deform support
+	#include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+	#pragma shader_feature _LATTICE_DEFORM
+//custom-end:
 
     #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
     #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Wind.hlsl"

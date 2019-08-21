@@ -510,6 +510,19 @@ float4 GetBlendMask(LayerTexCoord layerTexCoord, float4 vertexColor, bool useLod
     return blendMasks;
 }
 
+//custom-begin: slope mask feature
+float GetSlopeMask(float3 _worldNormal, float3 _refDirection, float _slopeStart, float _slopeBias)
+{
+    float _slopeAngle = dot(_worldNormal, _refDirection);
+    _slopeAngle = acos(_slopeAngle) / PI;
+
+    float slopeMask = saturate((_slopeAngle - _slopeStart) / max(_slopeBias, 0.000001));
+    slopeMask = 1 - slopeMask;
+
+    return slopeMask;
+}
+//custom-end: slope mask feature
+
 float GetInfluenceMask(LayerTexCoord layerTexCoord, bool useLodSampling = false, float lod = 0)
 {
     // Sample influence mask with same mapping as Main layer
@@ -675,6 +688,29 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     GetLayerTexCoord(input, layerTexCoord);
 
     float4 blendMasks = GetBlendMask(layerTexCoord, input.color);
+
+//custom-begin: slope mask feature
+#if defined(_LAYER_MASK_SLOPE_MASK_MUL)
+    SurfaceData surfaceData_forSlopeMask;
+    float3 normalTS_forSlopeMask, bentNormalTS_forSlopeMask;
+
+    GetSurfaceData0(input, layerTexCoord, surfaceData_forSlopeMask, normalTS_forSlopeMask, bentNormalTS_forSlopeMask, _SlopeSmoothNormal * 8);
+    //GetSurfaceData0(input, layerTexCoord, surfaceData_forSlopeMask, normalTS_forSlopeMask, bentNormalTS_forSlopeMask);
+    float3 worldNormal_forSlopeMask;
+    GetNormalWS(input, normalTS_forSlopeMask, worldNormal_forSlopeMask);
+    _SlopeReferenceDir.rgb = normalize(_SlopeReferenceDir.rgb);
+
+    float3 slopeMasks = float3(
+        GetSlopeMask(worldNormal_forSlopeMask, _SlopeReferenceDir.rgb, _SlopeAngle1, _SlopeBias1),
+        GetSlopeMask(worldNormal_forSlopeMask, _SlopeReferenceDir.rgb, _SlopeAngle2, _SlopeBias2),
+        GetSlopeMask(worldNormal_forSlopeMask, _SlopeReferenceDir.rgb, _SlopeAngle3, _SlopeBias3)
+        );
+    slopeMasks = lerp(float3(1, 1, 1), slopeMasks, float3(_SlopeMaskIntensity1, _SlopeMaskIntensity2, _SlopeMaskIntensity3));
+
+    blendMasks *= float4(slopeMasks, 1);
+#endif
+//custom-end: slope mask feature
+
     float depthOffset = ApplyPerPixelDisplacement(input, V, layerTexCoord, blendMasks);
 
 #ifdef _DEPTHOFFSET_ON
@@ -758,6 +794,16 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     surfaceData.transmittanceMask = 0.0;
 
     GetNormalWS(input, normalTS, surfaceData.normalWS, doubleSidedConstants);
+
+//custom-begin: View angle dependent smoothness tweak
+    float NdotV = ClampNdotV(dot(surfaceData.normalWS, V));
+    float invNdotV = 1.f - NdotV;
+
+    float smoothnessViewAngleOffset = PROP_BLEND_SCALAR(_SmoothnessViewAngleOffset, weights)
+    surfaceData.perceptualSmoothness += smoothnessViewAngleOffset * invNdotV;
+    surfaceData.perceptualSmoothness = min(surfaceData.perceptualSmoothness, 1.f);
+//custom-end:
+
     // Use bent normal to sample GI if available
     // If any layer use a bent normal map, then bentNormalTS contain the interpolated result of bentnormal and normalmap (in case no bent normal are available)
     // Note: the code in LitDataInternal ensure that we fallback on normal map for layer that have no bentnormal

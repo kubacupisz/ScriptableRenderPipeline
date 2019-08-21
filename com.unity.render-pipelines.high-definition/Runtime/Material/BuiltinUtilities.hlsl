@@ -1,3 +1,8 @@
+//custom-begin: allow including MaterialUtilities.hlsl before LitData.hlsl
+#ifndef __MATERIALUTILITIES_HLSL__
+#define __MATERIALUTILITIES_HLSL__
+//custom-end
+
 // Return camera relative probe volume world to object transformation
 float4x4 GetProbeVolumeWorldToObject()
 {
@@ -9,6 +14,11 @@ float4x4 GetProbeVolumeWorldToObject()
 // Else we have lightprobe for dynamic/moving entity. Either SH9 per object lightprobe or SH4 per pixel per object volume probe
 float3 SampleBakedGI(float3 positionRWS, float3 normalWS, float2 uvStaticLightmap, float2 uvDynamicLightmap)
 {
+//custom-begin: LightFieldZone
+    // ..count on this optimizing out every future operation on baked diffuse
+    //return float3(0, 0, 0);
+//custom-end:
+
     // If there is no lightmap, it assume lightprobe
 #if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTMAP_ON)
 
@@ -208,3 +218,22 @@ void PostInitBuiltinData(   float3 V, PositionInputs posInput, SurfaceData surfa
 #endif
     ApplyDebugToBuiltinData(builtinData);
 }
+
+//custom-begin: screen space dither mask
+float SampleScreenSpaceDither(uint2 positionSS)
+{
+    uint2 repeatMask = uint2(_ScreenSpaceDitherMask_AnimRepeat.zw);
+    uint2 repeatPositionSS = positionSS & repeatMask;
+    return LOAD_TEXTURE2D(_ScreenSpaceDitherMask, repeatPositionSS).r;
+}
+
+float SampleScreenSpaceDitherAnimated(uint2 positionSS)
+{
+    uint2 animSS = uint2(_ScreenSpaceDitherMask_AnimRepeat.xy);
+    return SampleScreenSpaceDither(positionSS + animSS);
+}
+//custom-end
+
+//custom-begin: allow including MaterialUtilities.hlsl before LitData.hlsl
+#endif
+//custom-end

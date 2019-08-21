@@ -67,4 +67,10 @@ void GetSurfaceData(FragInputs input, float3 V, PositionInputs posInput, out Dec
 	surfaceData.normalWS.w = _NormalBlendSrc ? maskMapBlend : albedoMapBlend;
 #endif
 	surfaceData.MAOSBlend.xy = float2(surfaceData.mask.w, surfaceData.mask.w);
+
+//custom-begin: add decal mode for blurring normal buffer
+#ifdef _BLURNORMALBUFFER
+    surfaceData.HTileMask = DBUFFERHTILEBIT_BLUR;
+#endif
+//custom-end:
 }

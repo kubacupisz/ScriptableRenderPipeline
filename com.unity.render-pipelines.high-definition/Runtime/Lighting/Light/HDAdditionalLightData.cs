@@ -206,7 +206,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public uint GetLightLayers()
         {
             int value = legacyLight.renderingLayerMask;
-            return value < 0 ? (uint)LightLayerEnum.Everything : (uint)value;
+//custom-begin: guard light layers
+            //return value < 0 ? (uint)LightLayerEnum.Everything : (uint)value;
+            return (uint)(value & (uint)LightLayerEnum.Everything);
+//custom-end:
         }
 
         // Shadow Settings
@@ -456,6 +459,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // Make light position camera relative:
             // TODO: think about VR (use different camera position for each eye)
+//custom-begin: wire shadow culling
+            shadowRequest.viewAbsolute = shadowRequest.view;
+//custom-end
             if (ShaderConfig.s_CameraRelativeRendering != 0)
             {
                 var translation = Matrix4x4.Translate(cameraPos);

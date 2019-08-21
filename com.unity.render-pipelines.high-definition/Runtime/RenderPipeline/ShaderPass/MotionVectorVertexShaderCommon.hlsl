@@ -1,9 +1,18 @@
 #ifndef MOTION_VEC_VERTEX_COMMON_INCLUDED
 #define MOTION_VEC_VERTEX_COMMON_INCLUDED
 
+//custom-begin: alembic
+float _AlembicMotionVectorsScale;
+//custom-end:
+
 // Available semantic start from TEXCOORD4
 struct AttributesPass
 {
+//custom-begin: alembic
+#ifdef ALEMBIC
+    float3 aiVelocity : TEXCOORD3;
+#endif
+//custom-end:
     float3 previousPositionOS : TEXCOORD4; // Contain previous transform position (in case of skinning for example)
 };
 
@@ -133,6 +142,31 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
         float3 previousPositionRWS = TransformPreviousObjectToWorld(hasDeformation ? inputPass.previousPositionOS : inputMesh.positionOS);
 #endif
 
+//custom-begin: warp
+#if defined(WARP) || defined(WARP2)
+    #ifdef ATTRIBUTES_NEED_NORMAL
+        float3 normal = inputMesh.normalOS;
+    #else
+        float3 normal = float3(0.0, 0.0, 0.0); // We need this case to be able to compile ApplyVertexModification that doesn't use normal.
+    #endif
+    #ifdef WARP
+        CorridorWarpVertex(PARAM_FRAME_PREV, inputMesh.positionOS, normal, inputMesh.uv0, inputMesh.uv1, inputMesh.uv2);
+    #else//WARP2
+        CorridorWarpVertex2(PARAM_FRAME_PREV, inputMesh.positionOS, normal, inputMesh.uv0, inputMesh.uv1, inputMesh.uv2);
+    #endif
+        previousPositionRWS = TransformPreviousObjectToWorld(inputMesh.positionOS);
+    #ifdef ATTRIBUTES_NEED_NORMAL
+        inputMesh.normalOS = normal;
+    #endif
+#endif
+//custom-end:
+
+//custom-begin: alembic
+#ifdef ALEMBIC
+        previousPositionRWS = TransformPreviousObjectToWorld(inputMesh.positionOS + inputPass.aiVelocity * _AlembicMotionVectorsScale);
+#endif
+//custom-end:
+
 #ifdef ATTRIBUTES_NEED_NORMAL
         float3 normalWS = TransformPreviousObjectToWorldNormal(inputMesh.normalOS);
 #else
@@ -140,10 +174,22 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
 #endif
 
 #if defined(HAVE_VERTEX_MODIFICATION)
+//custom-begin: warp
+    #if defined(WARP) || defined(WARP2)
+        ApplyVertexModification(inputMesh, normalWS, previousPositionRWS, _LastTime, PARAM_FRAME_PREV);
+    #else
         ApplyVertexModification(inputMesh, normalWS, previousPositionRWS, _LastTime);
+    #endif
+//custom-end:
 #endif
 
         varyingsType.vpass.previousPositionCS = mul(_PrevViewProjMatrix, float4(previousPositionRWS, 1.0));
+
+//custom-begin: wires
+#ifdef _WIRES
+        varyingsType.vpass.previousPositionCS = WireVertexPreviousPositionCS(inputMesh, varyingsType.vpass.positionCS);
+#endif
+//custom-end:
     }
 
     return PackVaryingsType(varyingsType);

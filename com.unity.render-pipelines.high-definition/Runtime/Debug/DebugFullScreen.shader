@@ -223,6 +223,16 @@ Shader "Hidden/HDRP/DebugFullScreen"
                         d = 1.0 - saturate(d);
                     }
 
+//custom-begin
+                    // Needs UI to tweak the scale and arrow threshold
+                    float scale = 10;
+                    float arrowThreshold = 0.1;
+                    scale *= length(mv);
+                    color *= scale;
+                    color += d * step(arrowThreshold, scale);
+                    return color.xyzz;
+//custom-end
+
                     return float4(color + d.xxx, 1.0);
                 }
                 if (_FullScreenDebugMode == FULLSCREENDEBUGMODE_CONTACT_SHADOWS)

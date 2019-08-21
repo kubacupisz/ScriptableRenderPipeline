@@ -54,6 +54,7 @@
 #define DEBUGVIEW_STACKLIT_SURFACEDATA_DIFFUSION_PROFILE_HASH (1130)
 #define DEBUGVIEW_STACKLIT_SURFACEDATA_SUBSURFACE_MASK (1131)
 #define DEBUGVIEW_STACKLIT_SURFACEDATA_THICKNESS (1132)
+#define DEBUGVIEW_STACKLIT_SURFACEDATA_SPECULAR_OCCLUSION (1133)
 
 //
 // UnityEngine.Experimental.Rendering.HDPipeline.StackLit+BSDFData:  static fields
@@ -94,6 +95,7 @@
 #define DEBUGVIEW_STACKLIT_BSDFDATA_THICKNESS (1183)
 #define DEBUGVIEW_STACKLIT_BSDFDATA_USE_THICK_OBJECT_MODE (1184)
 #define DEBUGVIEW_STACKLIT_BSDFDATA_TRANSMITTANCE (1185)
+#define DEBUGVIEW_STACKLIT_BSDFDATA_SPECULAR_OCCLUSION (1186)
 
 // Generated from UnityEngine.Experimental.Rendering.HDPipeline.StackLit+SurfaceData
 // PackingRules = Exact
@@ -128,6 +130,7 @@ struct SurfaceData
     uint diffusionProfileHash;
     float subsurfaceMask;
     float thickness;
+    float specularOcclusion;
 };
 
 // Generated from UnityEngine.Experimental.Rendering.HDPipeline.StackLit+BSDFData
@@ -166,6 +169,7 @@ struct BSDFData
     float thickness;
     bool useThickObjectMode;
     float3 transmittance;
+    float specularOcclusion;
 };
 
 //
@@ -275,6 +279,9 @@ void GetGeneratedSurfaceDataDebug(uint paramId, SurfaceData surfacedata, inout f
             break;
         case DEBUGVIEW_STACKLIT_SURFACEDATA_THICKNESS:
             result = surfacedata.thickness.xxx;
+            break;
+        case DEBUGVIEW_STACKLIT_SURFACEDATA_SPECULAR_OCCLUSION:
+            result = surfacedata.specularOcclusion.xxx;
             break;
     }
 }
@@ -394,6 +401,9 @@ void GetGeneratedBSDFDataDebug(uint paramId, BSDFData bsdfdata, inout float3 res
             break;
         case DEBUGVIEW_STACKLIT_BSDFDATA_TRANSMITTANCE:
             result = bsdfdata.transmittance;
+            break;
+        case DEBUGVIEW_STACKLIT_BSDFDATA_SPECULAR_OCCLUSION:
+            result = bsdfdata.specularOcclusion.xxx;
             break;
     }
 }

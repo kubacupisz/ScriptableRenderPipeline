@@ -164,6 +164,9 @@ float _Metallic;
 float _Smoothness;
 float _SmoothnessRemapMin;
 float _SmoothnessRemapMax;
+//custom-begin: View angle dependent smoothness tweak
+float _SmoothnessViewAngleOffset;
+//custom-end:
 float _AORemapMin;
 float _AORemapMax;
 
@@ -218,6 +221,9 @@ PROP_DECL(float, _Metallic);
 PROP_DECL(float, _Smoothness);
 PROP_DECL(float, _SmoothnessRemapMin);
 PROP_DECL(float, _SmoothnessRemapMax);
+//custom-begin: View angle dependent smoothness tweak
+PROP_DECL(float, _SmoothnessViewAngleOffset);
+//custpm-end:
 PROP_DECL(float, _AORemapMin);
 PROP_DECL(float, _AORemapMax);
 
@@ -258,6 +264,20 @@ float _InheritBaseColor2;
 float _InheritBaseColor3;
 PROP_DECL(float, _HeightOffset);
 float _HeightTransition;
+
+//custom-begin: slope mask feature
+float4 _SlopeReferenceDir;
+float _SlopeSmoothNormal;
+float _SlopeAngle1;
+float _SlopeAngle2;
+float _SlopeAngle3;
+float _SlopeBias1;
+float _SlopeBias2;
+float _SlopeBias3;
+float _SlopeMaskIntensity1;
+float _SlopeMaskIntensity2;
+float _SlopeMaskIntensity3;
+//custom-end: slope mask feature
 
 float4 _LayerMaskMap_ST;
 float _TexWorldScaleBlendMask;

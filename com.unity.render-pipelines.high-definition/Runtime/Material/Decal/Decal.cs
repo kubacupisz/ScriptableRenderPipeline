@@ -36,6 +36,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             Diffuse = 1,
             Normal = 2,
             Mask = 4
+//custom-begin: add decal mode for blurring normal buffer
+        ,   Blur = 8
+//custom-end:
         };
 
         //-----------------------------------------------------------------------------

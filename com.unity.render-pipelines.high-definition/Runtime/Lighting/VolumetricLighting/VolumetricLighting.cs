@@ -130,6 +130,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         } // struct Parameters
 
+//custom-begin: Allocate both quality levels and acivate based on preset (fast switching).
+        public VolumetricLightingPreset configPreset = VolumetricLightingPreset.Off;
+//custon-end
         public VolumetricLightingPreset preset = VolumetricLightingPreset.Off;
 
         static ComputeShader          m_VolumeVoxelizationCS      = null;
@@ -146,6 +149,15 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // These two buffers do not depend on the frameID and are therefore shared by all views.
         RTHandleSystem.RTHandle       m_DensityBufferHandle;
         RTHandleSystem.RTHandle       m_LightingBufferHandle;
+
+//custom-begin: Allocate both quality levels
+        // Multi-quality data
+        int m_LastFrameQualityChanged = -1;
+        RTHandleSystem.RTHandle[] m_DensityBufferHandles;
+        RTHandleSystem.RTHandle[] m_LightingBufferHandles;
+
+        public bool QualityChangedThisFrame => m_LastFrameQualityChanged == Time.frameCount;
+//custom-end
 
         // Is the feature globally disabled?
         bool m_SupportVolumetrics = false;
@@ -177,7 +189,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (!m_SupportVolumetrics)
                 return;
 
-            preset = asset.currentPlatformRenderPipelineSettings.increaseResolutionOfVolumetrics
+//custom-begin: Allocate both quality levels
+            configPreset = asset.currentPlatformRenderPipelineSettings.increaseResolutionOfVolumetrics
+//custom-end
                 ? VolumetricLightingPreset.High
                 : VolumetricLightingPreset.Medium;
 
@@ -192,6 +206,27 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_xySeqOffset = new Vector4();
 
             CreateBuffers();
+
+//custom-begin: Allocate both quality levels
+            SetQualityPreset(configPreset);
+        }
+
+        void SetQualityPreset(VolumetricLightingPreset newPreset)
+        {
+            if (preset == newPreset)
+                return;
+
+            preset = newPreset;
+
+            m_LastFrameQualityChanged = Time.frameCount;
+            m_DensityBufferHandle = m_DensityBufferHandles[(int)preset];
+            m_LightingBufferHandle = m_LightingBufferHandles[(int)preset];
+        }
+
+        public void SetOverrideHighQualityPreset(bool hq)
+        {
+            SetQualityPreset(hq ? VolumetricLightingPreset.High : configPreset);
+//custom-end
         }
 
         // RTHandleSystem API expects a function which computes the resolution. We define it here.
@@ -201,6 +236,22 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             return new Vector2Int(resolution.x, resolution.y);
         }
+
+//custom-begin: Allocate both quality levels
+        static Vector2Int ComputeVBufferResolutionXY_MQ(Vector2Int screenSize)
+        {
+            Vector3Int resolution = ComputeVBufferResolution(VolumetricLightingPreset.Medium, screenSize.x, screenSize.y);
+            return new Vector2Int(resolution.x, resolution.y);
+        }
+
+        static Vector2Int ComputeVBufferResolutionXY_HQ(Vector2Int screenSize)
+        {
+            Vector3Int resolution = ComputeVBufferResolution(VolumetricLightingPreset.High, screenSize.x, screenSize.y);
+            return new Vector2Int(resolution.x, resolution.y);
+        }
+
+        static ScaleFunc[] fnComputeVBufferResolutionXY = { null, ComputeVBufferResolutionXY_MQ, ComputeVBufferResolutionXY_HQ };
+//custom-end
 
         // RTHandleSystem API expects a function which computes the resolution. We define it here.
         Vector2Int ComputeHistoryVBufferResolutionXY(Vector2Int screenSize)
@@ -250,13 +301,21 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             s_VisibleVolumeBoundsBuffer = new ComputeBuffer(k_MaxVisibleVolumeCount, Marshal.SizeOf(typeof(OrientedBBox)));
             s_VisibleVolumeDataBuffer   = new ComputeBuffer(k_MaxVisibleVolumeCount, Marshal.SizeOf(typeof(DensityVolumeEngineData)));
 
-            int d = ComputeVBufferSliceCount(preset);
+//custom-begin: Allocate both quality levels
+            m_DensityBufferHandles = new RTHandleSystem.RTHandle[(int)VolumetricLightingPreset.Count];
+            m_LightingBufferHandles = new RTHandleSystem.RTHandle[(int)VolumetricLightingPreset.Count];
 
-            // With stereo instancing, the VBuffer is doubled and split into 2 compartments for each eye
-            if (TextureXR.useTexArray && XRGraphics.stereoRenderingMode == XRGraphics.StereoRenderingMode.SinglePassInstanced)
-                d = d * 2;
+            for (var i = (int)VolumetricLightingPreset.Medium; i <= (int)VolumetricLightingPreset.High; ++i)
+            {
+                preset = (VolumetricLightingPreset)i;
 
-            m_DensityBufferHandle = RTHandles.Alloc(scaleFunc:         ComputeVBufferResolutionXY,
+                int d = ComputeVBufferSliceCount(preset);
+
+                // With stereo instancing, the VBuffer is doubled and split into 2 compartments for each eye
+                if (TextureXR.useTexArray && XRGraphics.stereoRenderingMode == XRGraphics.StereoRenderingMode.SinglePassInstanced)
+                    d = d * 2;
+
+                m_DensityBufferHandles[(int)i] = RTHandles.Alloc(scaleFunc: fnComputeVBufferResolutionXY[i],
                     slices:            d,
                     dimension:         TextureDimension.Tex3D,
                     colorFormat:       GraphicsFormat.R16G16B16A16_SFloat, // 8888_sRGB is not precise enough
@@ -265,7 +324,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     /* useDynamicScale: true, // <- TODO */
                     name:              "VBufferDensity");
 
-            m_LightingBufferHandle = RTHandles.Alloc(scaleFunc:         ComputeVBufferResolutionXY,
+                m_LightingBufferHandles[(int)i] = RTHandles.Alloc(scaleFunc: fnComputeVBufferResolutionXY[i],
                     slices:            d,
                     dimension:         TextureDimension.Tex3D,
                     colorFormat:       GraphicsFormat.R16G16B16A16_SFloat,
@@ -273,6 +332,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     enableMSAA:        false,
                     /* useDynamicScale: true, // <- TODO */
                     name:              "VBufferIntegral");
+            }
+
+            preset = VolumetricLightingPreset.Off;
+//custom-end
         }
 
         // For the initial allocation, no suballocation happens (the texture is full size).
@@ -339,10 +402,15 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         void DestroyBuffers()
         {
-            if (m_DensityBufferHandle != null)
-                RTHandles.Release(m_DensityBufferHandle);
-            if (m_LightingBufferHandle != null)
-                RTHandles.Release(m_LightingBufferHandle);
+//custom-begin: Allocate both quality levels
+            for (var i = 0; i < (int)VolumetricLightingPreset.Count; ++i)
+            {
+                if (m_DensityBufferHandles[i] != null)
+                    RTHandles.Release(m_DensityBufferHandles[i]);
+                if (m_LightingBufferHandles[i] != null)
+                    RTHandles.Release(m_LightingBufferHandles[i]);
+            }
+//custom-end
 
             CoreUtils.SafeRelease(s_VisibleVolumeBoundsBuffer);
             CoreUtils.SafeRelease(s_VisibleVolumeDataBuffer);
@@ -367,7 +435,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 case VolumetricLightingPreset.Medium:
                     return 8;
                 case VolumetricLightingPreset.High:
-                    return 4;
+//custom-begin: less extreme high
+                    return 6;
+//custom-end
                 case VolumetricLightingPreset.Off:
                     return 0;
                 default:
@@ -383,7 +453,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 case VolumetricLightingPreset.Medium:
                     return 64;
                 case VolumetricLightingPreset.High:
-                    return 128;
+//custom-begin: less extreme high
+                    return 100;
+//custom-end
                 case VolumetricLightingPreset.Off:
                     return 0;
                 default:

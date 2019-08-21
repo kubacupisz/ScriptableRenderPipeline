@@ -70,6 +70,12 @@ DirectLighting ShadeSurface_Directional(LightLoopContext lightLoopContext,
     DirectLighting lighting;
     ZERO_INITIALIZE(DirectLighting, lighting);
 
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+    LIGHTLOOP_LIGHT_TRANSFORM(lightLoopContext.lightTransformData, posInput, light);
+#endif
+//custom-end: lightloop light transform
+
     float3 L     = ComputeSunLightDirection(light, N, V);
     float  NdotL = dot(N, L); // Do not saturate
 
@@ -219,6 +225,12 @@ DirectLighting ShadeSurface_Punctual(LightLoopContext lightLoopContext,
     DirectLighting lighting;
     ZERO_INITIALIZE(DirectLighting, lighting);
 
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+    LIGHTLOOP_LIGHT_TRANSFORM(lightLoopContext.lightTransformData, posInput, light);
+#endif
+//custom-end: lightloop light transform
+
     float3 L;
     float3 lightToSample;
     float4 distances; // {d, d^2, 1/d, d_proj}
@@ -236,8 +248,19 @@ DirectLighting ShadeSurface_Punctual(LightLoopContext lightLoopContext,
     EvaluateLight_Punctual(lightLoopContext, posInput, light, builtinData, N, L, NdotL, lightToSample, distances,
                            color, attenuation);
 
+//custom-begin: (Nick) eye rendering
+#if defined(EYE_HLSL_H)
+    float NdotLWrapped = ComputeWrappedPowerDiffuseLighting(NdotL, _EyeWrappedLightingCosine, _EyeWrappedLightingPower);
+
+    float intensityDiffuse  = max(0, attenuation * NdotLWrapped);
+    float intensitySpecular = max(0, attenuation * NdotL); // Warning: attenuation can be greater than 1 due to the inverse square attenuation (when position is close to light)
+
+    if (max(intensitySpecular, intensityDiffuse) > 0.0)
+#else
     // TODO: transmittance contributes to attenuation, how can we use it for early-out?
     if (attenuation > 0)
+#endif
+//custom-end: (Nick) eye rendering
     {
         // Simulate a sphere/disk light with this hack
         // Note that it is not correct with our pre-computation of PartLambdaV (mean if we disable the optimization we will not have the
@@ -251,8 +274,15 @@ DirectLighting ShadeSurface_Punctual(LightLoopContext lightLoopContext,
         {
             float intensity = attenuation * NdotL;
 
+//custom-begin: (Nick) eye rendering
+#if defined(EYE_HLSL_H)
+            lighting.diffuse  = diffuseBsdf  * (intensityDiffuse  * light.diffuseDimmer);
+            lighting.specular = specularBsdf * (intensitySpecular * light.specularDimmer);
+#else
             lighting.diffuse  = diffuseBsdf  * (intensity * light.diffuseDimmer);
             lighting.specular = specularBsdf * (intensity * light.specularDimmer);
+#endif
+//custom-end: (Nick) eye rendering
         }
         else if (MaterialSupportsTransmission(bsdfData))
         {

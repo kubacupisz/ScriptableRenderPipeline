@@ -26,7 +26,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // Currently only PCF 3x3 is used for deferred rendering so if we're in deferred return 3
             if (camera.frameSettings.litShaderMode == LitShaderMode.Deferred)
-                return 3;
+//custom-begin: PCSS
+                return 1;// 3;
+//custom-end:
 
             switch (hdAsset.currentPlatformRenderPipelineSettings.hdShadowInitParams.shadowQuality)
             {

@@ -156,6 +156,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public Matrix4x4 prevViewProjMatrix;
         public Matrix4x4 prevViewProjMatrixNoCameraTrans;
 
+//custom-begin: Camera cut frame motion override
+        public int prevViewMatrixOverrideFrame;
+        public Matrix4x4 prevViewMatrixOverride;
+//custom-end: Camera cut frame motion override
+
         // Helper property to inform how many views are rendered simultaneously
         public int viewCount
         {
@@ -317,7 +322,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 int numVolumetricBuffersRequired   = isVolumetricHistoryRequired   ? 2 : 0; // History + feedback
 
                 if ((numColorPyramidBuffersAllocated != numColorPyramidBuffersRequired) ||
-                    (numVolumetricBuffersAllocated   != numVolumetricBuffersRequired))
+                    (numVolumetricBuffersAllocated   != numVolumetricBuffersRequired) ||
+                    vlSys.QualityChangedThisFrame)
                 {
                     // Reinit the system.
                     colorPyramidHistoryIsValid = false;
@@ -587,6 +593,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     prevViewProjMatrixNoCameraTrans = prevViewProjMatrix;
                 }
 
+//custom-begin: Camera cut frame motion override
+                if (prevViewMatrixOverrideFrame == Time.frameCount)
+                {
+                    prevWorldSpaceCameraPos = prevViewMatrixOverride.inverse.GetColumn(3);
+
+                    Matrix4x4 overrideViewMatrix = prevViewMatrixOverride;
+                    if (ShaderConfig.s_CameraRelativeRendering != 0)
+                        overrideViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
+                    prevViewProjMatrix = gpuNonJitteredProj * overrideViewMatrix;
+                    prevViewProjMatrixNoCameraTrans = prevViewProjMatrix;
+                }
+//custom-end:
+
                 isFirstFrame = false;
             }
 
@@ -613,9 +632,24 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             else
             {
                 Matrix4x4 noTransViewMatrix = camera.worldToCameraMatrix;
+//custom-begin: Camera cut frame motion override
+                if(prevViewMatrixOverrideFrame == Time.frameCount)
+                    noTransViewMatrix = prevViewMatrixOverride;
+//custom-end:
                 noTransViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
                 prevViewProjMatrixNoCameraTrans = nonJitteredProjMatrix * noTransViewMatrix;
             }
+
+//custom-begin: Camera cut frame motion override
+            /*if (prevViewMatrixOverrideFrame == Time.frameCount)
+            {
+                Debug.Log($"Override Frame :\n{prevWorldSpaceCameraPos * 100}\n{prevViewProjMatrix.ToString()}");
+            }
+            if (Time.frameCount - prevViewMatrixOverrideFrame < 5 && Time.frameCount - prevViewMatrixOverrideFrame > 0)
+            {
+                Debug.Log($"Current Frame :\n{prevWorldSpaceCameraPos * 100}\n{prevViewProjMatrix.ToString()}");
+            }*/
+//custom-end:
 
             float n = camera.nearClipPlane;
             float f = camera.farClipPlane;
@@ -849,11 +883,15 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             return viewID;
         }
 
-        public void Reset()
+// custom-begin:
+        public void Reset(bool resetLastFrameActive = true)
         {
-            m_LastFrameActive = -1;
+            if (resetLastFrameActive)
+                m_LastFrameActive = -1;
+
             isFirstFrame = true;
         }
+// custom-end
 
         // Will return NULL if the camera does not exist.
         public static HDCamera Get(Camera camera)

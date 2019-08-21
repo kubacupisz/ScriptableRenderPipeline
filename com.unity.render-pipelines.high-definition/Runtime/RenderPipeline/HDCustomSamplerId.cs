@@ -82,6 +82,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // Misc
         VolumeUpdate,
 
+//custom-begin: (Nick) eye rendering
+        EyeScreenSpaceReflections,
+//custom-end: (Nick) eye rendering
+
         // Low res transparency
         DownsampleDepth,
         LowResTransparent,
@@ -114,6 +118,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         FXAA,
         SMAA,
         FinalPost,
+
+//custom-begin: lens flare
+        LensFlare,
+//custom-end:
 
         Max
     }

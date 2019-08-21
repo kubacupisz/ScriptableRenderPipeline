@@ -11,7 +11,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
     // Such a Material will share some properties between it various variant (shader graph variant or hand authored variant).
     // This is the purpose of BaseLitGUI. It contain all properties that are common to all Material based on Lit template.
     // For the default hand written Lit material see LitUI.cs that contain specific properties for our default implementation.
-    abstract class BaseUnlitGUI : ExpandableAreaMaterial
+//custom-begin: make class public
+    public abstract class BaseUnlitGUI : ExpandableAreaMaterial
+//custom-end:
     {
         //Be sure to end before after last LayeredLitGUI.LayerExpendable
         [Flags]

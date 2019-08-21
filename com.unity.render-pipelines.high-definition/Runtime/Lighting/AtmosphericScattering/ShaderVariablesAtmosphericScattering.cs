@@ -21,6 +21,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // Volumetrics
         public float  _VBufferLastSliceDist;       // The distance to the middle of the last slice
         public int    _EnableDistantFog;           // bool...
+
+//custom-begin: extinction tweak
+        public float _Extinction;
+//custom-end
     }
 }
 

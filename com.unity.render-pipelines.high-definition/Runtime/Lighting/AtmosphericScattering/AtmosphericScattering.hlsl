@@ -107,6 +107,9 @@ float4 EvaluateAtmosphericScattering(PositionInputs posInput, float3 V)
 
             fogColor  = volFog.rgb; // Pre-multiplied by design
             fogFactor = volFog.a;
+//custom-begin: extinction tweak
+            fogFactor *= _Extinction;
+//custom-end
             break;
         }
     }

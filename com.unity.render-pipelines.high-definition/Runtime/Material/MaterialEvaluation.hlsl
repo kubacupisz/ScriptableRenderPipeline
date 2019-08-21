@@ -46,6 +46,9 @@ struct AmbientOcclusionFactor
     float3 indirectAmbientOcclusion;
     float3 directAmbientOcclusion;
     float3 indirectSpecularOcclusion;
+//custom-begin: added support for direct specular occlusion
+    float3 directSpecularOcclusion;
+//custom-end
 };
 
 // Get screen space ambient occlusion only:
@@ -80,6 +83,11 @@ void GetScreenSpaceAmbientOcclusion(float2 positionSS, float NdotV, float percep
     aoFactor.indirectSpecularOcclusion = lerp(_AmbientOcclusionParam.rgb, float3(1.0, 1.0, 1.0), min(specularOcclusionFromData, specularOcclusion));
     aoFactor.indirectAmbientOcclusion = lerp(_AmbientOcclusionParam.rgb, float3(1.0, 1.0, 1.0), min(ambientOcclusionFromData, indirectAmbientOcclusion));
     aoFactor.directAmbientOcclusion = lerp(_AmbientOcclusionParam.rgb, float3(1.0, 1.0, 1.0), directAmbientOcclusion);
+
+//custom-begin: added support for direct specular occlusion
+    float directSpecularOcclusion = lerp(1.0, min(specularOcclusionFromData, specularOcclusion), _AmbientOcclusionParam.w);
+    aoFactor.directSpecularOcclusion = lerp(_AmbientOcclusionParam.rgb, float3(1.0, 1.0, 1.0), directSpecularOcclusion);
+//custom-end:
 }
 
 // Use GTAOMultiBounce approximation for ambient occlusion (allow to get a tint from the diffuseColor)
@@ -94,6 +102,11 @@ void GetScreenSpaceAmbientOcclusionMultibounce(float2 positionSS, float NdotV, f
     aoFactor.indirectSpecularOcclusion = GTAOMultiBounce(min(specularOcclusionFromData, specularOcclusion), fresnel0);
     aoFactor.indirectAmbientOcclusion = GTAOMultiBounce(min(ambientOcclusionFromData, indirectAmbientOcclusion), diffuseColor);
     aoFactor.directAmbientOcclusion = GTAOMultiBounce(directAmbientOcclusion, diffuseColor);
+
+//custom-begin: added support for direct specular occlusion
+    float directSpecularOcclusion = lerp(1.0, min(specularOcclusionFromData, specularOcclusion), _AmbientOcclusionParam.w);
+    aoFactor.directSpecularOcclusion = GTAOMultiBounce(directSpecularOcclusion, fresnel0);
+//custom-end:
 }
 
 void ApplyAmbientOcclusionFactor(AmbientOcclusionFactor aoFactor, inout BuiltinData builtinData, inout AggregateLighting lighting)
@@ -108,6 +121,10 @@ void ApplyAmbientOcclusionFactor(AmbientOcclusionFactor aoFactor, inout BuiltinD
     builtinData.bakeDiffuseLighting *= aoFactor.indirectAmbientOcclusion;
     lighting.indirect.specularReflected *= aoFactor.indirectSpecularOcclusion;
     lighting.direct.diffuse *= aoFactor.directAmbientOcclusion;
+
+//custom-begin: added support for direct specular occlusion
+    lighting.direct.specular *= aoFactor.directSpecularOcclusion;
+//custom-end:
 }
 
 #ifdef DEBUG_DISPLAY

@@ -57,6 +57,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             EditorGUILayout.PropertyField(serialized.albedo, Styles.s_AlbedoLabel);
             EditorGUILayout.PropertyField(serialized.meanFreePath, Styles.s_MeanFreePathLabel);
+//custom-begin: exponential fog
+            EditorGUILayout.PropertyField(serialized.exponent, Styles.s_ExponentLabel);
+//custom-end
         }
 
         static void Drawer_AdvancedSwitch(SerializedDensityVolume serialized, Editor owner)

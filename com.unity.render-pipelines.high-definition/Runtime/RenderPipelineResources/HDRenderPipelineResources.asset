@@ -236,4 +236,8 @@ MonoBehaviour:
     - {fileID: 2800000, guid: a35bdcb2008832646b3c8d2eb11e38a9, type: 3}
     SMAASearchTex: {fileID: 2800000, guid: dc95d70472e232b438d0fd38651e7ec2, type: 3}
     SMAAAreaTex: {fileID: 2800000, guid: 92e0d85ab4eca874098e7fcf6f8f674e, type: 3}
+    eyeBlueNoiseTexture: {fileID: 2800000, guid: 4b429baeb0e5d1b48a83608c2f11f183,
+      type: 3}
+    screenSpaceDitherMask: {fileID: 2800000, guid: 67bda988e38ad984b9c003dc8bcb7e44,
+      type: 3}
   m_Version: 4

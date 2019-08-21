@@ -7,9 +7,15 @@
 // Be careful this require to update GetPunctualFilterWidthInTexels() in C# as well!
 
 // We can't use multi_compile for compute shaders so we force the shadow algorithm
+//custom-begin: PCSS
+#if (SHADERPASS == SHADERPASS_DEFERRED_LIGHTING)
+#define SHADOW_HIGH
+#else
 #if (SHADERPASS == SHADERPASS_DEFERRED_LIGHTING || SHADERPASS == SHADERPASS_VOLUMETRIC_LIGHTING || SHADERPASS == SHADERPASS_VOLUME_VOXELIZATION)
 #define SHADOW_LOW 
 #endif
+#endif
+//custom-end:
 
 #ifdef SHADOW_LOW
 #define PUNCTUAL_FILTER_ALGORITHM(sd, posSS, posTC, sampleBias, tex, samp) SampleShadow_PCF_Tent_3x3(_ShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp)

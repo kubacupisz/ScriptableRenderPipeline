@@ -5,7 +5,9 @@ using System;
 
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
-    class LitGUI : BaseLitGUI
+//custom-begin: make class public
+    public class LitGUI : BaseLitGUI
+//custom-end:
     {
         protected override uint defaultExpandedState { get { return (uint)(Expandable.Base | Expandable.Input | Expandable.VertexAnimation | Expandable.Detail | Expandable.Emissive | Expandable.Transparency | Expandable.Tesselation); } }
 
@@ -161,6 +163,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         protected const string kSmoothnessRemapMin = "_SmoothnessRemapMin";
         protected MaterialProperty[] smoothnessRemapMax = new MaterialProperty[kMaxLayerCount];
         protected const string kSmoothnessRemapMax = "_SmoothnessRemapMax";
+//custom-begin: View angle dependent smoothness tweak
+        protected MaterialProperty[] smoothnessViewAngleOffset = new MaterialProperty[kMaxLayerCount];
+        protected const string kSmoothnessViewAngleOffset = "_SmoothnessViewAngleOffset";
+//custom-end:
         protected MaterialProperty[] aoRemapMin = new MaterialProperty[kMaxLayerCount];
         protected const string kAORemapMin = "_AORemapMin";
         protected MaterialProperty[] aoRemapMax = new MaterialProperty[kMaxLayerCount];
@@ -334,6 +340,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 smoothness[i] = FindProperty(string.Format("{0}{1}", kSmoothness, m_PropertySuffixes[i]), props);
                 smoothnessRemapMin[i] = FindProperty(string.Format("{0}{1}", kSmoothnessRemapMin, m_PropertySuffixes[i]), props);
                 smoothnessRemapMax[i] = FindProperty(string.Format("{0}{1}", kSmoothnessRemapMax, m_PropertySuffixes[i]), props);
+//custom-begin: View angle dependent smoothness tweak
+                smoothnessViewAngleOffset[i] = FindProperty(string.Format("{0}{1}", kSmoothnessViewAngleOffset, m_PropertySuffixes[i]), props);
+//custom-end:
                 aoRemapMin[i] = FindProperty(string.Format("{0}{1}", kAORemapMin, m_PropertySuffixes[i]), props);
                 aoRemapMax[i] = FindProperty(string.Format("{0}{1}", kAORemapMax, m_PropertySuffixes[i]), props);
                 maskMap[i] = FindProperty(string.Format("{0}{1}", kMaskMap, m_PropertySuffixes[i]), props);
@@ -634,6 +643,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                             aoRemapMax[layerIndex].floatValue = aoMax;
                         }
                     }
+
+//custom-begin: View angle dependent smoothness tweak
+                    if(smoothnessViewAngleOffset[layerIndex] != null)
+                        m_MaterialEditor.ShaderProperty(smoothnessViewAngleOffset[layerIndex], smoothnessViewAngleOffset[layerIndex].displayName);
+//custom-end:
 
                     m_MaterialEditor.TexturePropertySingleLine(((MaterialId)materialID.floatValue == MaterialId.LitSpecular) ? Styles.maskMapSpecularText : Styles.maskMapSText, maskMap[layerIndex]);
 

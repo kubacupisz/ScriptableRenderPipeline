@@ -32,6 +32,13 @@ Shader "HDRP/LayeredLitTessellation"
         _Smoothness2("Smoothness2", Range(0.0, 1.0)) = 0.5
         _Smoothness3("Smoothness3", Range(0.0, 1.0)) = 0.5
 
+//custom-begin: View angle dependent smoothness tweak
+        _SmoothnessViewAngleOffset0("Smoothness View Angle Offset", Range(0.0, 1.0)) = 0.0
+        _SmoothnessViewAngleOffset1("Smoothness View Angle Offset", Range(0.0, 1.0)) = 0.0
+        _SmoothnessViewAngleOffset2("Smoothness View Angle Offset", Range(0.0, 1.0)) = 0.0
+        _SmoothnessViewAngleOffset3("Smoothness View Angle Offset", Range(0.0, 1.0)) = 0.0
+//custom-end:
+
         _SmoothnessRemapMin0("SmoothnessRemapMin0", Range(0.0, 1.0)) = 0.0
         _SmoothnessRemapMin1("SmoothnessRemapMin1", Range(0.0, 1.0)) = 0.0
         _SmoothnessRemapMin2("SmoothnessRemapMin2", Range(0.0, 1.0)) = 0.0
@@ -220,6 +227,25 @@ Shader "HDRP/LayeredLitTessellation"
         _InheritBaseColor1("_InheritBaseColor1", Range(0, 1.0)) = 0.0
         _InheritBaseColor2("_InheritBaseColor2", Range(0, 1.0)) = 0.0
         _InheritBaseColor3("_InheritBaseColor3", Range(0, 1.0)) = 0.0
+
+//custom-begin: slope mask feature
+        _SlopeMaskMode("_SlopeMaskMode", Range(0, 1.0)) = 0
+
+        _SlopeReferenceDir("_SlopeReferenceDir", Vector) = (0, 1, 0, 0)
+        _SlopeSmoothNormal("_SlopeSmoothNormal", Range(0, 1.0)) = 0
+
+        _SlopeAngle1("_SlopeAngle1", Range(0, 1.0)) = 0.2
+        _SlopeAngle2("_SlopeAngle2", Range(0, 1.0)) = 0.3
+        _SlopeAngle3("_SlopeAngle3", Range(0, 1.0)) = 0.4
+
+        _SlopeBias1("_SlopeBias1", Range(0, 1.0)) = 0.1
+        _SlopeBias2("_SlopeBias2", Range(0, 1.0)) = 0.1
+        _SlopeBias3("_SlopeBias3", Range(0, 1.0)) = 0.1
+
+        _SlopeMaskIntensity1("_SlopeMaskIntensity1", Range(0, 1.0)) = 1.0
+        _SlopeMaskIntensity2("_SlopeMaskIntensity2", Range(0, 1.0)) = 1.0
+        _SlopeMaskIntensity3("_SlopeMaskIntensity3", Range(0, 1.0)) = 1.0
+//custom-end: slope mask feature
 
         [ToggleUI] _OpacityAsDensity0("_OpacityAsDensity0", Float) = 0.0
         [ToggleUI] _OpacityAsDensity1("_OpacityAsDensity1", Float) = 0.0

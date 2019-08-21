@@ -54,5 +54,11 @@ void GetBuiltinData(FragInputs input, float3 V, inout PositionInputs posInput, S
 
     builtinData.depthOffset = depthOffset;
 
+//custom-begin: added hooks for modifying SurfaceData and BuiltinData
+#if defined(LIT_BUILTIN_DATA_MODIFIER)
+    LIT_BUILTIN_DATA_MODIFIER(input, builtinData);
+#endif
+//custom-end:
+
     PostInitBuiltinData(V, posInput, surfaceData, builtinData);
 }

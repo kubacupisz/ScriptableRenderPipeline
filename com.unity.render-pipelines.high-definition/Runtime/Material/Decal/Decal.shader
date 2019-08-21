@@ -12,6 +12,9 @@ Shader "HDRP/Decal"
         _DecalBlend("_DecalBlend", Range(0.0, 1.0)) = 0.5
 		[ToggleUI] _AlbedoMode("_AlbedoMode", Range(0.0, 1.0)) = 1.0
 		[HideInInspector] _NormalBlendSrc("_NormalBlendSrc", Float) = 0.0
+//custom-begin: add decal mode for blurring normal buffer
+        [ToggleUI] _BlurNormalsMode("_BlurNormalsMode", Range(0.0, 1.0)) = 0.0
+//custom-end:
 		[HideInInspector] _MaskBlendSrc("_MaskBlendSrc", Float) = 1.0
 		[HideInInspector] _MaskBlendMode("_MaskBlendMode", Float) = 4.0 // smoothness 3RT default
 		[ToggleUI] _MaskmapMetal("_MaskmapMetal", Range(0.0, 1.0)) = 0.0
@@ -60,6 +63,9 @@ Shader "HDRP/Decal"
     #pragma shader_feature_local _MASKMAP
     #pragma shader_feature_local _EMISSIVEMAP
 	#pragma shader_feature_local _ALBEDOCONTRIBUTION
+//custom-begin: add decal mode for blurring normal buffer
+    #pragma shader_feature_local _BLURNORMALBUFFER
+//custom-end:
 
     #pragma multi_compile_instancing
 

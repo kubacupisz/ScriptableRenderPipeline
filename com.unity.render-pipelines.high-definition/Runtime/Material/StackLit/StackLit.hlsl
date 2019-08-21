@@ -69,6 +69,10 @@ void GetAmbientOcclusionFactor(float3 indirectAmbientOcclusion, float3 indirectS
     aoFactor.indirectAmbientOcclusion = indirectAmbientOcclusion;
     aoFactor.indirectSpecularOcclusion = indirectSpecularOcclusion;
     aoFactor.directAmbientOcclusion = directAmbientOcclusion;
+
+//custom-begin: added support for direct specular occlusion
+    aoFactor.directSpecularOcclusion = 1.0;// dummy to complete initialization
+//custom-end:
 }
 
 //...MaterialEvaluation is needed earlier in StackLit for occlusion handling (see PreLightData_SetupOcclusion)
@@ -728,6 +732,10 @@ BSDFData ConvertSurfaceDataToBSDFData(uint2 positionSS, SurfaceData surfaceData)
     }
 
     bsdfData.ambientOcclusion = surfaceData.ambientOcclusion;
+
+//custom-begin: added specular occlusion to StackLit
+    bsdfData.specularOcclusion = surfaceData.specularOcclusion;
+//custom-end:
 
     ApplyDebugToBSDFData(bsdfData);
     return bsdfData;
@@ -3965,6 +3973,20 @@ void PostEvaluateBSDF(  LightLoopContext lightLoopContext,
     // We also add emissive since it is not merged with bakeDiffuseLighting in ModifyBakedDiffuseLighting.
     // (also cf lit deferred EncodeToGBuffer function).
     diffuseLighting = (modifiedDiffuseColor * lighting.direct.diffuse) + (builtinData.bakeDiffuseLighting * diffuseOcclusion) + builtinData.emissiveColor;
+
+//custom-begin: added support for direct specular occlusion
+    {
+        float3 indirectSpecularOcclusion = lerp(
+            preLightData.hemiSpecularOcclusion[BASE_LOBEA_IDX],
+            preLightData.hemiSpecularOcclusion[BASE_LOBEB_IDX],
+            bsdfData.lobeMix);
+
+        float directSpecularOcclusionTerm = lerp(1.0, bsdfData.specularOcclusion, _AmbientOcclusionParam.w);
+        float3 directSpecularOcclusion = GTAOMultiBounce(directSpecularOcclusionTerm, bsdfData.fresnel0);
+
+        lighting.direct.specular *= min(directSpecularOcclusion, indirectSpecularOcclusion);
+    }
+//custom-end:
 
     specularLighting = lighting.direct.specular + lighting.indirect.specularReflected;
 

@@ -170,6 +170,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // + Diffusion Profile
             [SurfaceDataAttributes("Thickness")]
             public float thickness;
+
+//custom-begin: added specular occlusion to StackLit
+            [SurfaceDataAttributes("Specular Occlusion")]
+            public float specularOcclusion;
+//custom-end:
         };
 
         //-----------------------------------------------------------------------------
@@ -239,6 +244,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public float thickness;
             public bool useThickObjectMode; // Read from the diffusion profile
             public Vector3 transmittance;   // Precomputation of transmittance
+
+//custom-begin: added specular occlusion to StackLit
+            public float specularOcclusion;
+//custom-end:
         };
 
         //-----------------------------------------------------------------------------
