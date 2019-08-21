@@ -27,9 +27,7 @@ namespace UnityEngine.Rendering
 
         public string displayName { get; protected set; } = "";
 
-//custom-begin: malte: made public, to allow custom stacks for custom type subsets
         public ReadOnlyCollection<VolumeParameter> parameters { get; private set; }
-//custom-end
 
 #pragma warning disable 414
         [SerializeField]
@@ -120,8 +118,8 @@ namespace UnityEngine.Rendering
 
                 int hash = 17;
 
-                foreach (var p in parameters)
-                    hash = hash * 23 + p.GetHashCode();
+                for (int i = 0; i < parameters.Count; i++)
+                    hash = hash * 23 + parameters[i].GetHashCode();
 
                 return hash;
             }

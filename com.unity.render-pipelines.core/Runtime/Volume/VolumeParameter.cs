@@ -30,9 +30,7 @@ namespace UnityEngine.Rendering
             return ((VolumeParameter<T>) this).value;
         }
 
-//custom-begin: malte: made public, to allow custom stacks for custom type subsets
         public abstract void SetValue(VolumeParameter parameter);
-//custom-end
 
         // This is used in case you need to access fields/properties that can't be accessed in the
         // constructor of a ScriptableObject (VolumeParameter are generally declared and inited in
@@ -101,9 +99,7 @@ namespace UnityEngine.Rendering
             m_Value = x;
         }
 
-//custom-begin: malte: made public, to allow custom stacks for custom type subsets
         public override void SetValue(VolumeParameter parameter)
-//custom-end
         {
             m_Value = parameter.GetValue<T>();
         }
@@ -115,7 +111,7 @@ namespace UnityEngine.Rendering
                 int hash = 17;
                 hash = hash * 23 + overrideState.GetHashCode();
 
-                if (value != null)
+                if (!ReferenceEquals(value, null))
                     hash = hash * 23 + value.GetHashCode();
 
                 return hash;
@@ -124,7 +120,7 @@ namespace UnityEngine.Rendering
 
         public override string ToString() => $"{value} ({overrideState})";
 
-        public static bool operator==(VolumeParameter<T> lhs, T rhs) => lhs != null && lhs.value != null && lhs.value.Equals(rhs);
+        public static bool operator==(VolumeParameter<T> lhs, T rhs) => lhs != null && !ReferenceEquals(lhs.value, null) && lhs.value.Equals(rhs);
 
         public static bool operator!=(VolumeParameter<T> lhs, T rhs) => !(lhs == rhs);
 
@@ -170,6 +166,13 @@ namespace UnityEngine.Rendering
     public class BoolParameter : VolumeParameter<bool>
     {
         public BoolParameter(bool value, bool overrideState = false)
+            : base(value, overrideState) {}
+    }
+
+    [Serializable, DebuggerDisplay(k_DebuggerDisplay)]
+    public class LayerMaskParameter : VolumeParameter<LayerMask>
+    {
+        public LayerMaskParameter(LayerMask value, bool overrideState = false)
             : base(value, overrideState) {}
     }
 

@@ -4,16 +4,15 @@ using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
 using Unity.Collections.LowLevel.Unsafe;
-using UnityEditor;
-using UnityEditor.Experimental.Rendering;
-using UnityEditor.Experimental.Rendering.HDPipeline;
 using UnityEditor.VersionControl;
-using UnityEngine.Assertions;
+using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
-using static UnityEditor.VersionControl.Provider;
+using UnityEngine.Rendering.HighDefinition;
+using UnityEditor.Experimental.Rendering;
 
-namespace UnityEngine.Experimental.Rendering.HDPipeline
+namespace UnityEditor.Rendering.HighDefinition
 {
     unsafe class HDBakedReflectionSystem : ScriptableBakedReflectionSystem
     {
@@ -218,14 +217,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                     var bakedTexturePath = HDBakingUtilities.GetBakedTextureFilePath(probe);
                     HDBakingUtilities.CreateParentDirectoryIfMissing(bakedTexturePath);
-                    if (Provider.isActive && File.Exists(bakedTexturePath))
-                    {
-                        Checkout(bakedTexturePath, CheckoutMode.Both);
-                        // Checkout will make those file writeable, but this is not immediate,
-                        // so we retries when this fails.
-                        if (!HDEditorUtils.CopyFileWithRetryOnUnauthorizedAccess(cacheFile, bakedTexturePath))
-                            return;
-                    }
+                    Checkout(bakedTexturePath);
+                    // Checkout will make those file writeable, but this is not immediate,
+                    // so we retries when this fails.
+                    if (!HDEditorUtils.CopyFileWithRetryOnUnauthorizedAccess(cacheFile, bakedTexturePath))
+                        return;
                 }
                 // AssetPipeline bug
                 // Sometimes, the baked texture reference is destroyed during 'AssetDatabase.StopAssetEditing()'
@@ -252,8 +248,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     var index = addIndices[i];
                     var instanceId = states[index].instanceID;
                     var probe = (HDProbe)EditorUtility.InstanceIDToObject(instanceId);
-                    var cacheFile = GetGICacheFileForHDProbe(states[index].probeBakingHash);
-
                     var bakedTexturePath = HDBakingUtilities.GetBakedTextureFilePath(probe);
                     var bakedTexture = AssetDatabase.LoadAssetAtPath<Texture>(bakedTexturePath);
                     Assert.IsNotNull(bakedTexture, "The baked texture was imported before, " +
@@ -372,18 +366,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 probe.SetTexture(ProbeSettings.Mode.Baked, bakedTexture);
                 AssignRenderData(probe, bakedTexturePath);
                 EditorUtility.SetDirty(probe);
-
-//custom-begin: bake realtime probe
-                if (probe.mode == ProbeSettings.Mode.Realtime && probe.opRealtimeToBaked)
-                {
-                    probe.opRealtimeToBaked = false;
-                    probe.SetTexture(ProbeSettings.Mode.Custom, bakedTexture);
-                    probe.mode = ProbeSettings.Mode.Custom;
-                }
-//custom-end:
             }
             AssetDatabase.StopAssetEditing();
-            
+
             cubeRT.Release();
             planarRT.Release();
 
@@ -452,7 +437,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 if (!Directory.Exists(sceneFolder))
                     continue;
 
-                var types = TypeInfo.GetEnumValues<ProbeSettings.ProbeType>();
+                var types = UnityEngine.Rendering.HighDefinition.TypeInfo.GetEnumValues<ProbeSettings.ProbeType>();
                 for (int typeI = 0; typeI < types.Length; ++typeI)
                 {
                     var files = Directory.GetFiles(
@@ -492,6 +477,26 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             AssetDatabase.StopAssetEditing();
         }
 
+        internal static void Checkout(string targetFile)
+        {
+            // Try to checkout through the VCS
+            if (Provider.isActive
+                && HDEditorUtils.IsAssetPath(targetFile)
+                && Provider.GetAssetByPath(targetFile) != null)
+            {
+                Provider.Checkout(targetFile, CheckoutMode.Both).Wait();
+            }
+            else if (File.Exists(targetFile))
+            {
+                // There is no VCS, but the file is still locked
+                // Try to make it writeable
+                var attributes = File.GetAttributes(targetFile);
+                if ((attributes & FileAttributes.ReadOnly) == 0) return;
+                attributes &= ~FileAttributes.ReadOnly;
+                File.SetAttributes(targetFile, attributes);
+            }
+        }
+
         internal static void AssignRenderData(HDProbe probe, string bakedTexturePath)
         {
             switch (probe.settings.type)
@@ -518,31 +523,31 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             RenderTexture cubeRT, RenderTexture planarRT
         )
         {
+            RenderAndWriteToFile(probe, targetFile, cubeRT, planarRT, out _, out _);
+        }
+
+        internal static void RenderAndWriteToFile(
+            HDProbe probe, string targetFile,
+            RenderTexture cubeRT, RenderTexture planarRT,
+            out CameraSettings cameraSettings,
+            out CameraPositionSettings cameraPositionSettings
+        )
+        {
             var settings = probe.settings;
             switch (settings.type)
             {
                 case ProbeSettings.ProbeType.ReflectionProbe:
                     {
                         var positionSettings = ProbeCapturePositionSettings.ComputeFrom(probe, null);
-//custom-begin: bake realtime probe
-                        if (probe.mode == ProbeSettings.Mode.Realtime && probe.opRealtimeToBaked)
-                        {
-                            HDBakingUtilities.CreateParentDirectoryIfMissing(targetFile);
-                            HDTextureUtilities.WriteTextureFileToDisk(probe.realtimeTexture, targetFile);
-                        }
-                        else
-                        {
-                            HDRenderUtilities.Render(probe.settings, positionSettings, cubeRT,
+                        HDRenderUtilities.Render(probe.settings, positionSettings, cubeRT,
+                            out cameraSettings, out cameraPositionSettings,
                             forceFlipY: true,
                             forceInvertBackfaceCulling: true, // Cubemap have an RHS standard, so we need to invert the face culling
                             (uint)StaticEditorFlags.ReflectionProbeStatic
                         );
                         HDBakingUtilities.CreateParentDirectoryIfMissing(targetFile);
-                        if (Provider.isActive && HDEditorUtils.IsAssetPath(targetFile))
-                            Checkout(targetFile, CheckoutMode.Both);
+                        Checkout(targetFile);
                         HDTextureUtilities.WriteTextureFileToDisk(cubeRT, targetFile);
-                        }
-//custom-end:
                         break;
                     }
                 case ProbeSettings.ProbeType.PlanarProbe:
@@ -557,19 +562,18 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                             settings,
                             positionSettings,
                             planarRT,
-                            out CameraSettings cameraSettings, out CameraPositionSettings cameraPositionSettings
+                            out cameraSettings, out cameraPositionSettings
                         );
                         HDBakingUtilities.CreateParentDirectoryIfMissing(targetFile);
-                        if (Provider.isActive && HDEditorUtils.IsAssetPath(targetFile))
-                            Checkout(targetFile, CheckoutMode.Both);
+                        Checkout(targetFile);
                         HDTextureUtilities.WriteTextureFileToDisk(planarRT, targetFile);
                         var renderData = new HDProbe.RenderData(cameraSettings, cameraPositionSettings);
                         var targetRenderDataFile = targetFile + ".renderData";
-                        if (Provider.isActive && HDEditorUtils.IsAssetPath(targetRenderDataFile))
-                            Checkout(targetRenderDataFile, CheckoutMode.Both);
+                        Checkout(targetRenderDataFile);
                         HDBakingUtilities.TrySerializeToDisk(renderData, targetRenderDataFile);
                         break;
                     }
+                default: throw new ArgumentOutOfRangeException(nameof(probe.settings.type));
             }
         }
 
@@ -598,15 +602,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                             ? TextureImporterCompression.Compressed
                             : TextureImporterCompression.Uncompressed;
                         importer.textureShape = TextureImporterShape.TextureCube;
-//custom-begin: need to clear out any lingering importer settings
-                        var tis = new TextureImporterSettings();
-                        importer.ReadTextureSettings(tis);
-                        tis.cubemapConvolution = TextureImporterCubemapConvolution.None;
-                        tis.seamlessCubemap = false;
-                        tis.wrapMode = TextureWrapMode.Repeat;
-                        tis.aniso = 1;
-                        importer.SetTextureSettings(tis);
-//custom-end:
                         importer.SaveAndReimport();
                         break;
                     }

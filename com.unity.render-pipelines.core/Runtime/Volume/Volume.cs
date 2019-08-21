@@ -2,6 +2,8 @@ using System.Collections.Generic;
 
 namespace UnityEngine.Rendering
 {
+    //Volumes are documented in HDRP for now
+    [HelpURL(Documentation.baseURLHDRP + Documentation.version + Documentation.subURL + "Volumes" + Documentation.endURL)]
     [ExecuteAlways]
     public class Volume : MonoBehaviour
     {
@@ -10,7 +12,7 @@ namespace UnityEngine.Rendering
 //custom-end
 
         [Tooltip("A global volume is applied to the whole scene.")]
-        public bool isGlobal = false;
+        public bool isGlobal = true;
 
         [Tooltip("Volume priority in the stack. Higher number means higher priority. Negative values are supported.")]
         public float priority = 0f;

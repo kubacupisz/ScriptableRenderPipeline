@@ -41,6 +41,8 @@ Shader "Hidden/HDRP/ApplyDistortion"
 
         float4 Frag(Varyings input) : SV_Target
         {
+            UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
             // We use a bias when fetching distortion source pixels
             // This avoid artifacts when a distortion is overlapped by an opaque object
             const float _FetchBias = 0.9;
@@ -109,7 +111,8 @@ Shader "Hidden/HDRP/ApplyDistortion"
                 Pass Zero   // We can clear the bit since we won't need anymore.
             }
 
-            ZWrite Off ZTest Off Blend Off Cull Off
+            ZWrite Off Blend Off Cull Off
+            ZTest Less // Required for XR occlusion mesh optimization
 
             HLSLPROGRAM
                 #pragma vertex Vert

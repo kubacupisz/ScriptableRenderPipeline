@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.VFX.Block;
 using UnityEngine;
-using UnityEngine.Experimental.VFX;
+using UnityEngine.VFX;
 
 namespace UnityEditor.VFX
 {
@@ -13,6 +13,7 @@ namespace UnityEditor.VFX
         public override string codeGeneratorTemplate { get { return RenderPipeTemplate("VFXParticleMeshes"); } }
         public override VFXTaskType taskType { get { return VFXTaskType.ParticleMeshOutput; } }
         public override bool supportsUV { get { return true; } }
+        public override bool implementsMotionVector { get { return true; } }
         public override CullMode defaultCullMode { get { return CullMode.Back;  } }
 
         public override IEnumerable<VFXAttributeInfo> attributes
@@ -57,7 +58,7 @@ namespace UnityEditor.VFX
             public Texture2D mainTexture = VFXResources.defaultResources.particleTexture;
             [Tooltip("Mesh to be used for particle rendering.")]
             public Mesh mesh = VFXResources.defaultResources.mesh;
-            [Tooltip("Define a bitmask to control which submeshes are rendered.")]
+            [Tooltip("Define a bitmask to control which submeshes are rendered."), BitField]
             public uint subMeshMask = 0xffffffff;
         }
 

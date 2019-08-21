@@ -20,7 +20,7 @@ Shader "HDRP/Decal"
 		[ToggleUI] _MaskmapMetal("_MaskmapMetal", Range(0.0, 1.0)) = 0.0
 		[ToggleUI] _MaskmapAO("_MaskmapAO", Range(0.0, 1.0)) = 0.0
 		[ToggleUI] _MaskmapSmoothness("_MaskmapSmoothness", Range(0.0, 1.0)) = 1.0
-		[HideInInspector] _DecalMeshDepthBias("_DecalMeshDepthBias", Float) = 0.0 
+		[HideInInspector] _DecalMeshDepthBias("_DecalMeshDepthBias", Float) = 0.0
 		[HideInInspector] _DrawOrder("_DrawOrder", Int) = 0
         [ToggleUI] _Emissive("_Emissive", Range(0.0, 1.0)) = 0.0
         [HDR] _EmissiveColor("EmissiveColor", Color) = (0, 0, 0)
@@ -32,10 +32,11 @@ Shader "HDRP/Decal"
         [HideInInspector] _EmissiveIntensityUnit("Emissive Mode", Int) = 0
         [ToggleUI] _UseEmissiveIntensity("Use Emissive Intensity", Int) = 0
         _EmissiveIntensity("Emissive Intensity", Float) = 1
+        _EmissiveExposureWeight("Emissive Pre Exposure", Range(0.0, 1.0)) = 1.0
 
 
         // Stencil state
-        [HideInInspector] _DecalStencilRef("_DecalStencilRef", Int) = 8 
+        [HideInInspector] _DecalStencilRef("_DecalStencilRef", Int) = 8
         [HideInInspector] _DecalStencilWriteMask("_DecalStencilWriteMask", Int) = 8
 
         // Remapping
@@ -95,7 +96,8 @@ Shader "HDRP/Decal"
     {
         Tags{ "RenderPipeline" = "HDRenderPipeline"}
 
-		// c# code relies on the order in which the passes are declared, any change will need to be reflected in DecalUI.cs
+		// c# code relies on the order in which the passes are declared, any change will need to be reflected in Decalsystem.cs - s_MaterialDecalNames and s_MaterialDecalSGNames array
+        // and DecalSet.InitializeMaterialValues()
 
 		// pass 0 is mesh 3RT mode
 		Pass
@@ -144,7 +146,7 @@ Shader "HDRP/Decal"
 		// 1 - Metal
 		// 2 - AO
 		// 3 - Metal + AO
-		// 4 - Smoothness also 3RT 
+		// 4 - Smoothness also 3RT
 		// 5 - Metal + Smoothness
 		// 6 - AO + Smoothness
 		// 7 - Metal + AO + Smoothness
@@ -173,7 +175,7 @@ Shader "HDRP/Decal"
 			Blend 2 SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
 			Blend 3 Zero OneMinusSrcColor
 
-			ColorMask R 2	// metal 
+			ColorMask R 2	// metal
 			ColorMask R 3	// metal alpha
 
 			HLSLPROGRAM
@@ -283,10 +285,10 @@ Shader "HDRP/Decal"
 			Blend 0 SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
 			Blend 1 SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
 			Blend 2 SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
-		
+
 			ColorMask BA 2	// smoothness/smoothness alpha
             ColorMask 0 3   // Caution: We need to setup the mask to 0 in case perChannelMAsk is enabled as 4 RT are bind
-		
+
 			HLSLPROGRAM
 
             // We need multicompile here as DBufferProjector_S is also use as DBufferProjector_3RT so for both 3RT and 4RT
@@ -324,7 +326,7 @@ Shader "HDRP/Decal"
 			Blend 2 SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
 			Blend 3 Zero OneMinusSrcColor
 
-			ColorMask RBA 2	// metal/smoothness/smoothness alpha 
+			ColorMask RBA 2	// metal/smoothness/smoothness alpha
 			ColorMask R 3	// metal alpha
 
 			HLSLPROGRAM
@@ -412,11 +414,11 @@ Shader "HDRP/Decal"
             ENDHLSL
         }
 
-		// Mesh 
+		// Mesh
 		// 8 - Metal
 		// 9 - AO
 		// 10 - Metal + AO
-		// 11 - Smoothness 
+		// 11 - Smoothness
 		// 12 - Metal + Smoothness
 		// 13 - AO + Smoothness
 		// 14 - Metal + AO + Smoothness
@@ -442,7 +444,7 @@ Shader "HDRP/Decal"
 			Blend 2 SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
 			Blend 3 Zero OneMinusSrcColor
 
-			ColorMask R 2	// metal 
+			ColorMask R 2	// metal
 			ColorMask R 3	// metal alpha
 
 			HLSLPROGRAM
@@ -586,7 +588,7 @@ Shader "HDRP/Decal"
 			Blend 2 SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
 			Blend 3 Zero OneMinusSrcColor
 
-			ColorMask RBA 2	// metal/smoothness/smoothness alpha 
+			ColorMask RBA 2	// metal/smoothness/smoothness alpha
 			ColorMask R 3	// metal alpha
 
 			HLSLPROGRAM
@@ -669,7 +671,7 @@ Shader "HDRP/Decal"
 
 			ENDHLSL
 		}
-            
+
         Pass // 15
         {
             Name "Projector_Emissive"
@@ -720,7 +722,7 @@ Shader "HDRP/Decal"
             // additive
             Blend 0 SrcAlpha One
 
-            HLSLPROGRAM      
+            HLSLPROGRAM
 
             #define SHADERPASS SHADERPASS_FORWARD_EMISSIVE_MESH
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
@@ -732,5 +734,5 @@ Shader "HDRP/Decal"
         }
 
 	}
-    CustomEditor "Experimental.Rendering.HDPipeline.DecalUI"
+    CustomEditor "Rendering.HighDefinition.DecalUI"
 }

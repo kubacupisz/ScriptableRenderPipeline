@@ -40,11 +40,11 @@ float3 SampleBakedGI(float3 positionRWS, float3 normalWS, float2 uvStaticLightma
     {
 #if SHADEROPTIONS_RAYTRACING
         if (unity_ProbeVolumeParams.w == 1.0)
-            return SampleProbeVolumeSH9(TEXTURE2D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH), positionRWS, normalWS, GetProbeVolumeWorldToObject(),
+            return SampleProbeVolumeSH9(TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH), positionRWS, normalWS, GetProbeVolumeWorldToObject(),
                 unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z, unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz);
         else
 #endif
-            return SampleProbeVolumeSH4(TEXTURE2D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH), positionRWS, normalWS, GetProbeVolumeWorldToObject(),
+            return SampleProbeVolumeSH4(TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH), positionRWS, normalWS, GetProbeVolumeWorldToObject(),
                 unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z, unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz);
     }
 
@@ -155,7 +155,7 @@ void InitBuiltinData(PositionInputs posInput, float alpha, float3 normalWS, floa
         #endif
 
         #if SHADERPASS == SHADERPASS_FORWARD
-        builtinData.bakeDiffuseLighting = LOAD_TEXTURE2D(_IndirectDiffuseTexture, posInput.positionSS).xyz;
+        builtinData.bakeDiffuseLighting = LOAD_TEXTURE2D_X(_IndirectDiffuseTexture, posInput.positionSS).xyz;
         #endif
     }
     else
@@ -213,8 +213,15 @@ void PostInitBuiltinData(   float3 V, PositionInputs posInput, SurfaceData surfa
     // color in case of lit deferred for example and avoid material to have to deal with it
     builtinData.bakeDiffuseLighting *= _IndirectLightingMultiplier.x;
     builtinData.backBakeDiffuseLighting *= _IndirectLightingMultiplier.x;
+
 #ifdef MODIFY_BAKED_DIFFUSE_LIGHTING
-    ModifyBakedDiffuseLighting(V, posInput, surfaceData, builtinData);
+
+#ifdef DEBUG_DISPLAY
+    // When the lux meter is enabled, we don't want the albedo of the material to modify the diffuse baked lighting
+    if (_DebugLightingMode != DEBUGLIGHTINGMODE_LUX_METER)
+#endif
+        ModifyBakedDiffuseLighting(V, posInput, surfaceData, builtinData);
+
 #endif
     ApplyDebugToBuiltinData(builtinData);
 }

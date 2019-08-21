@@ -1,6 +1,8 @@
 #ifndef MOTION_VEC_VERTEX_COMMON_INCLUDED
 #define MOTION_VEC_VERTEX_COMMON_INCLUDED
 
+// TODO: replace alembic motion vectors with builtin 'precomputedVelocity'
+
 //custom-begin: alembic
 float _AlembicMotionVectorsScale;
 //custom-end:
@@ -14,6 +16,9 @@ struct AttributesPass
 #endif
 //custom-end:
     float3 previousPositionOS : TEXCOORD4; // Contain previous transform position (in case of skinning for example)
+#if defined (_ADD_PRECOMPUTED_VELOCITY)
+    float3 precomputedVelocity    : TEXCOORD5; // Add Precomputed Velocity (Alembic computes velocities on runtime side).
+#endif
 };
 
 struct VaryingsPassToPS
@@ -119,7 +124,7 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
     // It is not possible to correctly generate the motion vector for tesselated geometry as tessellation parameters can change
     // from one frame to another (adaptative, lod) + in Unity we only receive information for one non tesselated vertex.
     // So motion vetor will be based on interpolate previous position at vertex level instead.
-    varyingsType.vpass.positionCS = mul(_NonJitteredViewProjMatrix, float4(varyingsType.vmesh.positionRWS, 1.0));
+    varyingsType.vpass.positionCS = mul(UNITY_MATRIX_UNJITTERED_VP, float4(varyingsType.vmesh.positionRWS, 1.0));
 
     // Note: unity_MotionVectorsParams.y is 0 is forceNoMotion is enabled
     bool forceNoMotion = unity_MotionVectorsParams.y == 0.0;
@@ -131,15 +136,20 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
     {
         bool hasDeformation = unity_MotionVectorsParams.x > 0.0; // Skin or morph target
 
+        float3 effectivePositionOS = (hasDeformation ? inputPass.previousPositionOS : inputMesh.positionOS);
+#if defined(_ADD_PRECOMPUTED_VELOCITY)
+        effectivePositionOS -= inputPass.precomputedVelocity;
+#endif
+
     // Need to apply any vertex animation to the previous worldspace position, if we want it to show up in the motion vector buffer
 #if defined(HAVE_MESH_MODIFICATION)
         AttributesMesh previousMesh = inputMesh;
-        if (hasDeformation)
-            previousMesh.positionOS = inputPass.previousPositionOS;
-        previousMesh = ApplyMeshModification(previousMesh);
+        previousMesh.positionOS = effectivePositionOS ;
+
+        previousMesh = ApplyMeshModification(previousMesh, _LastTimeParameters.xyz);
         float3 previousPositionRWS = TransformPreviousObjectToWorld(previousMesh.positionOS);
 #else
-        float3 previousPositionRWS = TransformPreviousObjectToWorld(hasDeformation ? inputPass.previousPositionOS : inputMesh.positionOS);
+        float3 previousPositionRWS = TransformPreviousObjectToWorld(effectivePositionOS);
 #endif
 
 //custom-begin: warp
@@ -176,14 +186,14 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
 #if defined(HAVE_VERTEX_MODIFICATION)
 //custom-begin: warp
     #if defined(WARP) || defined(WARP2)
-        ApplyVertexModification(inputMesh, normalWS, previousPositionRWS, _LastTime, PARAM_FRAME_PREV);
+        ApplyVertexModification(inputMesh, normalWS, previousPositionRWS, _LastTimeParameters.xyz, PARAM_FRAME_PREV);
     #else
-        ApplyVertexModification(inputMesh, normalWS, previousPositionRWS, _LastTime);
+        ApplyVertexModification(inputMesh, normalWS, previousPositionRWS, _LastTimeParameters.xyz);
     #endif
 //custom-end:
 #endif
 
-        varyingsType.vpass.previousPositionCS = mul(_PrevViewProjMatrix, float4(previousPositionRWS, 1.0));
+        varyingsType.vpass.previousPositionCS = mul(UNITY_MATRIX_PREV_VP, float4(previousPositionRWS, 1.0));
 
 //custom-begin: wires
 #ifdef _WIRES

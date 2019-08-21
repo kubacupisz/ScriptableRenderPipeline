@@ -58,7 +58,7 @@ namespace UnityEditor.VFX.UI
 
         public VFXBlackboardCategory()
         {
-            var tpl = Resources.Load<VisualTreeAsset>("uxml/VFXBlackboardSection");
+            var tpl = VFXView.LoadUXML("VFXBlackboardSection");
 
             m_MainContainer = tpl.CloneTree();
             m_MainContainer.AddToClassList("mainContainer");
@@ -127,7 +127,7 @@ namespace UnityEditor.VFX.UI
         public void SetSelectable()
         {
             capabilities |= Capabilities.Selectable | Capabilities.Droppable | Capabilities.Deletable;
-            styleSheets.Add(Resources.Load<StyleSheet>("Selectable"));
+            styleSheets.Add(VFXView.LoadStyleSheet("Selectable"));
             AddToClassList("selectable");
             hierarchy.Add(new VisualElement() {name = "selection-border", pickingMode = PickingMode.Ignore});
 
@@ -190,7 +190,7 @@ namespace UnityEditor.VFX.UI
 
                 if (value)
                 {
-                    m_MainContainer.Add(m_Header);
+                    m_MainContainer.Insert(1,m_Header);
                 }
                 else
                 {
