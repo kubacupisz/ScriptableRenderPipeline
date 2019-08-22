@@ -24,7 +24,7 @@ Shader "HDRenderPipeline/LensFlare (HDRP Additive)"
 
 
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderConfig.cs.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition-config/Runtime/ShaderConfig.cs.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
 			#include "LensFlareHDRPCommon.hlsl"
 
