@@ -48,7 +48,7 @@ namespace UnityEngine.Rendering.HighDefinition
     } // struct Frustum
 
     [GenerateHLSL]
-    struct OrientedBBox
+    public struct OrientedBBox
     {
         // 3 x float4 = 48 bytes.
         // TODO: pack the axes into 16-bit UNORM per channel, and consider a quaternionic representation.
@@ -77,7 +77,7 @@ namespace UnityEngine.Rendering.HighDefinition
         }
     } // struct OrientedBBox
 
-    static class GeometryUtils
+    public static class GeometryUtils
     {
         // Returns 'true' if the OBB intersects (or is inside) the frustum, 'false' otherwise.
         public static bool Overlap(OrientedBBox obb, Frustum frustum)
