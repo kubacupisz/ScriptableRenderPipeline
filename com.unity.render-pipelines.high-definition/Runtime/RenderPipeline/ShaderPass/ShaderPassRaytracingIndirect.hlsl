@@ -5,7 +5,7 @@
 [shader("closesthit")]
 void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, AttributeData attributeData : SV_IntersectionAttributes)
 {
-	// The first thing that we should do is grab the intersection vertice
+    // The first thing that we should do is grab the intersection vertice
     IntersectionVertex currentvertex;
     GetCurrentIntersectionVertex(attributeData, currentvertex);
 
@@ -15,7 +15,12 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
 
     // Compute the view vector
     float3 viewWS = -rayIntersection.incidentDirection;
+
+    // Make sure to add the additional travel distance
     float3 pointWSPos = GetAbsolutePositionWS(fragInput.positionRWS);
+    float travelDistance = length(pointWSPos - rayIntersection.origin);
+    rayIntersection.t = travelDistance;
+    rayIntersection.cone.width += travelDistance * rayIntersection.cone.spreadAngle;
 
     PositionInputs posInput;
     posInput.positionWS = fragInput.positionRWS;
@@ -26,20 +31,8 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
     BuiltinData builtinData;
     GetSurfaceDataFromIntersection(fragInput, viewWS, posInput, currentvertex, rayIntersection.cone, surfaceData, builtinData);
 
-    // Make sure to add the additional travel distance
-    float travelDistance = length(pointWSPos - rayIntersection.origin);
-    rayIntersection.t = travelDistance;
-    rayIntersection.cone.width += travelDistance * rayIntersection.cone.spreadAngle;
-
-#ifdef ENABLE_RTPV
-    if (!fragInput.isFrontFace)
-    {
-        rayIntersection.color = float3(0.0, 0.0, 0.0);
-        return;
-    }
-#endif
     // Compute the bsdf data
-    BSDFData bsdfData =  ConvertSurfaceDataToBSDFData(posInput.positionSS, surfaceData);
+    BSDFData bsdfData = ConvertSurfaceDataToBSDFData(posInput.positionSS, surfaceData);
 
 #ifdef HAS_LIGHTLOOP
     // We do not want to use the diffuse when we compute the indirect diffuse

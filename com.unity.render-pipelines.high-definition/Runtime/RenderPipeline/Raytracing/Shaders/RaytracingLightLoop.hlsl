@@ -1,7 +1,7 @@
 // This allows us to either use the light cluster to pick which lights should be used, or use all the lights available
 // #define USE_LIGHT_CLUSTER 
 
-#if defined( ENABLE_RTPV ) && defined( RT_SUN_OCC )
+#if defined(RT_SUN_OCC)
 RaytracingAccelerationStructure raytracingAccelStruct;
 #endif
 
@@ -101,7 +101,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
     // Initialize the contactShadow and contactShadowFade fields
     InitContactShadow(posInput, context);
     
-#if defined( ENABLE_RTPV ) && defined( RT_SUN_OCC )
+#if defined(RT_SUN_OCC)
     // Evaluate sun shadows.
     if (_DirectionalShadowIndex >= 0)
     {
@@ -125,8 +125,8 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
             rayIntersection.cone.spreadAngle  = 0;
             rayIntersection.cone.width        = 0;
 
-            const uint missShaderIndex = 0;
-            TraceRay(raytracingAccelStruct, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 1, 1, rayDescriptor, rayIntersection);
+            const uint missShaderIndex = 1; // See the inspector of the BakeProbes.raytrace shader.
+            TraceRay(raytracingAccelStruct, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 1, missShaderIndex, rayDescriptor, rayIntersection);
 
             context.shadowValue = rayIntersection.t < kTMax ? 0.0 : 1.0;
         }
