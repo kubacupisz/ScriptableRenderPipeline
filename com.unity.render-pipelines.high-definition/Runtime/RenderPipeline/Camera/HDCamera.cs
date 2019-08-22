@@ -29,11 +29,6 @@ namespace UnityEngine.Rendering.HighDefinition
             public Matrix4x4 prevViewProjMatrix;
             public Matrix4x4 prevViewProjMatrixNoCameraTrans;
 
-//custom-begin: Camera cut frame motion override
-            public int prevViewMatrixOverrideFrame;
-            public Matrix4x4 prevViewMatrixOverride;
-//custom-end:
-
             // Utility matrix (used by sky) to map screen position to WS view direction
             public Matrix4x4 pixelCoordToViewDirWS;
 
@@ -133,6 +128,11 @@ namespace UnityEngine.Rendering.HighDefinition
         }
 
         public bool isMainGameView { get { return camera.cameraType == CameraType.Game && camera.targetTexture == null; } }
+
+//custom-begin: Camera cut frame motion override
+        public int prevViewMatrixOverrideFrame;
+        public Matrix4x4 prevViewMatrixOverride;
+//custom-end: Camera cut frame motion override
 
         // Helper property to inform how many views are rendered simultaneously
         public int viewCount { get => Math.Max(1, xr.viewCount); }
@@ -513,19 +513,19 @@ namespace UnityEngine.Rendering.HighDefinition
                     viewConstants.prevViewProjMatrix = viewConstants.nonJitteredViewProjMatrix;
                     viewConstants.prevViewProjMatrixNoCameraTrans = viewConstants.prevViewProjMatrix;
                 }
-
 //custom-begin: Camera cut frame motion override
-                if (viewConstants.prevViewMatrixOverrideFrame == Time.frameCount)
+                if (prevViewMatrixOverrideFrame == Time.frameCount)
                 {
-                    viewConstants.prevWorldSpaceCameraPos = viewConstants.prevViewMatrixOverride.inverse.GetColumn(3);
+                    viewConstants.prevWorldSpaceCameraPos = prevViewMatrixOverride.inverse.GetColumn(3);
 
-                    Matrix4x4 overrideViewMatrix = viewConstants.prevViewMatrixOverride;
+                    Matrix4x4 overrideViewMatrix = prevViewMatrixOverride;
                     if (ShaderConfig.s_CameraRelativeRendering != 0)
                         overrideViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
                     viewConstants.prevViewProjMatrix = gpuNonJitteredProj * overrideViewMatrix;
                     viewConstants.prevViewProjMatrixNoCameraTrans = viewConstants.prevViewProjMatrix;
                 }
 //custom-end:
+
             }
 
             viewConstants.viewMatrix = gpuView;
@@ -549,8 +549,8 @@ namespace UnityEngine.Rendering.HighDefinition
             {
                 Matrix4x4 noTransViewMatrix = viewMatrix;
 //custom-begin: Camera cut frame motion override
-                if(viewConstants.prevViewMatrixOverrideFrame == Time.frameCount)
-                    noTransViewMatrix = viewConstants.prevViewMatrixOverride;
+                if(prevViewMatrixOverrideFrame == Time.frameCount)
+                    noTransViewMatrix = prevViewMatrixOverride;
 //custom-end:
                 noTransViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
                 viewConstants.prevViewProjMatrixNoCameraTrans = gpuNonJitteredProj * noTransViewMatrix;

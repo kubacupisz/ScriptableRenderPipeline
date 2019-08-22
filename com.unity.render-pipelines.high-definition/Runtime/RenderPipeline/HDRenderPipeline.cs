@@ -290,6 +290,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer> OnPrepareCamera;
         public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer> OnCameraDepthReady;
         public static event Action<ScriptableRenderContext> OnBeginNewFrame;
+        public static event Action<ShaderTagId, CommandBuffer> OnBeforeOpaque;
         public static event Action<ScriptableRenderContext, HDCamera, RTHandle, RTHandle, CommandBuffer> OnBeforeForwardOpaque;
         public static event Action<Matrix4x4, CommandBuffer> OnBeforeShadows;
 //custom-end:
@@ -299,7 +300,7 @@ namespace UnityEngine.Rendering.HighDefinition
 //custom-end:
 
 //custom-begin: Expose debug so we can disable/change rendering when active
-        public DebugDisplaySettings CurrentDebugDisplaySettings => m_CurrentDebugDisplaySettings;
+        internal DebugDisplaySettings CurrentDebugDisplaySettings => m_CurrentDebugDisplaySettings;
 //custom-end:
 
 
@@ -376,8 +377,8 @@ namespace UnityEngine.Rendering.HighDefinition
             m_CameraMotionVectorsMaterial = CoreUtils.CreateEngineMaterial(defaultResources.shaders.cameraMotionVectorsPS);
             m_DecalNormalBufferMaterial = CoreUtils.CreateEngineMaterial(defaultResources.shaders.decalNormalBufferPS);
 //custom-begin: add decal mode for blurring normal buffer
-            m_DecalNormalBufferMaterialBlur = CoreUtils.CreateEngineMaterial(asset.renderPipelineResources.shaders.decalNormalBufferPS);
-            m_DecalNormalBufferMaterialZero = CoreUtils.CreateEngineMaterial(asset.renderPipelineResources.shaders.decalNormalBufferPS);
+            m_DecalNormalBufferMaterialBlur = CoreUtils.CreateEngineMaterial(defaultResources.shaders.decalNormalBufferPS);
+            m_DecalNormalBufferMaterialZero = CoreUtils.CreateEngineMaterial(defaultResources.shaders.decalNormalBufferPS);
 //custom-end:
 
             m_CopyDepth = CoreUtils.CreateEngineMaterial(defaultResources.shaders.copyDepthBufferPS);
@@ -439,6 +440,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             // Do not reset these, they're not configured by [HDRPCallbackMethod]
             // OnBeginNewFrame = null;
+            // OnBeforeOpaque = null;
             // OnBeforeShadows = null;
 
             // TODO: the HDRenderPipeline object survives scene loading, so
@@ -547,9 +549,8 @@ namespace UnityEngine.Rendering.HighDefinition
 
 
 //custom-begin: (Nick) eye rendering
-            m_EyeRenderingManager.InitBuffers(m_GbufferManager, m_Asset.currentPlatformRenderPipelineSettings);
+            m_EyeRenderingManager.InitBuffers(m_Asset.currentPlatformRenderPipelineSettings);
 //custom-end: (Nick) eye rendering
-
             m_CameraColorBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, dimension: TextureXR.dimension, colorFormat: GetColorBufferFormat(), enableRandomWrite: true, useMipMap: false, useDynamicScale: true, name: "CameraColor");
             m_OpaqueAtmosphericScatteringBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, dimension: TextureXR.dimension, colorFormat: GetColorBufferFormat(), enableRandomWrite: true, useMipMap: false, useDynamicScale: true, name: "OpaqueAtmosphericScattering");
             m_CameraSssDiffuseLightingBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, dimension: TextureXR.dimension, colorFormat: GraphicsFormat.B10G11R11_UFloatPack32, enableRandomWrite: true, useDynamicScale: true, name: "CameraSSSDiffuseLighting");
@@ -923,12 +924,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 PushDecalsGlobalParams(hdCamera, cmd);
 
+                var visualEnv = VolumeManager.instance.stack.GetComponent<VisualEnvironment>();
+                visualEnv.PushFogShaderParameters(hdCamera, cmd);
 //custom-begin: (Nick) eye rendering
                 m_EyeRenderingManager.PushGlobalParams(hdCamera, cmd, m_FrameCount);
 //custom-end: (Nick) eye rendering
-
-                var visualEnv = VolumeManager.instance.stack.GetComponent<VisualEnvironment>();
-                visualEnv.PushFogShaderParameters(hdCamera, cmd);
 
                 PushVolumetricLightingGlobalParams(hdCamera, cmd, m_FrameCount);
 
@@ -2150,19 +2150,6 @@ namespace UnityEngine.Rendering.HighDefinition
                 m_EyeRenderingManager.SetupScreenSpaceReflectionsData(hdCamera, cmd, m_CameraColorBuffer, m_SharedRTManager.GetDepthStencilBuffer(), m_SharedRTManager.GetDepthTexture(), m_SharedRTManager.GetDepthBufferMipChainInfo());
 //custom-end: (Nick) eye rendering
 
-//custom-begin: resolve eyes (in GeometryLast) after eyes SSR pass
-                //{
-                //    m_LightLoop.RenderForward(camera, cmd, true);
-                //    HDUtils.SetRenderTarget(cmd, hdCamera, m_CameraColorBuffer, m_CameraDepthStencilBuffer);
-                //    var eyesRenderQueue = new RenderQueueRange()
-                //    {
-                //        min = (int)RenderQueue.GeometryLast - 1,
-                //        max = (int)RenderQueue.GeometryLast - 1,
-                //    };
-                //    RenderOpaqueRenderList(m_CullResults, hdCamera, renderContext, cmd, m_ForwardOnlyPassNames, m_currentRendererConfigurationBakedLighting, eyesRenderQueue);
-                //}
-//custom-end: resolve eyes (in GeometryLast) after eyes SSR pass
-
                 RenderTransparentDepthPrepass(cullingResults, hdCamera, renderContext, cmd);
 
 //custom-begin: Custom callbacks
@@ -2901,6 +2888,11 @@ namespace UnityEngine.Rendering.HighDefinition
                                     rayTracingTransparentRendererList
 #endif
                                     );
+
+//custom-begin: callbacks
+                if (OnBeforeOpaque != null && (hdCamera.isMainGameView || hdCamera.camera.cameraType == CameraType.SceneView))
+                        OnBeforeOpaque(m_DepthOnlyPassNames[0], cmd);
+//custom-end
         }
 
             return depthPrepassParameters.shouldRenderMotionVectorAfterGBuffer;
@@ -2920,6 +2912,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 var rendererList = RendererList.Create(CreateOpaqueRendererListDesc(cull, hdCamera.camera, HDShaderPassNames.s_GBufferName, m_CurrentRendererConfigurationBakedLighting));
                 DrawOpaqueRendererList(renderContext, cmd, hdCamera.frameSettings, rendererList);
+
+//custom-begin: callbacks
+                if (OnBeforeOpaque != null && (hdCamera.isMainGameView || hdCamera.camera.cameraType == CameraType.SceneView))
+                    OnBeforeOpaque(HDShaderPassNames.s_GBufferName, cmd);
+//custom-end
 
                 m_GbufferManager.BindBufferAsTextures(cmd);
             }
@@ -3468,6 +3465,11 @@ namespace UnityEngine.Rendering.HighDefinition
                 CoreUtils.SetRenderTarget(cmd, m_SharedRTManager.GetMotionVectorsPassBuffersRTI(hdCamera.frameSettings), m_SharedRTManager.GetDepthStencilBuffer(hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA)));
                 var rendererList = RendererList.Create(CreateOpaqueRendererListDesc(cullResults, hdCamera.camera, HDShaderPassNames.s_MotionVectorsName, PerObjectData.MotionVectors));
                 DrawOpaqueRendererList(renderContext, cmd, hdCamera.frameSettings, rendererList);
+
+//custom-begin: callbacks
+                if (OnBeforeOpaque != null && (hdCamera.isMainGameView || hdCamera.camera.cameraType == CameraType.SceneView))
+                    OnBeforeOpaque(HDShaderPassNames.s_MotionVectorsName, cmd);
+//custom-end
             }
         }
 

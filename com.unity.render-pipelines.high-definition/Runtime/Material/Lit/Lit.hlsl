@@ -1262,8 +1262,16 @@ CBSDF EvaluateBSDF(float3 V, float3 L, PreLightData preLightData, BSDFData bsdfD
     }
 
     // The compiler should optimize these. Can revisit later if necessary.
+//custom-begin: eye rendering
+#if defined(EYE_HLSL_H)
+    float NdotLWrapped = ComputeWrappedPowerDiffuseLighting(NdotL, _EyeWrappedLightingCosine, _EyeWrappedLightingPower);
+    cbsdf.diffR = diffTerm * saturate(NdotLWrapped);
+    cbsdf.diffT = diffTerm * flippedNdotL;
+#else
     cbsdf.diffR = diffTerm * clampedNdotL;
     cbsdf.diffT = diffTerm * flippedNdotL;
+#endif
+//custom-end:
 
     // Probably worth branching here for perf reasons.
     // This branch will be optimized away if there's no transmission.
