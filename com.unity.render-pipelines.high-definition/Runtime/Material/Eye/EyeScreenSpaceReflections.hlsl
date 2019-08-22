@@ -125,7 +125,7 @@ float SampleDepthPyramid(float2 positionSS, int mipLevel)
     int2 mipOffset = int2(_DepthPyramidMipLevelOffsetsX[(_mipLevel + 0) >> 1] + 0.5,
                           _DepthPyramidMipLevelOffsetsY[(_mipLevel + 1) >> 1] + 0.5);
 
-    float sampleDepthNDC = LOAD_TEXTURE2D_X(_DepthPyramidTexture, mipOffset + mipCoord).x;
+    float sampleDepthNDC = LOAD_TEXTURE2D_X(_CameraDepthTexture, mipOffset + mipCoord).x;
     return sampleDepthNDC;
 
     // previously

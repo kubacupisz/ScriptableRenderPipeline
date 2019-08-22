@@ -82,7 +82,7 @@ void InitializeMappingData(FragInputs input, out TextureUVMapping uvMapping)
     uvMapping.texcoords[TEXCOORD_INDEX_PLANAR_ZX][1] = uvXZ;
 
 #ifdef _USE_TRIPLANAR
-    float3 vertexNormal = input.worldToTangent[2].xyz;
+    float3 vertexNormal = input.tangentToWorld[2].xyz;
     uvMapping.triplanarWeights[0] = ComputeTriplanarWeights(vertexNormal);
     // If we use local planar mapping, convert to local space
     vertexNormal = TransformWorldToObjectDir(vertexNormal);
@@ -90,11 +90,11 @@ void InitializeMappingData(FragInputs input, out TextureUVMapping uvMapping)
 #endif
 
     // Normal mapping with surface gradient
-    float3 vertexNormalWS = input.worldToTangent[2];
+    float3 vertexNormalWS = input.tangentToWorld[2];
     uvMapping.vertexNormalWS = vertexNormalWS;
 
-    uvMapping.vertexTangentWS[0] = input.worldToTangent[0];
-    uvMapping.vertexBitangentWS[0] = input.worldToTangent[1];
+    uvMapping.vertexTangentWS[0] = input.tangentToWorld[0];
+    uvMapping.vertexBitangentWS[0] = input.tangentToWorld[1];
 
     float3 dPdx = ddx_fine(input.positionRWS);
     float3 dPdy = ddy_fine(input.positionRWS);
@@ -280,8 +280,11 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     surfaceData.ambientOcclusion = lerp(_AmbientOcclusion, surfaceData.ambientOcclusion, _AmbientOcclusionUseMap);
 
 //custom-begin: added specular occlusion to StackLit
-    surfaceData.specularOcclusion = 1.0;// for now requires override in custom shader
+    surfaceData.specularOcclusionCustomInput = 1.0;// for now requires override in custom shader
 //custom-end:
+    surfaceData.soFixupVisibilityRatioThreshold = 0.0;
+    surfaceData.soFixupStrengthFactor = 0.0;
+    surfaceData.soFixupMaxAddedRoughness = 0.0;
 
     // These static material feature allow compile time optimization
     surfaceData.materialFeatures = MATERIALFEATUREFLAGS_STACK_LIT_STANDARD;
@@ -309,7 +312,7 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     surfaceData.anisotropyA = 0.0;
     surfaceData.anisotropyB = 0.0;
 #endif
-    surfaceData.tangentWS = normalize(input.worldToTangent[0].xyz); // The tangent is not normalize in worldToTangent for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
+    surfaceData.tangentWS = normalize(input.tangentToWorld[0].xyz); // The tangent is not normalize in worldToTangent for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
 
     float4 coatGradient = float4(0.0, 0.0, 0.0, 1.0f);
 #ifdef _MATERIAL_FEATURE_COAT
@@ -317,10 +320,10 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     surfaceData.coatPerceptualSmoothness = dot(SAMPLE_TEXTURE2D_SCALE_BIAS(_CoatSmoothnessMap), _CoatSmoothnessMapChannelMask);
     surfaceData.coatPerceptualSmoothness = lerp(_CoatSmoothnessMapRange.x, _CoatSmoothnessMapRange.y, surfaceData.coatPerceptualSmoothness);
     surfaceData.coatPerceptualSmoothness = lerp(_CoatSmoothness, surfaceData.coatPerceptualSmoothness, _CoatSmoothnessUseMap);
+    surfaceData.coatMask = 1.0;
     surfaceData.coatIor = _CoatIor;
     surfaceData.coatThickness = _CoatThickness;
     surfaceData.coatExtinction = _CoatExtinction; // in thickness^-1 units
-
 #ifdef _MATERIAL_FEATURE_COAT_NORMALMAP
     surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_STACK_LIT_COAT_NORMAL_MAP;
     coatGradient = SAMPLE_TEXTURE2D_NORMAL_SCALE_BIAS(_CoatNormalMap, _CoatNormalScale, _CoatNormalMapObjSpace);
@@ -328,6 +331,7 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
 
 #else
     surfaceData.coatPerceptualSmoothness = 0.0;
+    surfaceData.coatMask = 0.0;
     surfaceData.coatIor = 1.0001;
     surfaceData.coatThickness = 0.0;
     surfaceData.coatExtinction = float3(1.0, 1.0, 1.0);
@@ -342,11 +346,15 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     surfaceData.iridescenceMask = dot(SAMPLE_TEXTURE2D_SCALE_BIAS(_IridescenceMaskMap), _IridescenceMaskMapChannelMask);
     surfaceData.iridescenceMask = lerp(_IridescenceMaskMapRange.x, _IridescenceMaskMapRange.y, surfaceData.iridescenceMask);
     surfaceData.iridescenceMask = lerp(_IridescenceMask, surfaceData.iridescenceMask, _IridescenceMaskUseMap);
+    surfaceData.iridescenceCoatFixupTIR = 0.0;
+    surfaceData.iridescenceCoatFixupTIRClamp = 0.0;
 
 #else
     surfaceData.iridescenceIor = 1.0;
     surfaceData.iridescenceThickness = 0.0;
     surfaceData.iridescenceMask = 0.0;
+    surfaceData.iridescenceCoatFixupTIR = 0.0;
+    surfaceData.iridescenceCoatFixupTIRClamp = 0.0;
 #endif
 
 #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) || defined(_MATERIAL_FEATURE_TRANSMISSION)
@@ -403,10 +411,10 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     // Surface Data Part 2 (outsite GetSurfaceData( ) in Lit shader):
     // -------------------------------------------------------------
 
-    surfaceData.geomNormalWS = input.worldToTangent[2];
+    surfaceData.geomNormalWS = input.tangentToWorld[2];
     // Convert back to world space normal
-    surfaceData.normalWS = SurfaceGradientResolveNormal(input.worldToTangent[2], gradient.xyz);
-    surfaceData.coatNormalWS = SurfaceGradientResolveNormal(input.worldToTangent[2], coatGradient.xyz);
+    surfaceData.normalWS = SurfaceGradientResolveNormal(input.tangentToWorld[2], gradient.xyz);
+    surfaceData.coatNormalWS = SurfaceGradientResolveNormal(input.tangentToWorld[2], coatGradient.xyz);
 
     surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
 
@@ -433,7 +441,7 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
 
     if ((_GeometricNormalFilteringEnabled + _TextureNormalFilteringEnabled) > 0.0)
     {
-        float geometricVariance = _GeometricNormalFilteringEnabled ? GeometricNormalVariance(input.worldToTangent[2], _SpecularAntiAliasingScreenSpaceVariance) : 0.0;
+        float geometricVariance = _GeometricNormalFilteringEnabled ? GeometricNormalVariance(input.tangentToWorld[2], _SpecularAntiAliasingScreenSpaceVariance) : 0.0;
         // gradient.w is the average normal length
         float textureFilteringVariance = _TextureNormalFilteringEnabled ? TextureNormalVariance(gradient.w) : 0.0;
         float coatTextureFilteringVariance = _TextureNormalFilteringEnabled ? TextureNormalVariance(coatGradient.w) : 0.0;
@@ -461,7 +469,7 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
 
     // We need to call ApplyDebugToSurfaceData after filling the surfarcedata and before filling builtinData
     // as it can modify attribute use for static lighting
-    ApplyDebugToSurfaceData(input.worldToTangent, surfaceData);
+    ApplyDebugToSurfaceData(input.tangentToWorld, surfaceData);
 #endif
 
     // -------------------------------------------------------------
@@ -469,7 +477,7 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     // -------------------------------------------------------------
 
     // For back lighting we use the oposite vertex normal 
-    InitBuiltinData(posInput, alpha, surfaceData.normalWS, -input.worldToTangent[2], input.texCoord1, input.texCoord2, builtinData);
+    InitBuiltinData(posInput, alpha, surfaceData.normalWS, -input.tangentToWorld[2], input.texCoord1, input.texCoord2, builtinData);
 
     builtinData.emissiveColor = _EmissiveColor * lerp(float3(1.0, 1.0, 1.0), surfaceData.baseColor.rgb, _AlbedoAffectEmissive);
     builtinData.emissiveColor *= SAMPLE_TEXTURE2D_SCALE_BIAS(_EmissiveColorMap).rgb;

@@ -4359,7 +4359,7 @@ void PostEvaluateBSDF(  LightLoopContext lightLoopContext,
             preLightData.hemiSpecularOcclusion[BASE_LOBEB_IDX],
             bsdfData.lobeMix);
 
-        float directSpecularOcclusionTerm = lerp(1.0, bsdfData.specularOcclusion, _AmbientOcclusionParam.w);
+        float directSpecularOcclusionTerm = lerp(1.0, bsdfData.specularOcclusionCustomInput, _AmbientOcclusionParam.w);
         float3 directSpecularOcclusion = GTAOMultiBounce(directSpecularOcclusionTerm, bsdfData.fresnel0);
 
         lighting.direct.specular *= min(directSpecularOcclusion, indirectSpecularOcclusion);

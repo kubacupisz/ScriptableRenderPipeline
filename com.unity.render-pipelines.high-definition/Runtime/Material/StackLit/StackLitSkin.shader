@@ -442,7 +442,9 @@ Shader "HDRP/StackLitSkin"
 
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/SampleUVMapping.hlsl"
 
+#if SHADEROPTIONS_IS_THE_HERETIC
             #include "Assets/Code/Gawain/Runtime/SnappersHead.hlsl"
+#endif
 
             void SkinSurfNormal(FragInputs input, inout SurfaceData surfaceData)
             {
@@ -453,28 +455,30 @@ Shader "HDRP/StackLitSkin"
                     float3 tmpAlbedoNOP;
                     float1 tmpCavityNOP;
 
+#if SHADEROPTIONS_IS_THE_HERETIC
                     SnappersEval(uv, tmpAlbedoNOP, tmpNormal, tmpCavityNOP);
+#endif
                 }
 
                 float2 tmpNormalDeriv = UnpackDerivativeNormalAG(tmpNormal, _NormalScale);
-                float3 tmpNormalTS = SurfaceGradientFromTBN(tmpNormalDeriv, input.worldToTangent[0], input.worldToTangent[1]);
+                float3 tmpNormalTS = SurfaceGradientFromTBN(tmpNormalDeriv, input.tangentToWorld[0], input.tangentToWorld[1]);
 
 #ifdef _USE_DETAILMAP
                 float2 detailUV = uv * _DetailNormalMap_ST.xy + _DetailNormalMap_ST.zw;
                 float4 detailNormal = _DetailNormalMap.Sample(sampler_NormalMap, detailUV);
                 float2 detailNormalDeriv = UnpackDerivativeNormalAG(detailNormal, _DetailNormalScale);
 
-                tmpNormalTS += SurfaceGradientFromTBN(detailNormalDeriv, input.worldToTangent[0], input.worldToTangent[1]);
+                tmpNormalTS += SurfaceGradientFromTBN(detailNormalDeriv, input.tangentToWorld[0], input.tangentToWorld[1]);
 #endif
 
 #ifdef SURFACE_GRADIENT
-                surfaceData.normalWS = SurfaceGradientResolveNormal(input.worldToTangent[2], tmpNormalTS);
+                surfaceData.normalWS = SurfaceGradientResolveNormal(input.tangentToWorld[2], tmpNormalTS);
 #else
-                surfaceData.normalWS = normalize(TransformTangentToWorld(tmpNormalTS, input.worldToTangent));
+                surfaceData.normalWS = normalize(TransformTangentToWorld(tmpNormalTS, input.tangentToWorld));
 #endif
             }
 //custom-end:
-        
+
             // As we enabled WRITE_NORMAL_BUFFER we need all regular interpolator
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/StackLit/ShaderPass/StackLitSharePass.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/StackLit/StackLitData.hlsl"
@@ -504,7 +508,7 @@ Shader "HDRP/StackLitSkin"
             HLSLPROGRAM
             #define WRITE_NORMAL_BUFFER
             #pragma multi_compile _ WRITE_MSAA_DEPTH
-            
+
             #define SHADERPASS SHADERPASS_MOTION_VECTORS
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
@@ -517,7 +521,9 @@ Shader "HDRP/StackLitSkin"
 
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/SampleUVMapping.hlsl"
 
+#if SHADEROPTIONS_IS_THE_HERETIC
             #include "Assets/Code/Gawain/Runtime/SnappersHead.hlsl"
+#endif
 
             void SkinSurfNormal(FragInputs input, inout SurfaceData surfaceData)
             {
@@ -528,24 +534,26 @@ Shader "HDRP/StackLitSkin"
                     float3 tmpAlbedoNOP;
                     float1 tmpCavityNOP;
 
+#if SHADEROPTIONS_IS_THE_HERETIC
                     SnappersEval(uv, tmpAlbedoNOP, tmpNormal, tmpCavityNOP);
+#endif
                 }
 
                 float2 tmpNormalDeriv = UnpackDerivativeNormalAG(tmpNormal, _NormalScale);
-                float3 tmpNormalTS = SurfaceGradientFromTBN(tmpNormalDeriv, input.worldToTangent[0], input.worldToTangent[1]);
+                float3 tmpNormalTS = SurfaceGradientFromTBN(tmpNormalDeriv, input.tangentToWorld[0], input.tangentToWorld[1]);
 
 #ifdef _USE_DETAILMAP
                 float2 detailUV = uv * _DetailNormalMap_ST.xy + _DetailNormalMap_ST.zw;
                 float4 detailNormal = _DetailNormalMap.Sample(sampler_NormalMap, detailUV);
                 float2 detailNormalDeriv = UnpackDerivativeNormalAG(detailNormal, _DetailNormalScale);
 
-                tmpNormalTS += SurfaceGradientFromTBN(detailNormalDeriv, input.worldToTangent[0], input.worldToTangent[1]);
+                tmpNormalTS += SurfaceGradientFromTBN(detailNormalDeriv, input.tangentToWorld[0], input.tangentToWorld[1]);
 #endif
 
 #ifdef SURFACE_GRADIENT
-                surfaceData.normalWS = SurfaceGradientResolveNormal(input.worldToTangent[2], tmpNormalTS);
+                surfaceData.normalWS = SurfaceGradientResolveNormal(input.tangentToWorld[2], tmpNormalTS);
 #else
-                surfaceData.normalWS = normalize(TransformTangentToWorld(tmpNormalTS, input.worldToTangent));
+                surfaceData.normalWS = normalize(TransformTangentToWorld(tmpNormalTS, input.tangentToWorld));
 #endif
             }
 //custom-end:
@@ -716,8 +724,10 @@ Shader "HDRP/StackLitSkin"
             #define STACKLIT_SAMPLER_OVERRIDE s_linear_repeat_sampler// TODO remove this again if possible
             #define STACKLIT_SURFACE_DATA_MODIFIER SkinSurf
 
+#if SHADEROPTIONS_IS_THE_HERETIC
             #include "Assets/Code/Gawain/Runtime/SnappersHead.hlsl"
             #include "Assets/Code/Gawain/Runtime/SkinDeformationRenderer.hlsl"
+#endif
 
             TEXTURE2D(_CavityMap);
             float _CavityFresnelFade;
@@ -736,8 +746,10 @@ Shader "HDRP/StackLitSkin"
                 {
                     float4 tmpNormalNOP;
 
+#if SHADEROPTIONS_IS_THE_HERETIC
                     SnappersEval(uv, tmpAlbedo, tmpNormalNOP, tmpCavity);
                     ApplyBlendInputs(uv, tmpAlbedo);
+#endif
                 }
 
                 surfaceData.baseColor = tmpAlbedo;
@@ -750,7 +762,7 @@ Shader "HDRP/StackLitSkin"
                 float3 positionWS = GetAbsolutePositionWS(input.positionRWS);
                 float3 viewDirWS = normalize(_WorldSpaceCameraPos - positionWS);
 
-                float3 geomNormalWS = normalize(input.worldToTangent[2]);
+                float3 geomNormalWS = normalize(input.tangentToWorld[2]);
                 float geomNdotV = abs(dot(geomNormalWS, viewDirWS));
                 float geomFadeTerm = F_Schlick(1.0, 0.0, geomNdotV);// 1 when viewed straight on, 0 at grazing angle
 
@@ -759,7 +771,7 @@ Shader "HDRP/StackLitSkin"
                 float cavitySpecularOcclusion = lerp(1.0, cavity, cavityFadeTerm * _CavitySpecularOcclusion);
                 float cavityModulateSmoothness = lerp(1.0, cavity, cavityFadeTerm * _CavityModulateSmoothness);
 
-                surfaceData.specularOcclusion *= cavitySpecularOcclusion;
+                surfaceData.specularOcclusionCustomInput *= cavitySpecularOcclusion;
                 surfaceData.perceptualSmoothnessA *= cavityModulateSmoothness;
                 surfaceData.perceptualSmoothnessB *= cavityModulateSmoothness;
             }

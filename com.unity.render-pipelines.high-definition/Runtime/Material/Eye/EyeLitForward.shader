@@ -157,12 +157,14 @@ Shader "HDRP/EyeLitForward"
         [HideInInspector] _DstBlend("__dst", Float) = 0.0
         [HideInInspector] _AlphaSrcBlend("__alphaSrc", Float) = 1.0
         [HideInInspector] _AlphaDstBlend("__alphaDst", Float) = 0.0
-        [HideInInspector] _ZWrite("__zw", Float) = 1.0
+        [HideInInspector][ToggleUI] _ZWrite("__zw", Float) = 1.0
         [HideInInspector] _CullMode("__cullmode", Float) = 2.0
         [HideInInspector] _CullModeForward("__cullmodeForward", Float) = 2.0 // This mode is dedicated to Forward to correctly handle backface then front face rendering thin transparent
+        [Enum(UnityEditor.Rendering.HighDefinition.TransparentCullMode)] _TransparentCullMode("_TransparentCullMode", Int) = 2 // Back culling by default
         [HideInInspector] _ZTestDepthEqualForOpaque("_ZTestDepthEqualForOpaque", Int) = 4 // Less equal
         [HideInInspector] _ZTestModeDistortion("_ZTestModeDistortion", Int) = 8
         [HideInInspector] _ZTestGBuffer("_ZTestGBuffer", Int) = 4
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTestTransparent("Transparent ZTest", Int) = 4 // Less equal
 
         [ToggleUI] _EnableFogOnTransparent("Enable Fog", Float) = 1.0
         [ToggleUI] _EnableBlendModePreserveSpecularLighting("Enable Blend Mode Preserve Specular Lighting", Float) = 1.0
@@ -192,8 +194,6 @@ Shader "HDRP/EyeLitForward"
         _SpecularAAScreenSpaceVariance("SpecularAAScreenSpaceVariance", Range(0.0, 1.0)) = 0.1
         _SpecularAAThreshold("SpecularAAThreshold", Range(0.0, 1.0)) = 0.2
 
-        [ToggleUI] _EnableMotionVectorForVertexAnimation("EnableMotionVectorForVertexAnimation", Float) = 0.0
-
         _PPDMinSamples("Min sample for POM", Range(1.0, 64.0)) = 5
         _PPDMaxSamples("Max sample for POM", Range(1.0, 64.0)) = 15
         _PPDLodThreshold("Start lod to fade out the POM effect", Range(0.0, 16.0)) = 5
@@ -210,14 +210,6 @@ Shader "HDRP/EyeLitForward"
         _TexWorldScaleEmissive("Scale to apply on world coordinate", Float) = 1.0
         [HideInInspector] _UVMappingMaskEmissive("_UVMappingMaskEmissive", Color) = (1, 0, 0, 0)
 
-        // Wind
-        [ToggleUI]  _EnableWind("Enable Wind", Float) = 0.0
-        _InitialBend("Initial Bend", float) = 1.0
-        _Stiffness("Stiffness", float) = 1.0
-        _Drag("Drag", float) = 1.0
-        _ShiverDrag("Shiver Drag", float) = 0.2
-        _ShiverDirectionality("Shiver Directionality", Range(0.0, 1.0)) = 0.5
-
         // Caution: C# code in BaseLitUI.cs call LightmapEmissionFlagsProperty() which assume that there is an existing "_EmissionColor"
         // value that exist to identify if the GI emission need to be enabled.
         // In our case we don't use such a mechanism but need to keep the code quiet. We declare the value and always enable it.
@@ -231,6 +223,7 @@ Shader "HDRP/EyeLitForward"
 
         [ToggleUI] _SupportDecals("Support Decals", Float) = 1.0
         [ToggleUI] _ReceivesSSR("Receives SSR", Float) = 1.0
+        [ToggleUI] _AddPrecomputedVelocity("AddPrecomputedVelocity", Float) = 0.0
 
         [HideInInspector] _DiffusionProfile("Obsolete, kept for migration purpose", Int) = 0
         [HideInInspector] _DiffusionProfileAsset("Diffusion Profile Asset", Vector) = (0, 0, 0, 0)
@@ -311,7 +304,6 @@ Shader "HDRP/EyeLitForward"
     #pragma multi_compile_instancing
     #pragma instancing_options renderinglayer
 
-
     //-------------------------------------------------------------------------------------
     // Define
     //-------------------------------------------------------------------------------------
@@ -324,26 +316,22 @@ Shader "HDRP/EyeLitForward"
     #define OUTPUT_SPLIT_LIGHTING
     #endif
 
-    #if defined(_TRANSPARENT_WRITES_VELOCITY) && defined(_SURFACE_TYPE_TRANSPARENT)
-    #define _WRITE_TRANSPARENT_VELOCITY
+    #if defined(_TRANSPARENT_WRITES_MOTION_VEC) && defined(_SURFACE_TYPE_TRANSPARENT)
+    #define _WRITE_TRANSPARENT_MOTION_VECTOR
     #endif
     //-------------------------------------------------------------------------------------
     // Include
     //-------------------------------------------------------------------------------------
 
     #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
-    #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Wind.hlsl"
+    #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPass.cs.hlsl"
-    // #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
 
     //-------------------------------------------------------------------------------------
     // variable declaration
     //-------------------------------------------------------------------------------------
 
-    // Can't include 'ShaderVariables.hlsl' here because of USE_LEGACY_UNITY_MATRIX_VARIABLES. :-(
-    // Same story for 'Material.hlsl' (above) which includes 'AtmosphericScattering.hlsl' which includes 'ShaderVariables.hlsl'.
-    // #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
     // #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.cs.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitProperties.hlsl"
 
@@ -375,7 +363,6 @@ Shader "HDRP/EyeLitForward"
             // We reuse depth prepass for the scene selection, allow to handle alpha correctly as well as tessellation and vertex animation
             #define SHADERPASS SHADERPASS_DEPTH_ONLY
             #define SCENESELECTIONPASS // This will drive the output of the scene selection shader
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/ShaderPass/LitDepthPass.hlsl"
@@ -384,6 +371,8 @@ Shader "HDRP/EyeLitForward"
 
             #pragma vertex Vert
             #pragma fragment Frag
+
+            #pragma editor_sync_compilation
 
             ENDHLSL
         }
@@ -404,8 +393,6 @@ Shader "HDRP/EyeLitForward"
             HLSLPROGRAM
 
             #define SHADERPASS SHADERPASS_SHADOWS
-            #define USE_LEGACY_UNITY_MATRIX_VARIABLES
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/ShaderPass/LitDepthPass.hlsl"
@@ -447,13 +434,12 @@ Shader "HDRP/EyeLitForward"
             #pragma multi_compile _ WRITE_MSAA_DEPTH
 
             #define SHADERPASS SHADERPASS_DEPTH_ONLY
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
 
 //custom-begin: output geometric normal during depth prepass
             #define LIT_SURFACE_DATA_MODIFIER EyeSurfNormal
-            #include "Eye.hlsl"
+            #include "EyeLitForward.hlsl"
 
             void EyeSurfNormal(FragInputs input, inout SurfaceData surfaceData)
             {
@@ -465,7 +451,7 @@ Shader "HDRP/EyeLitForward"
                 // Remove normal mapping from the surface of the cornea, but keep it on the surface of the sclera.
                 // The assumption here is that normal map data within the cornea region is intended for the surface
                 // of the iris (layer 1) after light has traveled through the optically smooth surface of the cornea (layer 0)
-                surfaceData.normalWS = NLerp(input.worldToTangent[2], scleraNormalWS, eyeData.maskSclera);
+                surfaceData.normalWS = NLerp(input.tangentToWorld[2], scleraNormalWS, eyeData.maskSclera);
                 surfaceData.perceptualSmoothness = lerp(_EyeCorneaSmoothness, scleraSmoothness, eyeData.maskSclera);
             }
 //custom-end:
@@ -511,25 +497,25 @@ Shader "HDRP/EyeLitForward"
             #pragma multi_compile _ WRITE_MSAA_DEPTH
             
             #define SHADERPASS SHADERPASS_MOTION_VECTORS
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
 
 //custom-begin: output geometric normal during depth prepass
             #define LIT_SURFACE_DATA_MODIFIER EyeSurfNormal
-            #include "Eye.hlsl"
+            #include "EyeLitForward.hlsl"
 
             void EyeSurfNormal(FragInputs input, inout SurfaceData surfaceData)
             {
                 EyeData eyeData = GetEyeData(input);
 
-                const float3 scleraNormalWS = surfaceData.normalWS;
+				const float3 geomNormalWS = TransformTangentToWorld(float3(0.0, 0.0, 1.0), input.tangentToWorld);
+				const float3 scleraNormalWS = surfaceData.normalWS;
                 const float scleraSmoothness = surfaceData.perceptualSmoothness;
 
                 // Remove normal mapping from the surface of the cornea, but keep it on the surface of the sclera.
                 // The assumption here is that normal map data within the cornea region is intended for the surface
                 // of the iris (layer 1) after light has traveled through the optically smooth surface of the cornea (layer 0)
-                surfaceData.normalWS = NLerp(input.worldToTangent[2], scleraNormalWS, eyeData.maskSclera);
+                surfaceData.normalWS = NLerp(geomNormalWS, scleraNormalWS, eyeData.maskSclera);
                 surfaceData.perceptualSmoothness = lerp(_EyeCorneaSmoothness, scleraSmoothness, eyeData.maskSclera);
             }
 //custom-end:
@@ -561,7 +547,7 @@ Shader "HDRP/EyeLitForward"
                 Pass Replace
             }
 
-            Blend [_SrcBlend] [_DstBlend]
+            Blend [_SrcBlend] [_DstBlend], [_AlphaSrcBlend] [_AlphaDstBlend]
             // In case of forward we want to have depth equal for opaque mesh
             ZTest [_ZTestDepthEqualForOpaque]
             ZWrite [_ZWrite]
@@ -579,7 +565,7 @@ Shader "HDRP/EyeLitForward"
             #pragma multi_compile DECALS_OFF DECALS_3RT DECALS_4RT
             
             // Supported shadow modes per light type
-            #pragma multi_compile SHADOW_LOW SHADOW_MEDIUM SHADOW_HIGH SHADOW_VERY_HIGH
+            #pragma multi_compile SHADOW_LOW SHADOW_MEDIUM SHADOW_HIGH
 
             #pragma multi_compile USE_FPTL_LIGHTLIST USE_CLUSTERED_LIGHTLIST
 
@@ -589,9 +575,8 @@ Shader "HDRP/EyeLitForward"
             #if !defined(_SURFACE_TYPE_TRANSPARENT) && !defined(DEBUG_DISPLAY)
                 #define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST
             #endif
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/Lighting.hlsl"
 
         #ifdef DEBUG_DISPLAY
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Debug/DebugDisplay.hlsl"
@@ -605,7 +590,7 @@ Shader "HDRP/EyeLitForward"
             // - Provide sampling function for shadowmap, ies, cookie and reflection (depends on the specific use with the light loops like index array or atlas or single and texture format (cubemap/latlong))
 
 //custom-begin: eye rendering
-            #include "Eye.hlsl"
+            #include "EyeLitForward.hlsl"
 
             struct LightTransformData
             {
@@ -733,7 +718,7 @@ Shader "HDRP/EyeLitForward"
             #endif
 
                 // input.positionSS is SV_Position
-                PositionInputs posInput = GetPositionInput_Stereo(input.positionSS.xy, _ScreenSize.zw, input.positionSS.z, input.positionSS.w, input.positionRWS.xyz, tileIndex, unity_StereoEyeIndex);
+                PositionInputs posInput = GetPositionInput(input.positionSS.xy, _ScreenSize.zw, input.positionSS.z, input.positionSS.w, input.positionRWS.xyz, tileIndex);
 
             #ifdef VARYINGS_NEED_POSITION_WS
                 float3 V = GetWorldSpaceNormalizeViewDir(input.positionRWS);
@@ -843,16 +828,16 @@ Shader "HDRP/EyeLitForward"
                     float3 layer1DiffuseLighting;
                     {
                         const float3 irisPlaneWS = TransformObjectToWorldDir(float3(0.0, 0.0, 1.0));
-                        const float3 irisConvexWS = input.worldToTangent[2];
+                        const float3 irisConvexWS = input.tangentToWorld[2];
                         const float3 irisConcaveWS = reflect(-irisConvexWS, irisPlaneWS);
 
-                        const float3 irisNormalTS = SurfaceGradientFromPerturbedNormal(input.worldToTangent[2], surfaceData_normalWS);
+                        const float3 irisNormalTS = SurfaceGradientFromPerturbedNormal(input.tangentToWorld[2], surfaceData_normalWS);
                         const float3 irisNormalWS = SurfaceGradientResolveNormal(NLerp(irisConvexWS, irisConcaveWS, _EyeIrisConcavity), irisNormalTS);
 
                         // Remove normal mapping from the surface of the sclera, but keep it on the surface of the iris.
                         // The assumption here is that normal map data within the the sclera is intented to drive
                         // specular-only distortion from surface wetness.
-                        surfaceData.normalWS = NLerp(input.worldToTangent[2], irisNormalWS, eyeData.maskCornea);
+                        surfaceData.normalWS = NLerp(input.tangentToWorld[2], irisNormalWS, eyeData.maskCornea);
                         surfaceData.perceptualSmoothness = 1.0 - normalData.perceptualRoughness;
 
                         bsdfData = ConvertSurfaceDataToBSDFData(input.positionSS.xy, surfaceData);
@@ -862,7 +847,7 @@ Shader "HDRP/EyeLitForward"
 
                         LightTransformData lightTransformData;
                         lightTransformData.refractMask = _EyeIrisBentLighting * eyeData.maskCornea;
-                        lightTransformData.refractNormalWS = input.worldToTangent[2];
+                        lightTransformData.refractNormalWS = input.tangentToWorld[2];
 
                         float3 layer1SpecularLightingUnused;
 #ifdef LIGHTLOOP_LIGHT_TRANSFORM
@@ -909,5 +894,5 @@ Shader "HDRP/EyeLitForward"
 //custom-end:
     }
 
-    CustomEditor "Experimental.Rendering.HDPipeline.LitGUI"
+    CustomEditor "Rendering.HighDefinition.LitGUI"
 }

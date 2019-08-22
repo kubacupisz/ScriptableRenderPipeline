@@ -110,10 +110,10 @@ Shader "HDRP/Lit"
         _DistortionBlurRemapMin("DistortionBlurRemapMin", Float) = 0.0
         _DistortionBlurRemapMax("DistortionBlurRemapMax", Float) = 1.0
 
-            
+
         [ToggleUI]  _UseShadowThreshold("_UseShadowThreshold", Float) = 0.0
         [ToggleUI]  _AlphaCutoffEnable("Alpha Cutoff Enable", Float) = 0.0
-        _AlphaCutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5 
+        _AlphaCutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         _AlphaCutoffShadow("_AlphaCutoffShadow", Range(0.0, 1.0)) = 0.5
         _AlphaCutoffPrepass("_AlphaCutoffPrepass", Range(0.0, 1.0)) = 0.5
         _AlphaCutoffPostpass("_AlphaCutoffPostpass", Range(0.0, 1.0)) = 0.5
@@ -315,11 +315,6 @@ Shader "HDRP/Lit"
     // Include
     //-------------------------------------------------------------------------------------
 
-//custom-begin: Lattice deform support
-	#include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
-	#pragma shader_feature _LATTICE_DEFORM
-//custom-end:
-
     #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
@@ -354,6 +349,13 @@ Shader "HDRP/Lit"
             Cull Off
 
             HLSLPROGRAM
+
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
 
             // Note: Require _ObjectId and _PassValue variables
 
@@ -392,6 +394,13 @@ Shader "HDRP/Lit"
             }
 
             HLSLPROGRAM
+
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
 
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
@@ -436,6 +445,13 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
+
             // Lightmap memo
             // DYNAMICLIGHTMAP_ON is used when we have an "enlighten lightmap" ie a lightmap updated at runtime by enlighten.This lightmap contain indirect lighting from realtime lights and realtime emissive material.Offline baked lighting(from baked material / light,
             // both direct and indirect lighting) will hand up in the "regular" lightmap->LIGHTMAP_ON.
@@ -467,6 +483,13 @@ Shader "HDRP/Lit"
             ColorMask 0
 
             HLSLPROGRAM
+
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
 
             #define SHADERPASS SHADERPASS_SHADOWS
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
@@ -500,6 +523,13 @@ Shader "HDRP/Lit"
             ZWrite On
 
             HLSLPROGRAM
+
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
 
             // In deferred, depth only pass don't output anything.
             // In forward it output the normal buffer
@@ -544,9 +574,17 @@ Shader "HDRP/Lit"
             ZWrite On
 
             HLSLPROGRAM
+
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
+
             #pragma multi_compile _ WRITE_NORMAL_BUFFER
             #pragma multi_compile _ WRITE_MSAA_DEPTH
-            
+
             #define SHADERPASS SHADERPASS_MOTION_VECTORS
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
@@ -585,6 +623,13 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
+
             #define SHADERPASS SHADERPASS_DISTORTION
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
@@ -608,6 +653,13 @@ Shader "HDRP/Lit"
             ColorMask 0
 
             HLSLPROGRAM
+
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
 
             #define SHADERPASS SHADERPASS_DEPTH_ONLY
             #define CUTOFF_TRANSPARENT_DEPTH_PREPASS
@@ -637,6 +689,13 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
+
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
@@ -644,7 +703,7 @@ Shader "HDRP/Lit"
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             // Setup DECALS_OFF so the shader stripper can remove variants
             #pragma multi_compile DECALS_OFF DECALS_3RT DECALS_4RT
-            
+
             // Supported shadow modes per light type
             #pragma multi_compile SHADOW_LOW SHADOW_MEDIUM SHADOW_HIGH
 
@@ -703,6 +762,13 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
+
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
@@ -710,7 +776,7 @@ Shader "HDRP/Lit"
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             // Setup DECALS_OFF so the shader stripper can remove variants
             #pragma multi_compile DECALS_OFF DECALS_3RT DECALS_4RT
-            
+
             // Supported shadow modes per light type
             #pragma multi_compile SHADOW_LOW SHADOW_MEDIUM SHADOW_HIGH
 
@@ -762,6 +828,14 @@ Shader "HDRP/Lit"
             ColorMask 0
 
             HLSLPROGRAM
+
+//custom-begin: Lattice deform support
+#if SHADEROPTIONS_IS_THE_HERETIC
+            #include "Assets/Features/LatticeDeform/LatticeDeform.hlsl"
+            #pragma shader_feature _LATTICE_DEFORM
+#endif
+//custom-end:
+
             #define SHADERPASS SHADERPASS_DEPTH_ONLY
             #define CUTOFF_TRANSPARENT_DEPTH_POSTPASS
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
@@ -786,17 +860,17 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
-            #pragma raytracing test      
+            #pragma raytracing test
 
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
             #pragma multi_compile _ DYNAMICLIGHTMAP_ON
-            
+
             #define SHADERPASS SHADERPASS_RAYTRACING_INDIRECT
             #define SKIP_RASTERIZED_SHADOWS
 
-            // multi compile that allows us to 
+            // multi compile that allows us to
             #pragma multi_compile _ DIFFUSE_LIGHTING_ONLY
             #pragma multi_compile _ MULTI_BOUNCE_INDIRECT
 
@@ -809,9 +883,9 @@ Shader "HDRP/Lit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/Lighting.hlsl"
- 
+
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingIntersection.hlsl"
-            
+
             #include "Packages/com.unity.render-pipelines.high-definition\Runtime\Lighting\LightLoop\LightLoopDef.hlsl"
             #define HAS_LIGHTLOOP
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
@@ -830,13 +904,13 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
-            #pragma raytracing test      
+            #pragma raytracing test
 
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
             #pragma multi_compile _ DYNAMICLIGHTMAP_ON
-            
+
             #define SHADERPASS SHADERPASS_RAYTRACING_FORWARD
             #define SKIP_RASTERIZED_SHADOWS
 
@@ -849,9 +923,9 @@ Shader "HDRP/Lit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/Lighting.hlsl"
- 
+
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingIntersection.hlsl"
-            
+
             #include "Packages/com.unity.render-pipelines.high-definition\Runtime\Lighting\LightLoop\LightLoopDef.hlsl"
             #define HAS_LIGHTLOOP
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
@@ -870,14 +944,14 @@ Shader "HDRP/Lit"
 
             HLSLPROGRAM
 
-            #pragma raytracing test      
+            #pragma raytracing test
 
             #pragma multi_compile _ DEBUG_DISPLAY
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
             #pragma multi_compile _ DYNAMICLIGHTMAP_ON
             #pragma multi_compile _ DIFFUSE_LIGHTING_ONLY
-            
+
             #define SHADERPASS SHADERPASS_RAYTRACING_GBUFFER
 
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingMacros.hlsl"
@@ -886,9 +960,9 @@ Shader "HDRP/Lit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
- 
+
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/Deferred/RaytracingIntersectonGBuffer.hlsl"
-            
+
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/StandardLit/StandardLit.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitRaytracingData.hlsl"
@@ -897,7 +971,7 @@ Shader "HDRP/Lit"
 
             ENDHLSL
         }
-        
+
         Pass
         {
             Name "VisibilityDXR"

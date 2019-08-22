@@ -1,6 +1,6 @@
 //custom-begin: (Nick) eye rendering
 using UnityEngine.Rendering;
-using System;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Experimental.Rendering;
 
 namespace UnityEngine.Rendering.HighDefinition
@@ -17,7 +17,7 @@ namespace UnityEngine.Rendering.HighDefinition
         {
         }
 
-        public void InitBuffers(GBufferManager gbufferManager, RenderPipelineSettings settings)
+        public void InitBuffers(RenderPipelineSettings settings)
         {
             m_ScreenSpaceReflectionsRT = RTHandles.Alloc(
                 Vector2.one,
@@ -77,7 +77,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     {
                         int j = i << 1;
                         depthPyramidMipLevelOffsetsX[i] = depthPyramidInfo.mipLevelOffsets[j].x;
-                        depthPyramidMipLevelOffsetsY[i] = depthPyramidInfo.mipLevelOffsets[Math.Max(0, j - 1)].y;
+                        depthPyramidMipLevelOffsetsY[i] = depthPyramidInfo.mipLevelOffsets[Mathf.Max(0, j - 1)].y;
                     }
 
                     cmd.SetGlobalInt("_DepthPyramidMaxMip", depthPyramidInfo.mipLevelCount);
