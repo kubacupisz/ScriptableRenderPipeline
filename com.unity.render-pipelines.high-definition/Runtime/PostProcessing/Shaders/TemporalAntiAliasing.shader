@@ -65,12 +65,12 @@ Shader "Hidden/HDRP/TemporalAntialiasing"
 
 #if DEMO
 
-            float3 history = Map(DEMO_FETCH(_InputHistoryTexture, posInputs.positionNDC - motionVector, 0.0, _ScreenToTargetScaleHistory.xy));
-            float3 color = Map(DEMO_FETCH(_InputTexture, uv, 0.0, _ScreenToTargetScale.xy));
+            float3 history = Map(DEMO_FETCH(_InputHistoryTexture, input.texcoord - motionVector, 0.0, _RTHandleScaleHistory.xy));
+            float3 color = Map(DEMO_FETCH(_InputTexture, uv, 0.0, _RTHandleScale.xy));
             float colorLuma = Luminance(color);
 
             // 3x3 neighbourhood
-            #define SAMPLE_NEIGHBOUR(i,j) DEMO_FETCH(_InputTexture, uv, float2(j-1, i-1), _ScreenToTargetScale.xy)
+            #define SAMPLE_NEIGHBOUR(i,j) DEMO_FETCH(_InputTexture, uv, float2(j-1, i-1), _RTHandleScale.xy)
             float3 _00 = SAMPLE_NEIGHBOUR(0, 0).rgb;
             float3 _01 = SAMPLE_NEIGHBOUR(0, 1).rgb;
             float3 _02 = SAMPLE_NEIGHBOUR(0, 2).rgb;

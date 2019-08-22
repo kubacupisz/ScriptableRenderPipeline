@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering;
-using RTHandle = UnityEngine.Rendering.RTHandle;
+using UnityEngine.Rendering.HighDefinition;
 
 [ExecuteInEditMode]
 public class LensFlareSettings : MonoBehaviour

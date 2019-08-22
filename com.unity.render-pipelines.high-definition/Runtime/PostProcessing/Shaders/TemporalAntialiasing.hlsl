@@ -46,8 +46,8 @@ float2 Fetch4Array(Texture2DArray tex, uint slot, float2 coords, float2 offset, 
 //custom-begin: less destructive taa
 float3 FetchBicubic(TEXTURE2D_X(tex), float2 coords, float2 offset, float2 scale)
 {
-    float4 bicubicWnd = float4(_ScreenSize.xy * rcp(_ScreenToTargetScale.xy), 1.0 / (_ScreenSize.xy * rcp(_ScreenToTargetScale.xy)));
-    float2 maxCoord = (_ScreenToTargetScale.xy - bicubicWnd.zw);
+    float4 bicubicWnd = float4(_ScreenSize.xy * rcp(_RTHandleScale.xy), 1.0 / (_ScreenSize.xy * rcp(_RTHandleScale.xy)));
+    float2 maxCoord = (_RTHandleScale.xy - bicubicWnd.zw);
     float2 uv = min(maxCoord, (coords + offset * _ScreenSize.zw) * scale);
     return SampleTexture2DBicubic(TEXTURE2D_X_ARGS(tex, s_linear_clamp_sampler), uv, bicubicWnd, maxCoord, 0).xyz;
 }

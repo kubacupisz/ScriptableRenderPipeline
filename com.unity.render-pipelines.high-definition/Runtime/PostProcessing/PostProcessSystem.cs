@@ -70,6 +70,9 @@ namespace UnityEngine.Rendering.HighDefinition
         ChromaticAberration m_ChromaticAberration;
         LensDistortion m_LensDistortion;
         Vignette m_Vignette;
+//custom-begin: support for external lut grading
+        ColorLookup m_ColorLookup;
+//custom-end:
         Tonemapping m_Tonemapping;
         WhiteBalance m_WhiteBalance;
         ColorAdjustments m_ColorAdjustments;
@@ -269,6 +272,9 @@ namespace UnityEngine.Rendering.HighDefinition
             m_ChromaticAberration       = stack.GetComponent<ChromaticAberration>();
             m_LensDistortion            = stack.GetComponent<LensDistortion>();
             m_Vignette                  = stack.GetComponent<Vignette>();
+//custom-begin: support for external lut grading
+            m_ColorLookup               = stack.GetComponent<ColorLookup>();
+//custom-end:
             m_Tonemapping               = stack.GetComponent<Tonemapping>();
             m_WhiteBalance              = stack.GetComponent<WhiteBalance>();
             m_ColorAdjustments          = stack.GetComponent<ColorAdjustments>();
@@ -1932,7 +1938,18 @@ namespace UnityEngine.Rendering.HighDefinition
             var builderCS = m_Resources.shaders.lutBuilder3DCS;
             string kernelName = "KBuild_NoTonemap";
 
-            if (m_Tonemapping.IsActive())
+//custom-begin: migrate custom support for external lut grading to built-in support
+            var useExternalLut = m_ColorLookup.IsActive() && m_ColorLookup.contribution.value > 0.0f;
+            if (useExternalLut)
+            {
+                tonemappingMode = TonemappingMode.External;
+                {
+                    m_Tonemapping.lutContribution.value = m_ColorLookup.contribution.value;
+                    m_Tonemapping.lutTexture.value = m_ColorLookup.texture.value;
+                }
+            }
+            if (useExternalLut || m_Tonemapping.IsActive())
+//custom-end:
             {
                 switch (tonemappingMode)
                 {
