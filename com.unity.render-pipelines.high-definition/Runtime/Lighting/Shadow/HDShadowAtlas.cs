@@ -510,7 +510,7 @@ namespace UnityEngine.Rendering.HighDefinition
                                     ScriptableRenderContext renderContext,
 //custom-begin: shadow callback
                                     CommandBuffer           cmd,
-                                    Action<Matrix4x4, CommandBuffer> onBeforeShadows)
+                                    Action<Matrix4x4, CommandBuffer> onBeforeShadows = null)
 //custom-end:
         {
             cmd.SetRenderTarget(atlasRenderTexture);

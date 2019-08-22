@@ -107,10 +107,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     RenderShadows(  data.parameters,
                                     atlasTexture,
                                     data.shadowDrawSettings,
-//custom-begin: shadow callback
-                                    context.renderContext, context.cmd,
-                                    null);
-//custom-end:
+                                    context.renderContext, context.cmd);
 
                     if (data.parameters.blurAlgorithm == BlurAlgorithm.EVSM)
                     {
