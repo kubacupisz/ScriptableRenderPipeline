@@ -95,6 +95,10 @@ namespace UnityEditor.Rendering.HighDefinition
             public static readonly GUIContent useHeightBasedBlendText = EditorGUIUtility.TrTextContent("Use Height Based Blend", "When enabled, HDRP blends the layer with the underlying layer based on the height.");
             public static readonly GUIContent useMainLayerInfluenceModeText = EditorGUIUtility.TrTextContent("Main Layer Influence", "Switches between regular layers mode and base/layers mode.");
             public static readonly GUIContent heightTransition = EditorGUIUtility.TrTextContent("Height Transition", "Sets the size, in world units, of the smooth transition between layers.");
+
+//custom-begin: slope mask feature
+            public static readonly GUIContent slopeMaskModeText = EditorGUIUtility.TrTextContent("Slope Mask Mode", "The Slope Mask is multiplied with the mask .");
+//custom-end: slope mask feature
         }
 
         MaterialProperty[] UVBase = new MaterialProperty[kMaxLayerCount];
@@ -420,7 +424,7 @@ namespace UnityEditor.Rendering.HighDefinition
             }
 
 //custom-begin: View angle dependent smoothness tweak
-            if(smoothnessViewAngleOffset[layerIndex] != null)
+            if(smoothnessViewAngleOffset[m_LayerIndex] != null)
                 materialEditor.ShaderProperty(smoothnessViewAngleOffset[m_LayerIndex], smoothnessViewAngleOffset[m_LayerIndex].displayName);
 //custom-end:
 
@@ -692,10 +696,10 @@ namespace UnityEditor.Rendering.HighDefinition
 
 //custom-begin: slope mask feature
             if(slopeMaskMode != null)
-            {                
+            {
                 EditorGUI.BeginChangeCheck();
                 EditorGUI.showMixedValue = slopeMaskMode.hasMixedValue;
-                bool slopeMaskModeEnable = EditorGUILayout.Toggle(styles.slopeMaskModeText, slopeMaskMode.floatValue > 0.0f);
+                bool slopeMaskModeEnable = EditorGUILayout.Toggle(Styles.slopeMaskModeText, slopeMaskMode.floatValue > 0.0f);
                 if (EditorGUI.EndChangeCheck())
                 {
                     slopeMaskMode.floatValue = slopeMaskModeEnable ? 1.0f : 0.0f;

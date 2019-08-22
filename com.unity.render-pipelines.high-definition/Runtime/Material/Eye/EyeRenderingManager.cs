@@ -1,16 +1,17 @@
 //custom-begin: (Nick) eye rendering
 using UnityEngine.Rendering;
 using System;
+using UnityEngine.Experimental.Rendering;
 
-namespace UnityEngine.Experimental.Rendering.HDPipeline
+namespace UnityEngine.Rendering.HighDefinition
 {
-    public class EyeRenderingManager
+    class EyeRenderingManager
     {
         Material m_ScreenSpaceReflectionsMaterial;
         Texture2D m_BlueNoiseTexture;
 
-        RTHandleSystem.RTHandle m_ScreenSpaceReflectionsRT;
-        RTHandleSystem.RTHandle m_ColorBufferCopyRT;
+        RTHandle m_ScreenSpaceReflectionsRT;
+        RTHandle m_ColorBufferCopyRT;
 
         public EyeRenderingManager()
         {
@@ -50,19 +51,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             RTHandles.Release(m_ColorBufferCopyRT);
         }
 
-        public void PushGlobalParams(HDCamera hdCamera, CommandBuffer cmd, uint frameIndex)
+        public void PushGlobalParams(HDCamera hdCamera, CommandBuffer cmd, int frameIndex)
         {
 
-            int sampleIndex = (int)frameIndex % 2;
+            int sampleIndex = frameIndex % 2;
             cmd.SetGlobalInt("_SampleIndex", sampleIndex);
         }
 
         public void SetupScreenSpaceReflectionsData(
             HDCamera hdCamera,
             CommandBuffer cmd,
-            RTHandleSystem.RTHandle colorBufferRT,
-            RTHandleSystem.RTHandle depthStencilBufferRT,
-            RTHandleSystem.RTHandle depthTextureRT,
+            RTHandle colorBufferRT,
+            RTHandle depthStencilBufferRT,
+            RTHandle depthTextureRT,
             HDUtils.PackedMipChainInfo depthPyramidInfo)
         {
             using (new ProfilingSample(cmd, "Setup Eye Screen Space Reflections Data", CustomSamplerId.EyeScreenSpaceReflections.GetSampler()))

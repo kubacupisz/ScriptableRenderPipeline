@@ -301,17 +301,6 @@ real ComputeWrappedPowerDiffuseLighting(real NdotL, real w, real p)
     return pow(saturate((NdotL + w) / (1.0 + w)), p) * (p + 1) / (w * 2.0 + 2.0);
 }
 
-//custom-begin: (Nick) eye rendering
-// Ref: Steve McAuley - Extension to Energy-Conserving Wrapped Diffuse
-// http://blog.stevemcauley.com/2013/01/30/extension-to-energy-conserving-wrapped-diffuse/
-// TODO: (Maybe): + w / (1 + w) could be pre-transformed cpu side into scale bias terms.
-// TODO: (Maybe): * (p + 1) / (w * 2 + 2) could be pre-transformed into a scale term.
-real ComputeWrappedPowerDiffuseLighting(real NdotL, real w, real p)
-{
-    return pow(saturate((NdotL + w) / (1 + w)), p) * (p + 1) / (w * 2 + 2);
-}
-//custom-end: (Nick) eye rendering
-
 // Ref: The Technical Art of Uncharted 4 - Brinck and Maximov 2016
 real ComputeMicroShadowing(real AO, real NdotL, real opacity)
 {

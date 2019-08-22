@@ -290,13 +290,12 @@ namespace UnityEngine.Rendering.HighDefinition
         public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer> OnPrepareCamera;
         public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer> OnCameraDepthReady;
         public static event Action<ScriptableRenderContext> OnBeginNewFrame;
-        public static event Action<ScriptableRenderContext, HDCamera, RTHandleSystem.RTHandle, RTHandleSystem.RTHandle, CommandBuffer> OnBeforeForwardOpaque;
+        public static event Action<ScriptableRenderContext, HDCamera, RTHandle, RTHandle, CommandBuffer> OnBeforeForwardOpaque;
         public static event Action<Matrix4x4, CommandBuffer> OnBeforeShadows;
-        public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer, GBufferManager, RTHandleSystem.RTHandle> OnAfterRenderDebug;
 //custom-end:
 
 //custom-begin: expose PostProcessSystem instance
-        public PostProcessSystem postProcessSystem { get { return m_PostProcessSystem; } }
+        internal PostProcessSystem postProcessSystem { get { return m_PostProcessSystem; } }
 //custom-end:
 
 //custom-begin: Expose debug so we can disable/change rendering when active
@@ -804,6 +803,10 @@ namespace UnityEngine.Rendering.HighDefinition
 
             CoreUtils.Destroy(m_CameraMotionVectorsMaterial);
             CoreUtils.Destroy(m_DecalNormalBufferMaterial);
+//custom-begin: add decal mode for blurring normal buffer
+            CoreUtils.Destroy(m_DecalNormalBufferMaterialBlur);
+            CoreUtils.Destroy(m_DecalNormalBufferMaterialZero);
+//custom-end:
 
             CoreUtils.Destroy(m_DebugViewMaterialGBuffer);
             CoreUtils.Destroy(m_DebugViewMaterialGBufferShadowMask);
@@ -883,14 +886,8 @@ namespace UnityEngine.Rendering.HighDefinition
                 else
                 {
 #endif
-//custom-begin: guard against nullref
                     while (m_ProbeCameraPool.Count > 0)
-                    {
-                        var probeCamera = m_ProbeCameraPool.Pop();
-                        if (probeCamera != null)
-                            CoreUtils.Destroy(probeCamera.gameObject);
-                    }
-//custom-end:
+                        CoreUtils.Destroy(m_ProbeCameraPool.Pop().gameObject);
 #if UNITY_EDITOR
                 }
 #endif
@@ -1171,7 +1168,7 @@ namespace UnityEngine.Rendering.HighDefinition
             }
 
 //custom-begin: Volumetrics quality override
-            m_VolumetricLightingSystem.SetOverrideHighQualityPreset(this.asset.VolumetricLightingForceHighQuality);
+            SetVolumetricOverrideHighQualityPreset(this.asset.VolumetricLightingForceHighQuality);
 //custom-end:
 
 			// TODO: Check with Fred if it make sense to put that here now that we have refactor the loop
@@ -2035,7 +2032,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 {
                     SSAOTask.Start(cmd, asyncParams, AsyncSSAODispatch, !haveAsyncTaskWithShadows);
                     haveAsyncTaskWithShadows = true;
-                    
+
                     void AsyncSSAODispatch(CommandBuffer c, HDGPUAsyncTaskParams a)
                         => m_AmbientOcclusionSystem.Dispatch(c, a.hdCamera, a.frameCount);
                 }
@@ -2244,15 +2241,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 hdCamera.ExecuteCaptureActions(m_IntermediateAfterPostProcessBuffer, cmd);
 
                 RenderDebug(hdCamera, cmd, cullingResults);
-//custom-begin: Custom callbacks
-                if (OnAfterRenderDebug != null)
-                {
-                    using (new ProfilingSample(cmd, "Debug Callback", CustomSamplerId.RenderDebug.GetSampler()))
-                    {
-                        OnAfterRenderDebug.Invoke(renderContext, hdCamera, cmd, m_GbufferManager, m_IntermediateAfterPostProcessBuffer);
-                    }
-                }
-//custom-end:
+
                 using (new ProfilingSample(cmd, "Final Blit (Dev Build Only)"))
                 {
                     var finalBlitParams = PrepareFinalBlitParameters(hdCamera);
@@ -3042,6 +3031,11 @@ namespace UnityEngine.Rendering.HighDefinition
             public Material decalNormalBufferMaterial;
             public int stencilRef;
             public int stencilMask;
+//custom-begin: add decal mode for blurring normal buffer
+            public Material decalNormalBufferMaterialBlur;
+            public Material decalNormalBufferMaterialZero;
+            public HDCamera hdCamera;
+//custom-end:
         }
 
         DBufferNormalPatchParameters PrepareDBufferNormalPatchParameters(HDCamera hdCamera)
@@ -3062,6 +3056,12 @@ namespace UnityEngine.Rendering.HighDefinition
                     throw new ArgumentOutOfRangeException("Unknown ShaderLitMode");
             }
 
+//custom-begin: add decal mode for blurring normal buffer
+            parameters.decalNormalBufferMaterialBlur = m_DecalNormalBufferMaterialBlur;
+            parameters.decalNormalBufferMaterialZero = m_DecalNormalBufferMaterialZero;
+            parameters.hdCamera = hdCamera;
+//custom-end:
+
             return parameters;
         }
 
@@ -3078,42 +3078,42 @@ namespace UnityEngine.Rendering.HighDefinition
             cmd.ClearRandomWriteTargets();
 
 //custom-begin: add decal mode for blurring normal buffer
-                    {
-                        const int PASS_MASK = 1;
-                        const int PASS_CONV = 2;
-                        const int PASS_BLIT = 3;
-                        const int PASS_ZERO = 4;
+            {
+                const int PASS_MASK = 1;
+                const int PASS_CONV = 2;
+                const int PASS_BLIT = 3;
+                const int PASS_ZERO = 4;
 
-                        int _NormalBlurMaskNameID = Shader.PropertyToID("_NormalBlurMask");
-                        var _NormalBlurMaskRT = new RenderTargetIdentifier(_NormalBlurMaskNameID);
-                        int _NormalBlurBufferNameID = Shader.PropertyToID("_NormalBlurBuffer");
-                        var _NormalBlurBufferRT = new RenderTargetIdentifier(_NormalBlurBufferNameID);
+                int _NormalBlurMaskNameID = Shader.PropertyToID("_NormalBlurMask");
+                var _NormalBlurMaskRT = new RenderTargetIdentifier(_NormalBlurMaskNameID);
+                int _NormalBlurBufferNameID = Shader.PropertyToID("_NormalBlurBuffer");
+                var _NormalBlurBufferRT = new RenderTargetIdentifier(_NormalBlurBufferNameID);
 
-                        m_DecalNormalBufferMaterialBlur.SetInt(HDShaderIDs._DecalNormalBufferStencilReadMask, (int)StencilBitMask.DecalsBlurNormalBuffer);
-                        m_DecalNormalBufferMaterialBlur.SetInt(HDShaderIDs._DecalNormalBufferStencilRef, (int)StencilBitMask.DecalsBlurNormalBuffer);
+                parameters.decalNormalBufferMaterialBlur.SetInt(HDShaderIDs._DecalNormalBufferStencilReadMask, (int)StencilBitMask.DecalsBlurNormalBuffer);
+                parameters.decalNormalBufferMaterialBlur.SetInt(HDShaderIDs._DecalNormalBufferStencilRef, (int)StencilBitMask.DecalsBlurNormalBuffer);
 
-                        m_DecalNormalBufferMaterialZero.SetInt(HDShaderIDs._DecalNormalBufferStencilReadMask, stencilMask | (int)StencilBitMask.DecalsBlurNormalBuffer);
-                        m_DecalNormalBufferMaterialZero.SetInt(HDShaderIDs._DecalNormalBufferStencilRef, stencilMask);
+                parameters.decalNormalBufferMaterialZero.SetInt(HDShaderIDs._DecalNormalBufferStencilReadMask, parameters.stencilMask | (int)StencilBitMask.DecalsBlurNormalBuffer);
+                parameters.decalNormalBufferMaterialZero.SetInt(HDShaderIDs._DecalNormalBufferStencilRef, parameters.stencilMask);
 
-                        cmd.GetTemporaryRT(_NormalBlurMaskNameID, hdCamera.actualWidth, hdCamera.actualHeight, 0, FilterMode.Point, RenderTextureFormat.R8, RenderTextureReadWrite.Linear, 1, true);
-                        cmd.GetTemporaryRT(_NormalBlurBufferNameID, hdCamera.actualWidth, hdCamera.actualHeight, 0, FilterMode.Point, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear, 1, true);
-                        {
-                            cmd.SetRenderTarget(_NormalBlurMaskRT);// gotta clear the mask
-                            cmd.ClearRenderTarget(false, true, Color.black);
+                cmd.GetTemporaryRT(_NormalBlurMaskNameID, parameters.hdCamera.actualWidth, parameters.hdCamera.actualHeight, 0, FilterMode.Point, RenderTextureFormat.R8, RenderTextureReadWrite.Linear, 1, true);
+                cmd.GetTemporaryRT(_NormalBlurBufferNameID, parameters.hdCamera.actualWidth, parameters.hdCamera.actualHeight, 0, FilterMode.Point, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear, 1, true);
+                {
+                    cmd.SetRenderTarget(_NormalBlurMaskRT);// gotta clear the mask
+                    cmd.ClearRenderTarget(false, true, Color.black);
 
-                            HDUtils.SetRenderTarget(cmd, hdCamera, m_SharedRTManager.GetDepthStencilBuffer());
-                            cmd.SetRandomWriteTarget(1, m_SharedRTManager.GetNormalBuffer());
-                            cmd.SetRandomWriteTarget(2, _NormalBlurMaskRT);
-                            cmd.SetRandomWriteTarget(3, _NormalBlurBufferRT);
-                            cmd.DrawProcedural(Matrix4x4.identity, m_DecalNormalBufferMaterialBlur, PASS_MASK, MeshTopology.Triangles, 3, 1);
-                            cmd.DrawProcedural(Matrix4x4.identity, m_DecalNormalBufferMaterialBlur, PASS_CONV, MeshTopology.Triangles, 3, 1);
-                            cmd.DrawProcedural(Matrix4x4.identity, m_DecalNormalBufferMaterialBlur, PASS_BLIT, MeshTopology.Triangles, 3, 1);
-                            cmd.DrawProcedural(Matrix4x4.identity, m_DecalNormalBufferMaterialZero, PASS_ZERO, MeshTopology.Triangles, 3, 1);
-                            cmd.ClearRandomWriteTargets();
-                        }
-                        cmd.ReleaseTemporaryRT(_NormalBlurMaskNameID);
-                        cmd.ReleaseTemporaryRT(_NormalBlurBufferNameID);
-                    }
+                    CoreUtils.SetRenderTarget(cmd, depthStencilBuffer);
+                    cmd.SetRandomWriteTarget(1, normalBuffer);
+                    cmd.SetRandomWriteTarget(2, _NormalBlurMaskRT);
+                    cmd.SetRandomWriteTarget(3, _NormalBlurBufferRT);
+                    cmd.DrawProcedural(Matrix4x4.identity, parameters.decalNormalBufferMaterialBlur, PASS_MASK, MeshTopology.Triangles, 3, 1);
+                    cmd.DrawProcedural(Matrix4x4.identity, parameters.decalNormalBufferMaterialBlur, PASS_CONV, MeshTopology.Triangles, 3, 1);
+                    cmd.DrawProcedural(Matrix4x4.identity, parameters.decalNormalBufferMaterialBlur, PASS_BLIT, MeshTopology.Triangles, 3, 1);
+                    cmd.DrawProcedural(Matrix4x4.identity, parameters.decalNormalBufferMaterialZero, PASS_ZERO, MeshTopology.Triangles, 3, 1);
+                    cmd.ClearRandomWriteTargets();
+                }
+                cmd.ReleaseTemporaryRT(_NormalBlurMaskNameID);
+                cmd.ReleaseTemporaryRT(_NormalBlurBufferNameID);
+            }
 //custom-end:
         }
 

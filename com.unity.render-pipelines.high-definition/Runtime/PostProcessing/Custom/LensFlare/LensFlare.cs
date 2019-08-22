@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace UnityEngine.Experimental.Rendering.HDPipeline
+namespace UnityEngine.Rendering.HighDefinition
 {
     [Serializable, VolumeComponentMenu("Custom/Lens Flare")]
     public sealed class LensFlare : VolumeComponent, IPostProcessComponent

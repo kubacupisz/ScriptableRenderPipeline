@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering.HDPipeline;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering;
-using RTHandle = UnityEngine.Experimental.Rendering.RTHandleSystem.RTHandle;
+using RTHandle = UnityEngine.Rendering.RTHandle;
 
 [ExecuteInEditMode]
 public class LensFlareSettings : MonoBehaviour
@@ -105,7 +105,7 @@ public class LensFlareSettings : MonoBehaviour
 
         cmd.SetGlobalVector(Uniforms._FlareScreenPos, ScreenUVToNDC(screenPos * viewportAdjustment));
         cmd.SetGlobalFloat(Uniforms._FlareDepth, viewportPos.z);
-        
+
         Vector2 screenPosPanini = ScreenUVToNDC(screenPos);
         if (paniniProjection.IsActive() && (cam.cameraType != CameraType.SceneView || PaniniProjectionSceneView.enabled))
             screenPosPanini = DoPaniniProjection(screenPosPanini, hdcam, paniniProjection, inverse:true);
@@ -202,7 +202,7 @@ public class LensFlareSettings : MonoBehaviour
         //  d |  /
         //    | /                ,
         //    |/                .
-        //    P 
+        //    P
         //    |              ´
         //    |         , ´
         //    +-    ´

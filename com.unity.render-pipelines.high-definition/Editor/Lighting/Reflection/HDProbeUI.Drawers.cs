@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+//custom-begin: allow rebake multi-selection of probes
 using System.Linq;
+//custom-end:
 using UnityEditorInternal;
 using System.Reflection;
 using UnityEngine;
@@ -284,11 +286,9 @@ namespace UnityEditor.Rendering.HighDefinition
 
                 // Check if current mode support baking
                 var mode = (ProbeSettings.Mode)serialized.probeSettings.mode.intValue;
-//custom-begin: bake realtime probe
-//                var doesModeSupportBaking = mode == ProbeSettings.Mode.Custom || mode == ProbeSettings.Mode.Baked;
-//                if (!doesModeSupportBaking)
-//                    return;
-//custom-end:
+                var doesModeSupportBaking = mode == ProbeSettings.Mode.Custom || mode == ProbeSettings.Mode.Baked;
+                if (!doesModeSupportBaking)
+                    return;
 
                 // Check if all scene are saved to a file (requirement to bake probes)
                 foreach (var target in serialized.serializedObject.targetObjects)
@@ -365,23 +365,7 @@ namespace UnityEditor.Rendering.HighDefinition
                             break;
                         }
                     case ProbeSettings.Mode.Realtime:
-//custom-begin: bake realtime probe
-                        GUI.enabled = serialized.target.enabled;
-
-                        if (GUILayout.Button(EditorGUIUtility.TrTextContent("Bake")))
-                        {
-                            serialized.target.opRealtimeToBaked = true;
-//custom-begin: allow rebake multi-selection of probes
-                            HDBakedReflectionSystem.BakeProbes(serialized.serializedObject.targetObjects.OfType<HDProbe>().ToArray());
-//custom-end:
-
-                            GUIUtility.ExitGUI();
-                        }
-
-                        GUI.enabled = true;
                         break;
-
-//custom-end:
                     default: throw new ArgumentOutOfRangeException();
                 }
             }

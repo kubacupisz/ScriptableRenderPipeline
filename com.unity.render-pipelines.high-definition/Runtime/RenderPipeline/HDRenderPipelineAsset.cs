@@ -109,7 +109,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
         internal ref FrameSettings GetDefaultFrameSettings(FrameSettingsRenderType type)
         {
-            switch (type)
+            switch(type)
             {
                 case FrameSettingsRenderType.Camera:
                     return ref m_RenderingPathDefaultCameraFrameSettings;
@@ -148,12 +148,12 @@ namespace UnityEngine.Rendering.HighDefinition
         [SerializeField, FormerlySerializedAs("renderPipelineSettings")]
         RenderPipelineSettings m_RenderPipelineSettings = RenderPipelineSettings.@default;
 
+        // Return the current use RenderPipelineSettings (i.e for the current platform)
+        public RenderPipelineSettings currentPlatformRenderPipelineSettings => m_RenderPipelineSettings;
+
 //custom-begin: Volumetrics quality override
         public bool VolumetricLightingForceHighQuality { get; set; }
 //custom-end:
-
-        // Return the current use RenderPipelineSettings (i.e for the current platform)
-        public RenderPipelineSettings currentPlatformRenderPipelineSettings => m_RenderPipelineSettings;
 
         [SerializeField]
         internal bool allowShaderVariantStripping = true;
@@ -256,7 +256,6 @@ namespace UnityEngine.Rendering.HighDefinition
             }
         }
 
-        /*MERGETODO reenable in new build
         public override Shader terrainDetailLitShader
         {
             get
@@ -280,7 +279,6 @@ namespace UnityEngine.Rendering.HighDefinition
                 return renderPipelineEditorResources == null ? null : renderPipelineEditorResources.shaders.terrainDetailGrassBillboardShader;
             }
         }
-        */
 
         // Note: This function is HD specific
         public Material GetDefaultDecalMaterial()
@@ -337,7 +335,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             // Is ray tracing supported for this project and this platform?
             bool raytracingSupport = AggreateRayTracingSupport(currentPlatformRenderPipelineSettings);
-            
+
             // Update all the individual defines
             bool needUpdate = false;
             needUpdate |= UpdateDefineList(raytracingSupport, "ENABLE_RAYTRACING");

@@ -263,7 +263,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 if ((m_NumColorPyramidBuffersAllocated != numColorPyramidBuffersRequired) ||
 //custom-begin: Re-alloc if volumetric quality changed
-                    (m_NumVolumetricBuffersAllocated != numVolumetricBuffersRequired) || hdrp.vlSys.QualityChangedThisFrame)
+                    (m_NumVolumetricBuffersAllocated != numVolumetricBuffersRequired) || hdrp.VolumetricQualityChangedThisFrame)
 //custom-end:
                 {
                     // Reinit the system.
@@ -521,7 +521,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                     Matrix4x4 overrideViewMatrix = viewConstants.prevViewMatrixOverride;
                     if (ShaderConfig.s_CameraRelativeRendering != 0)
-                        viewConstants.overrideViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
+                        overrideViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
                     viewConstants.prevViewProjMatrix = gpuNonJitteredProj * overrideViewMatrix;
                     viewConstants.prevViewProjMatrixNoCameraTrans = viewConstants.prevViewProjMatrix;
                 }
@@ -555,7 +555,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 noTransViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
                 viewConstants.prevViewProjMatrixNoCameraTrans = gpuNonJitteredProj * noTransViewMatrix;
             }
-			
+
 //custom-begin: Camera cut frame motion override
             /*
 			if (prevViewMatrixOverrideFrame == Time.frameCount)

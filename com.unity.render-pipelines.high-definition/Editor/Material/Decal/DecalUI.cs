@@ -139,6 +139,11 @@ namespace UnityEditor.Rendering.HighDefinition
         protected MaterialProperty emissiveColorHDR = null;
         protected const string kEmissiveColorHDR = "_EmissiveColorHDR";
 
+//custom-begin: add decal mode for blurring normal buffer
+        protected MaterialProperty blurNormalsMode = new MaterialProperty();
+        protected const string kBlurNormalsMode = "_BlurNormalsMode";
+//custom-end:
+
         void LoadMaterialProperties(MaterialProperty[] properties)
         {
             normalBlendSrc = FindProperty(kNormalBlendSrc, properties);
@@ -155,7 +160,7 @@ namespace UnityEditor.Rendering.HighDefinition
             emissiveColorLDR = FindProperty(kEmissiveColorLDR, properties);
             emissiveColorHDR = FindProperty(kEmissiveColorHDR, properties);
 //custom-begin: add decal mode for blurring normal buffer
-            blurNormalsMode = FindProperty(kBlurNormalsMode, props);
+            blurNormalsMode = FindProperty(kBlurNormalsMode, properties);
 //custom-end:
         }
 

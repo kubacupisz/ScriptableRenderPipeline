@@ -199,7 +199,7 @@ namespace UnityEditor.Rendering.HighDefinition
             emissiveExposureWeight = FindProperty(kEmissiveExposureWeight);
 
 //custom-begin: add decal mode for blurring normal buffer
-            blurNormalsMode = FindProperty(kBlurNormalsMode, props);
+            blurNormalsMode = FindProperty(kBlurNormalsMode);
 //custom-end:
 
             // always instanced

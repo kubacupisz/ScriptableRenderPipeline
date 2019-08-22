@@ -162,7 +162,7 @@ namespace UnityEngine.Rendering.HighDefinition
     public partial class HDRenderPipeline
     {
 //custom-begin: Allocate both quality levels and acivate based on preset (fast switching).
-        public VolumetricLightingPreset volumetricLightingConfigPreset = VolumetricLightingPreset.Off;
+        VolumetricLightingPreset      volumetricLightingConfigPreset = VolumetricLightingPreset.Off;
 //custon-end:
         VolumetricLightingPreset      volumetricLightingPreset = VolumetricLightingPreset.Off;
 
@@ -178,13 +178,16 @@ namespace UnityEngine.Rendering.HighDefinition
         ComputeBuffer                 m_VisibleVolumeDataBuffer   = null;
 
         // These two buffers do not depend on the frameID and are therefore shared by all views.
+        RTHandle                      m_DensityBufferHandle;
+        RTHandle                      m_LightingBufferHandle;
+
 //custom-begin: Allocate both quality levels
         // Multi-quality data
         int m_LastFrameQualityChanged = -1;
         RTHandle[] m_DensityBufferHandles;
         RTHandle[] m_LightingBufferHandles;
 
-        public bool QualityChangedThisFrame => m_LastFrameQualityChanged == Time.frameCount;
+        public bool VolumetricQualityChangedThisFrame => m_LastFrameQualityChanged == Time.frameCount;
 //custom-end:
 
         // Is the feature globally disabled?
@@ -239,12 +242,12 @@ namespace UnityEngine.Rendering.HighDefinition
             CreateVolumetricLightingBuffers();
 
 //custom-begin: Allocate both quality levels
-            SetQualityPreset(volumetricLightingConfigPreset);
+            SetVolumetricQualityPreset(volumetricLightingConfigPreset);
 //custom-end:
         }
-		
+
 //custom-begin: Allocate both quality levels
-        void SetQualityPreset(VolumetricLightingPreset newPreset)
+        void SetVolumetricQualityPreset(VolumetricLightingPreset newPreset)
         {
             if (volumetricLightingPreset == newPreset)
                 return;
@@ -256,9 +259,9 @@ namespace UnityEngine.Rendering.HighDefinition
             m_LightingBufferHandle = m_LightingBufferHandles[(int)volumetricLightingPreset];
         }
 
-        public void SetOverrideHighQualityPreset(bool hq)
+        public void SetVolumetricOverrideHighQualityPreset(bool hq)
         {
-            SetQualityPreset(hq ? VolumetricLightingPreset.High : configPreset);
+            SetVolumetricQualityPreset(hq ? VolumetricLightingPreset.High : volumetricLightingConfigPreset);
         }
 //custom-end:
 
@@ -269,7 +272,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             return new Vector2Int(resolution.x, resolution.y);
         }
-		
+
 //custom-begin: Allocate both quality levels
         static Vector2Int ComputeVBufferResolutionXY_MQ(Vector2Int screenSize)
         {

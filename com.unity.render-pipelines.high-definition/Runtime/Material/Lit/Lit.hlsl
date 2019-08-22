@@ -602,11 +602,6 @@ void EncodeIntoGBuffer( SurfaceData surfaceData
     // Note: no need to store MATERIALFEATUREFLAGS_LIT_STANDARD, always present
     outGBuffer2.a  = PackFloatInt8bit(coatMask, materialFeatureId, 8);
 
-//custom-begin: LightFieldZone
-    // NOTE: This stomps coatMask, find some other bits if clear coat is actually used.
-    //outGBuffer2.a  = PackFloatInt8bit(surfaceData.ambientOcclusion, materialFeatureId, 8);
-//custom-end:
-
     // RT3 - 11f:11f:10f
     // In deferred we encode emissive color with bakeDiffuseLighting. We don't have the room to store emissiveColor.
     // It mean that any futher process that affect bakeDiffuseLighting will also affect emissiveColor, like SSAO for example.
@@ -687,12 +682,6 @@ uint DecodeFromGBuffer(uint2 positionSS, uint tileFeatureFlags, out BSDFData bsd
     float coatMask;
     uint materialFeatureId;
     UnpackFloatInt8bit(inGBuffer2.a, 8, coatMask, materialFeatureId);
-
-//custom-begin: LightFieldZone
-    // NOTE: This stomps coatMask, find some other bits if clear coat is actually used.
-    //bsdfData.ambientOcclusion = coatMask;
-    //coatMask = 0;
-//custom-end:
 
     uint pixelFeatureFlags    = MATERIALFEATUREFLAGS_LIT_STANDARD; // Only sky/background do not have the Standard flag.
     bool pixelHasSubsurface   = materialFeatureId == GBUFFER_LIT_TRANSMISSION_SSS || materialFeatureId == GBUFFER_LIT_SSS;
@@ -1921,10 +1910,6 @@ IndirectLighting EvaluateBSDF_Env(  LightLoopContext lightLoopContext,
 // PostEvaluateBSDF
 // ----------------------------------------------------------------------------
 
-//custom-begin: LightFieldZone
-//#include "Assets/Features/LightFieldMidStage/Shaders/LightField_LightLoop.hlsl"
-//custom-end:
-
 void PostEvaluateBSDF(  LightLoopContext lightLoopContext,
                         float3 V, PositionInputs posInput,
                         PreLightData preLightData, BSDFData bsdfData, BuiltinData builtinData, AggregateLighting lighting,
@@ -1937,17 +1922,10 @@ void PostEvaluateBSDF(  LightLoopContext lightLoopContext,
 #else
     GetScreenSpaceAmbientOcclusionMultibounce(posInput.positionSS, preLightData.NdotV, bsdfData.perceptualRoughness, bsdfData.ambientOcclusion, bsdfData.specularOcclusion, bsdfData.diffuseColor, bsdfData.fresnel0, aoFactor);
 #endif
-//custom-begin: LightFieldZone
-    // Customized internally in LF_ApplyLighting below
-ApplyAmbientOcclusionFactor(aoFactor, builtinData, lighting);
-//custom-end:
+    ApplyAmbientOcclusionFactor(aoFactor, builtinData, lighting);
 
     // Subsurface scattering mode
     float3 modifiedDiffuseColor = GetModifiedDiffuseColorForSSS(bsdfData);
-
-//custom-begin: LightFieldZone
-    //LF_ApplyLighting(modifiedDiffuseColor, V, posInput, preLightData, bsdfData, aoFactor, builtinData, lighting);
-//custom-end:
 
     // Apply the albedo to the direct diffuse lighting (only once). The indirect (baked)
     // diffuse lighting has already multiply the albedo in ModifyBakedDiffuseLighting().

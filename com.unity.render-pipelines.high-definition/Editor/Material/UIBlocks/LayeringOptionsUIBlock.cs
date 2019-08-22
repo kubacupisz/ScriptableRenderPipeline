@@ -21,12 +21,11 @@ namespace UnityEditor.Rendering.HighDefinition
             public static readonly GUIContent inheritBaseColorText = EditorGUIUtility.TrTextContent("BaseColor influence", "Controls the strength of the Base Color inherited from the base layer.");
 
 //custom-begin: slope mask feature
-            public readonly GUIContent slopeMaskModeText = EditorGUIUtility.TrTextContent("Slope Mask Mode", "The Slope Mask is multiplied with the mask .");
-            public readonly GUIContent slopeAngleText = EditorGUIUtility.TrTextContent("Slope Angle", "Slope under the angle value are part of the mask. Negative Value invert the mask");
-            public readonly GUIContent slopeBiasText = EditorGUIUtility.TrTextContent("Slope Bias", "Used to smooth the Slope Mask");
-            public readonly GUIContent slopeMaskIntensityText = EditorGUIUtility.TrTextContent("Slope Mask Influence", "Slope Mask Influence.");
-            public readonly GUIContent slopeReferenceDirText = EditorGUIUtility.TrTextContent("Slope Reference Direction", "The direction used to compute the slope");
-            public readonly GUIContent slopeSmoothNormalText = EditorGUIUtility.TrTextContent("Smooth Main Layer Normal for Slope", "Smooth the main layer normal map for the slope mask generation");
+            public static readonly GUIContent slopeAngleText = EditorGUIUtility.TrTextContent("Slope Angle", "Slope under the angle value are part of the mask. Negative Value invert the mask");
+            public static readonly GUIContent slopeBiasText = EditorGUIUtility.TrTextContent("Slope Bias", "Used to smooth the Slope Mask");
+            public static readonly GUIContent slopeMaskIntensityText = EditorGUIUtility.TrTextContent("Slope Mask Influence", "Slope Mask Influence.");
+            public static readonly GUIContent slopeReferenceDirText = EditorGUIUtility.TrTextContent("Slope Reference Direction", "The direction used to compute the slope");
+            public static readonly GUIContent slopeSmoothNormalText = EditorGUIUtility.TrTextContent("Smooth Main Layer Normal for Slope", "Smooth the main layer normal map for the slope mask generation");
 //custom-end: slope mask feature
         }
 
@@ -102,9 +101,9 @@ namespace UnityEditor.Rendering.HighDefinition
 
 //custom-begin: slope mask feature
                     // Slope mask
-                    slopeAngle[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeAngle, i), props);
-                    slopeBias[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeBias, i), props);
-                    slopeMaskIntensity[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeMaskIntensity, i), props);
+                    slopeAngle[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeAngle, i));
+                    slopeBias[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeBias, i));
+                    slopeMaskIntensity[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeMaskIntensity, i));
 //custom-end: slope mask feature
             }
         }
@@ -146,9 +145,9 @@ namespace UnityEditor.Rendering.HighDefinition
                 if (mainLayerSlopeMaskModeEnable)
                 {
                     EditorGUILayout.Space();
-                    materialEditor.ShaderProperty(slopeAngle[layerIndex - 1], Styles.slopeAngleText);
-                    materialEditor.ShaderProperty(slopeBias[layerIndex - 1], Styles.slopeBiasText);
-                    materialEditor.ShaderProperty(slopeMaskIntensity[layerIndex - 1], Styles.slopeMaskIntensityText);
+                    materialEditor.ShaderProperty(slopeAngle[m_LayerIndex - 1], Styles.slopeAngleText);
+                    materialEditor.ShaderProperty(slopeBias[m_LayerIndex - 1], Styles.slopeBiasText);
+                    materialEditor.ShaderProperty(slopeMaskIntensity[m_LayerIndex - 1], Styles.slopeMaskIntensityText);
                 }
 //custom-end:
             }
@@ -157,11 +156,8 @@ namespace UnityEditor.Rendering.HighDefinition
                 materialEditor.TexturePropertySingleLine(Styles.layerInfluenceMapMaskText, layerInfluenceMaskMap);
 
 //custom-begin: slope mask feature
-                if (header.expanded)
-                {
-                    materialEditor.ShaderProperty(slopeReferenceDir, Styles.slopeReferenceDirText);
-                    materialEditor.ShaderProperty(slopeSmoothNormal, Styles.slopeSmoothNormalText);
-                }
+                materialEditor.ShaderProperty(slopeReferenceDir, Styles.slopeReferenceDirText);
+                materialEditor.ShaderProperty(slopeSmoothNormal, Styles.slopeSmoothNormalText);
 //custom-end:
             }
         }
