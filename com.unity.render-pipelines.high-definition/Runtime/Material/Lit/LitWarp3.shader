@@ -239,9 +239,12 @@ Shader "HDRP/LitWarpForward3"
     // Variant
     //-------------------------------------------------------------------------------------
 
-//custom-begin: trim variants, grafted from VFX/CaveWarp/Materials/Deform_00.mat
+//custom-begin: trim variants, grafted from VFX/CaveWarp/Materials/Portal_00.mat
+    #define _BLENDMODE_ALPHA
     #define _DISABLE_DECALS
+    #define _DISABLE_SSR
     #define _NORMALMAP_TANGENT_SPACE
+    #define _SURFACE_TYPE_TRANSPARENT
 
 //original:
     //#pragma shader_feature_local _ALPHATEST_ON

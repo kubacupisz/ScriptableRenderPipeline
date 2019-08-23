@@ -434,8 +434,8 @@ Shader "HDRP/LitWarpForward2"
 
         Pass
         {
-            Name "DepthOnly"
-            Tags{ "LightMode" = "DepthOnly" }
+            Name "DepthForwardOnly"
+            Tags{ "LightMode" = "DepthForwardOnly" }
 
             Cull[_CullMode]
 
@@ -454,7 +454,10 @@ Shader "HDRP/LitWarpForward2"
 
             // In deferred, depth only pass don't output anything.
             // In forward it output the normal buffer
-            #pragma multi_compile _ WRITE_NORMAL_BUFFER
+//custom-begin: always write normal buffer
+            //#pragma multi_compile _ WRITE_NORMAL_BUFFER
+            #define WRITE_NORMAL_BUFFER 1
+//custom-end:
             #pragma multi_compile _ WRITE_MSAA_DEPTH
 
             #define SHADERPASS SHADERPASS_DEPTH_ONLY
@@ -498,7 +501,10 @@ Shader "HDRP/LitWarpForward2"
             ZWrite On
 
             HLSLPROGRAM
-            #pragma multi_compile _ WRITE_NORMAL_BUFFER
+//custom-begin: always write normal buffer
+            //#pragma multi_compile _ WRITE_NORMAL_BUFFER
+            #define WRITE_NORMAL_BUFFER 1
+//custom-end:
             #pragma multi_compile _ WRITE_MSAA_DEPTH
 
             #define SHADERPASS SHADERPASS_MOTION_VECTORS
@@ -523,8 +529,8 @@ Shader "HDRP/LitWarpForward2"
 
         Pass
         {
-            Name "Forward"
-            Tags { "LightMode" = "Forward" } // This will be only for transparent object based on the RenderQueue index
+            Name "ForwardOnly"
+            Tags { "LightMode" = "ForwardOnly" } // This will be only for transparent object based on the RenderQueue index
 
             Stencil
             {

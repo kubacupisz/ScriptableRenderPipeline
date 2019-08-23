@@ -407,7 +407,7 @@ Shader "HDRP/EyeLitForward"
 
         Pass
         {
-            Name "DepthOnly"
+            Name "DepthForwardOnly"
             Tags{ "LightMode" = "DepthForwardOnly" }
 
             Cull[_CullMode]
@@ -536,7 +536,7 @@ Shader "HDRP/EyeLitForward"
 
         Pass
         {
-            Name "Forward"
+            Name "ForwardOnly"
             Tags { "LightMode" = "ForwardOnly" } // This will be only for transparent object based on the RenderQueue index
 
             Stencil
