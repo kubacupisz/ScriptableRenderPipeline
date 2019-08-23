@@ -962,10 +962,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public uint GetLightLayers()
         {
             int value = (int)lightlayersMask;
-//custom-begin: guard light layers (TODO: this doesn't belong here)
-            //return value < 0 ? (uint)LightLayerEnum.Everything : (uint)value;
-            return (uint)(value & (uint)LightLayerEnum.Everything);
-//custom-end:
+            return value < 0 ? (uint)LightLayerEnum.Everything : (uint)value;
         }
 
         // Shadow Settings
