@@ -14,11 +14,6 @@ float4x4 GetProbeVolumeWorldToObject()
 // Else we have lightprobe for dynamic/moving entity. Either SH9 per object lightprobe or SH4 per pixel per object volume probe
 float3 SampleBakedGI(float3 positionRWS, float3 normalWS, float2 uvStaticLightmap, float2 uvDynamicLightmap)
 {
-//custom-begin: LightFieldZone
-    // ..count on this optimizing out every future operation on baked diffuse
-    //return float3(0, 0, 0);
-//custom-end:
-
     // If there is no lightmap, it assume lightprobe
 #if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTMAP_ON)
 
