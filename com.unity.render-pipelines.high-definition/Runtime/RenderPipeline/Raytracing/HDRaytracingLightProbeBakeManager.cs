@@ -14,10 +14,10 @@ namespace UnityEngine.Experimental.Rendering.HighDefinition
             preRenderLightProbes?.Invoke(camera, cmdBuffer);
         }
 
-        public static event System.Action<HDCamera, CommandBuffer, Texture> bakeLightProbes;
-        public static void Bake(HDCamera camera, CommandBuffer cmdBuffer, Texture skyTexture)
+        public static event System.Action<HDCamera, CommandBuffer, HDRaytracingManager, Texture> bakeLightProbes;
+        public static void Bake(HDCamera camera, CommandBuffer cmdBuffer, HDRaytracingManager raytracingManager, Texture skyTexture)
         {
-            bakeLightProbes?.Invoke(camera, cmdBuffer, skyTexture);
+            bakeLightProbes?.Invoke(camera, cmdBuffer, raytracingManager, skyTexture);
         }
     }
 #endif

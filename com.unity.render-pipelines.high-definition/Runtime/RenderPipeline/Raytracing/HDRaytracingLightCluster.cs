@@ -15,7 +15,7 @@ namespace UnityEngine.Rendering.HighDefinition
     }
 
 #if ENABLE_RAYTRACING
-    class HDRaytracingLightCluster
+    public class HDRaytracingLightCluster
     {
         // External data
         RenderPipelineResources m_RenderPipelineResources = null;
@@ -74,7 +74,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
         }
 
-        public void Initialize(RenderPipelineResources rpResources, HDRenderPipelineRayTracingResources rpRTResources, HDRaytracingManager raytracingManager, SharedRTManager sharedRTManager, HDRenderPipeline renderPipeline)
+        internal void Initialize(RenderPipelineResources rpResources, HDRenderPipelineRayTracingResources rpRTResources, HDRaytracingManager raytracingManager, SharedRTManager sharedRTManager, HDRenderPipeline renderPipeline)
         {
             // Keep track of the external buffers
             m_RenderPipelineResources = rpResources;
@@ -804,7 +804,7 @@ namespace UnityEngine.Rendering.HighDefinition
             return envLightCount;
         }
 
-        public void EvaluateLightClusters(CommandBuffer cmd, HDCamera hdCamera, HDRayTracingLights rayTracingLights)
+        internal void EvaluateLightClusters(CommandBuffer cmd, HDCamera hdCamera, HDRayTracingLights rayTracingLights)
         {
             // Grab the current ray-tracing environment, if no environment available stop right away
             HDRaytracingEnvironment currentEnv = m_RaytracingManager.CurrentEnvironment();

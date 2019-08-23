@@ -2025,7 +2025,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
 #if ENABLE_RAYTRACING
                 m_RaytracingRenderer.Render(hdCamera, cmd, m_CameraColorBuffer, renderContext, cullingResults);
-                UnityEngine.Experimental.Rendering.HighDefinition.HDRaytracingLightProbeBakeManager.Bake(hdCamera, cmd, m_SkyManager.skyReflection);
+                UnityEngine.Experimental.Rendering.HighDefinition.HDRaytracingLightProbeBakeManager.Bake(hdCamera, cmd, m_RayTracingManager, m_SkyManager.skyReflection);
 #endif
                 // Render pre refraction objects
                 RenderForwardTransparent(cullingResults, hdCamera, true, renderContext, cmd);

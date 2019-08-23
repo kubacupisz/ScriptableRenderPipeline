@@ -22,7 +22,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public List<HDProbe> reflectionProbeArray = null;
     }
 
-    class HDRaytracingManager
+    public class HDRaytracingManager
     {
         // The list of ray-tracing environments that have been registered
         List<HDRaytracingEnvironment> m_Environments = new List<HDRaytracingEnvironment>();
@@ -72,7 +72,7 @@ namespace UnityEngine.Rendering.HighDefinition
             public List<Renderer> targetRenderers = null;
 
             // Structure that holds all the lights that are bound to this sub scene
-            public HDRayTracingLights lights = null;
+            internal HDRayTracingLights lights = null;
 
             // Flag that defines if this sub-scene should be re-evaluated
             public bool obsolete = false;
@@ -106,9 +106,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
         // Ray-count manager data
         RayCountManager m_RayCountManager = new RayCountManager();
-        public RayCountManager rayCountManager { get { return m_RayCountManager; } }
+        internal RayCountManager rayCountManager { get { return m_RayCountManager; } }
 
-        public void Init(RenderPipelineSettings settings, RenderPipelineResources rpResources, HDRenderPipelineRayTracingResources rayTracingResources, BlueNoise blueNoise, HDRenderPipeline renderPipeline, SharedRTManager sharedRTManager, DebugDisplaySettings currentDebugDisplaySettings)
+        internal void Init(RenderPipelineSettings settings, RenderPipelineResources rpResources, HDRenderPipelineRayTracingResources rayTracingResources, BlueNoise blueNoise, HDRenderPipeline renderPipeline, SharedRTManager sharedRTManager, DebugDisplaySettings currentDebugDisplaySettings)
         {
             // Keep track of the resources
             m_Resources = rpResources;
@@ -723,7 +723,7 @@ namespace UnityEngine.Rendering.HighDefinition
             return m_BlueNoise;
         }
 
-        public HDSimpleDenoiser GetSimpleDenoiser()
+        internal HDSimpleDenoiser GetSimpleDenoiser()
         {
             return m_SimpleDenoiser;
         }
