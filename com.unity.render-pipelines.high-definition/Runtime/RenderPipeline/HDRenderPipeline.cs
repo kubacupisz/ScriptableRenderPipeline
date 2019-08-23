@@ -285,14 +285,13 @@ namespace UnityEngine.Rendering.HighDefinition
         Material m_ColorResolveMaterial = null;
 
 //custom-begin: Callbacks
-        public delegate void Action<T1, T2, T3, T4, T5, T6>(T1 arg, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6);
-
-        public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer> OnPrepareCamera;
-        public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer> OnCameraDepthReady;
+        // Wire callbacks
         public static event Action<ScriptableRenderContext> OnBeginNewFrame;
         public static event Action<ShaderTagId, CommandBuffer> OnBeforeOpaque;
-        public static event Action<ScriptableRenderContext, HDCamera, RTHandle, RTHandle, CommandBuffer> OnBeforeForwardOpaque;
         public static event Action<Matrix4x4, CommandBuffer> OnBeforeShadows;
+
+        // Warp Capture
+        public static event Action<ScriptableRenderContext, HDCamera, CommandBuffer> OnCameraDepthReady;
 //custom-end:
 
 //custom-begin: expose PostProcessSystem instance
@@ -432,22 +431,6 @@ namespace UnityEngine.Rendering.HighDefinition
             MousePositionDebug.instance.Build();
 
             InitializeRenderStateBlocks();
-
-//custom-begin: Configure callbacks
-            OnPrepareCamera = null;
-            OnCameraDepthReady = null;
-            OnBeforeForwardOpaque = null;
-
-            // Do not reset these, they're not configured by [HDRPCallbackMethod]
-            // OnBeginNewFrame = null;
-            // OnBeforeOpaque = null;
-            // OnBeforeShadows = null;
-
-            // TODO: the HDRenderPipeline object survives scene loading, so
-            // this thing won't be called, even though some components in the newly
-            // loaded scene might expect it would.
-            HDRPCallbackAttribute.ConfigureAllLoadedCallbacks();
-//custom-end:
 
             // Keep track of the original msaa sample value
             // TODO : Bind this directly to the debug menu instead of having an intermediate value
@@ -1829,10 +1812,6 @@ namespace UnityEngine.Rendering.HighDefinition
             PushGlobalParams(hdCamera, cmd);
             VFXManager.ProcessCameraCommand(camera, cmd);
 
-//custom-begin: Prepare frame callback
-            OnPrepareCamera?.Invoke(renderContext, hdCamera, cmd);
-//custom-end:
-
             // TODO: Find a correct place to bind these material textures
             // We have to bind the material specific global parameters in this mode
             foreach (var material in m_MaterialList)
@@ -2151,10 +2130,6 @@ namespace UnityEngine.Rendering.HighDefinition
 //custom-end: (Nick) eye rendering
 
                 RenderTransparentDepthPrepass(cullingResults, hdCamera, renderContext, cmd);
-
-//custom-begin: Custom callbacks
-                OnBeforeForwardOpaque?.Invoke(renderContext, hdCamera, m_SharedRTManager.GetDepthStencilBuffer(), m_CameraColorBuffer, cmd);
-//custom-end:
 
 #if ENABLE_RAYTRACING
                 m_RaytracingRenderer.Render(hdCamera, cmd, m_CameraColorBuffer, renderContext, cullingResults);
