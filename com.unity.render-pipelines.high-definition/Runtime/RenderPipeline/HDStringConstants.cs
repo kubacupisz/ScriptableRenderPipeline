@@ -104,6 +104,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int g_LayeredSingleIdxBuffer = Shader.PropertyToID("g_LayeredSingleIdxBuffer");
         public static readonly int _EnvLightIndexShift = Shader.PropertyToID("_EnvLightIndexShift");
         public static readonly int _DensityVolumeIndexShift = Shader.PropertyToID("_DensityVolumeIndexShift");
+        public static readonly int _ProbeVolumeIndexShift = Shader.PropertyToID("_ProbeVolumeIndexShift");
         public static readonly int g_isOrthographic = Shader.PropertyToID("g_isOrthographic");
         public static readonly int g_iNrVisibLights = Shader.PropertyToID("g_iNrVisibLights");
 
@@ -150,7 +151,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _EnvCubemapTextures = Shader.PropertyToID("_EnvCubemapTextures");
         public static readonly int _EnvSliceSize = Shader.PropertyToID("_EnvSliceSize");
         public static readonly int _CookieSizePOT = Shader.PropertyToID("_CookieSizePOT");
-        public static readonly int _Env2DTextures = Shader.PropertyToID("_Env2DTextures"); 
+        public static readonly int _Env2DTextures = Shader.PropertyToID("_Env2DTextures");
         public static readonly int _Env2DCaptureVP = Shader.PropertyToID("_Env2DCaptureVP");
         public static readonly int _Env2DCaptureForward = Shader.PropertyToID("_Env2DCaptureForward");
         public static readonly int _DirectionalLightDatas = Shader.PropertyToID("_DirectionalLightDatas");
@@ -161,6 +162,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _EnvLightDatas = Shader.PropertyToID("_EnvLightDatas");
         public static readonly int _EnvLightCount = Shader.PropertyToID("_EnvLightCount");
         public static readonly int _EnvProxyCount = Shader.PropertyToID("_EnvProxyCount");
+        public static readonly int _ProbeVolumeBounds = Shader.PropertyToID("_ProbeVolumeBounds");
+        public static readonly int _ProbeVolumeDatas = Shader.PropertyToID("_ProbeVolumeDatas");
+        public static readonly int _ProbeVolumeCount = Shader.PropertyToID("_ProbeVolumeCount");
         public static readonly int _NumTileBigTileX = Shader.PropertyToID("_NumTileBigTileX");
         public static readonly int _NumTileBigTileY = Shader.PropertyToID("_NumTileBigTileY");
         public static readonly int _NumTileFtplX = Shader.PropertyToID("_NumTileFtplX");
@@ -473,7 +477,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _VolumeMaskAtlas                = Shader.PropertyToID("_VolumeMaskAtlas");
         public static readonly int _VolumeMaskDimensions           = Shader.PropertyToID("_VolumeMaskDimensions");
 
-        public static readonly int _EnableLightLayers              = Shader.PropertyToID("_EnableLightLayers"); 
+        public static readonly int _EnableLightLayers              = Shader.PropertyToID("_EnableLightLayers");
         public static readonly int _OffScreenRendering             = Shader.PropertyToID("_OffScreenRendering");
         public static readonly int _EnableSpecularLighting         = Shader.PropertyToID("_EnableSpecularLighting");
 
@@ -528,7 +532,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _AreaShadowHistoryRW             = Shader.PropertyToID("_AreaShadowHistoryRW");
         public static readonly int _AnalyticProbBuffer              = Shader.PropertyToID("_AnalyticProbBuffer");
         public static readonly int _AnalyticHistoryBuffer           = Shader.PropertyToID("_AnalyticHistoryBuffer");
-        
+
         // Ambient occlusion
         public static readonly int _AOHistorybufferRW               = Shader.PropertyToID("_AOHistorybufferRW");
         public static readonly int _RaytracingAOIntensity           = Shader.PropertyToID("_RaytracingAOIntensity");

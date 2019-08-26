@@ -7,7 +7,7 @@ using static UnityEngine.Experimental.Rendering.HDPipeline.RenderPipelineSetting
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
     using CED = CoreEditorDrawer<SerializedHDRenderPipelineAsset>;
-    
+
     static partial class HDRenderPipelineUI
     {
         enum Expandable
@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             ShadowResolution8192 = 8192,
             ShadowResolution16384 = 16384
         }
-        
+
         internal enum SelectedFrameSettings
         {
             Camera,
@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 CED.FoldoutGroup(k_PostProcessSectionTitle, Expandable.PostProcess, k_ExpandedState, Drawer_SectionPostProcessSettings)
             );
         }
-        
+
         public static readonly CED.IDrawer Inspector;
 
         static readonly CED.IDrawer FrameSettingsSection = CED.Group(
@@ -144,7 +144,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             // Not serialized as editor only datas... Retrieve them in data
             HDRenderPipelineAsset hdrpAsset = serialized.serializedObject.targetObject as HDRenderPipelineAsset;
             hdrpAsset.renderPipelineEditorResources = EditorGUILayout.ObjectField(k_RenderPipelineEditorResourcesContent, hdrpAsset.renderPipelineEditorResources, typeof(HDRenderPipelineEditorResources), allowSceneObjects: false) as HDRenderPipelineEditorResources;
-            
+
             EditorGUILayout.PropertyField(serialized.enableSRPBatcher, k_SRPBatcher);
             EditorGUILayout.PropertyField(serialized.shaderVariantLogLevel, k_ShaderVariantLogLevel);
         }
@@ -254,16 +254,16 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         static void Drawer_SectionShadows(SerializedHDRenderPipelineAsset serialized, Editor owner)
         {
             EditorGUILayout.PropertyField(serialized.renderPipelineSettings.supportShadowMask, k_SupportShadowMaskContent);
-            
+
             EditorGUILayout.LabelField(k_ShadowAtlasSubTitle);
             ++EditorGUI.indentLevel;
             serialized.renderPipelineSettings.hdShadowInitParams.shadowAtlasResolution.intValue = (int)(ShadowResolutionValue)EditorGUILayout.EnumPopup(k_ResolutionContent, (ShadowResolutionValue)serialized.renderPipelineSettings.hdShadowInitParams.shadowAtlasResolution.intValue);
             serialized.renderPipelineSettings.hdShadowInitParams.shadowMapDepthBits.intValue = EditorGUILayout.IntPopup(k_PrecisionContent, serialized.renderPipelineSettings.hdShadowInitParams.shadowMapDepthBits.intValue, k_ShadowBitDepthNames, k_ShadowBitDepthValues);
             EditorGUILayout.PropertyField(serialized.renderPipelineSettings.hdShadowInitParams.useDynamicViewportRescale, k_DynamicRescaleContent);
             --EditorGUI.indentLevel;
-            
+
             EditorGUILayout.DelayedIntField(serialized.renderPipelineSettings.hdShadowInitParams.maxShadowRequests, k_MaxRequestContent);
-            
+
             EditorGUILayout.PropertyField(serialized.renderPipelineSettings.hdShadowInitParams.shadowQuality, k_FilteringQuality);
         }
 
@@ -286,7 +286,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 }
 
                 EditorGUILayout.PropertyField(serialized.renderPipelineSettings.decalSettings.perChannelMask, k_MetalAndAOContent);
-                
+
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.DelayedIntField(serialized.renderPipelineSettings.lightLoopSettings.maxDecalsOnScreen, k_MaxDecalContent);
                 if (EditorGUI.EndChangeCheck())
@@ -308,7 +308,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 serialized.renderPipelineSettings.lightLoopSettings.maxAreaLightsOnScreen.intValue = Mathf.Clamp(serialized.renderPipelineSettings.lightLoopSettings.maxAreaLightsOnScreen.intValue, 1, LightLoop.k_MaxAreaLightsOnScreen);
             }
         }
-        
+
         static void Drawer_SectionDynamicResolutionSettings(SerializedHDRenderPipelineAsset serialized, Editor owner)
         {
             EditorGUILayout.PropertyField(serialized.renderPipelineSettings.dynamicResolutionSettings.enabled, k_Enabled);
@@ -343,7 +343,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
             --EditorGUI.indentLevel;
         }
-        
+
         static void Drawer_SectionPostProcessSettings(SerializedHDRenderPipelineAsset serialized, Editor owner)
         {
             EditorGUILayout.DelayedIntField(serialized.renderPipelineSettings.postProcessSettings.lutSize, k_LutSize);
@@ -412,6 +412,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             EditorGUILayout.PropertyField(serialized.renderPipelineSettings.supportLightLayers, k_SupportLightLayerContent);
 
+            EditorGUILayout.PropertyField(serialized.renderPipelineSettings.supportProbeVolume, k_SupportProbeVolumeContent);
+            using (new EditorGUI.DisabledScope(!serialized.renderPipelineSettings.supportProbeVolume.boolValue))
+            {
+                ++EditorGUI.indentLevel;
+                // TODO: Add Probe Volume render pipeline settings here.
+                --EditorGUI.indentLevel;
+            }
+
             EditorGUILayout.Space(); //to separate with following sub sections
         }
 
@@ -426,7 +434,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 EditorGUILayout.PropertyField(serialized.renderPipelineSettings.increaseSssSampleCount, k_SSSSampleCountContent);
                 --EditorGUI.indentLevel;
             }
-            
+
             EditorGUILayout.PropertyField(serialized.renderPipelineSettings.lightLoopSettings.supportFabricConvolution, k_SupportFabricBSDFConvolutionContent);
 
             diffusionProfileUI.drawElement = DrawDiffusionProfileElement;
@@ -502,7 +510,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 #if REALTIME_RAYTRACING_SUPPORT
             AppendSupport(builder, serialized.renderPipelineSettings.supportRayTracing, k_SupportRaytracing);
 #endif
-            
+            AppendSupport(builder, serialized.renderPipelineSettings.supportProbeVolume, k_SupportProbeVolumeContent);
+
             EditorGUILayout.HelpBox(builder.ToString(), MessageType.Info, wide: true);
         }
     }

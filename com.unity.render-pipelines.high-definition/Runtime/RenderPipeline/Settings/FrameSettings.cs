@@ -112,6 +112,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         [FrameSettingsField(3, autoName: ComputeMaterialVariants, positiveDependencies: new[] { ComputeLightEvaluation, DeferredTile })]
         ComputeMaterialVariants = 125,
         Reflection = 126, //set by engine, not for DebugMenu/Inspector
+        [FrameSettingsField(1, autoName: ProbeVolume)]
+        ProbeVolume = 127,
 
         //only 128 booleans saved. For more, change the BitArray used
     }
@@ -173,6 +175,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 (uint)FrameSettingsField.BigTilePrepass,
                 (uint)FrameSettingsField.TransparentsWriteVelocity,
                 (uint)FrameSettingsField.SpecularLighting,
+                (uint)FrameSettingsField.ProbeVolume
             })
         };
         /// <summary>Default FrameSettings for realtime ReflectionProbe/PlanarReflectionProbe renderer.</summary>
@@ -217,6 +220,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 (uint)FrameSettingsField.FPTLForForwardOpaque,
                 (uint)FrameSettingsField.BigTilePrepass,
                 (uint)FrameSettingsField.SpecularLighting,
+                (uint)FrameSettingsField.ProbeVolume
             })
         };
         /// <summary>Default FrameSettings for baked or custom ReflectionProbe/PlanarReflectionProbe renderer.</summary>
@@ -347,7 +351,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSAOAsync] &= async;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.ContactShadowsAsync] &= async;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.VolumeVoxelizationsAsync] &= async;
-			
+
             // XRTODO: workaround for lighting issues with single-pass double-wide (disable tile lighting)
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.BigTilePrepass] &= !stereoDoubleWide;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.DeferredTile] &= !stereoDoubleWide;
@@ -357,6 +361,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // In HD, MSAA is only supported for forward only rendering, no MSAA in deferred mode (for code complexity reasons)
             // XRTODO: fix FPTL for stereo (disabled for now)
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.FPTLForForwardOpaque] &= !msaa && !stereo;
+
+            sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.ProbeVolume] &= renderPipelineSettings.supportProbeVolume;
         }
 
         /// <summary>Aggregation is default with override of the renderer then sanitazed depending on supported features of hdrpasset.</summary>

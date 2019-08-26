@@ -46,8 +46,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         Punctual,
         Area,
         Env,
+        ProbeVolume,
         Decal,
-        DensityVolume,
+        DensityVolume, // WARNING: Currently lightlistbuild.compute assumes density volume is the last element in the LightCategory enum. Do not append new LightCategory types after DensityVolume. TODO: Fix .compute code.
         Count
     }
 
@@ -61,7 +62,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         Env         = 1 << 15,
         Sky         = 1 << 16,
         SSRefraction = 1 << 17,
-        SSReflection = 1 << 18
+        SSReflection = 1 << 18,
+        ProbeVolume = 1 << 19
             // If adding more light be sure to not overflow LightDefinitions.s_LightFeatureMaskFlags
     }
 
@@ -135,6 +137,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             ColorAndEdge
         };
 
+        // Warning: These must stay in sync with LightCategory.
+        // Specifically, TileClusterCategoryDebug is used as a bitmask in the debug shader applied as:
+        // (1 << lightCatagory) & tileClusterCategoryDebug
         public enum TileClusterCategoryDebug : int
         {
             Punctual = 1,
@@ -144,8 +149,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             EnvironmentAndPunctual = 5,
             EnvironmentAndArea = 6,
             EnvironmentAndAreaAndPunctual = 7,
-            Decal = 8,
-            DensityVolumes = 16
+            ProbeVolumes = 8,
+            Decal = 16,
+            DensityVolumes = 32
         };
 
         internal const int k_MaxCacheSize = 2000000000; //2 GigaByte
@@ -275,6 +281,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         int m_areaLightCount = 0;
         int m_lightCount = 0;
         int m_densityVolumeCount = 0;
+        int m_probeVolumeCount = 0;
         bool m_enableBakeShadowMask = false; // Track if any light require shadow mask. In this case we will need to enable the keyword shadow mask
 
         // This value is used to compute the area shadow when using raytracing by the HDRaytracingShadowManager
@@ -1745,7 +1752,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         // Return true if BakedShadowMask are enabled
         public bool PrepareLightsForGPU(CommandBuffer cmd, HDCamera hdCamera, CullingResults cullResults,
-            HDProbeCullingResults hdProbeCullingResults, DensityVolumeList densityVolumes, DebugDisplaySettings debugDisplaySettings)
+            HDProbeCullingResults hdProbeCullingResults, DensityVolumeList densityVolumes, ProbeVolumeList probeVolumes, DebugDisplaySettings debugDisplaySettings)
         {
         #if ENABLE_RAYTRACING
             HDRaytracingEnvironment raytracingEnv = m_RayTracingManager.CurrentEnvironment();
@@ -2179,7 +2186,16 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     AddBoxVolumeDataAndBound(densityVolumes.bounds[i], LightCategory.DensityVolume, featureFlags, worldToViewCR, camera.stereoEnabled);
                 }
 
-                m_lightCount = m_lightList.lights.Count + m_lightList.envLights.Count + decalDatasCount + m_densityVolumeCount;
+                m_probeVolumeCount = probeVolumes.bounds != null ? probeVolumes.bounds.Count : 0;
+                for (int i = 0, n = m_probeVolumeCount; i < n; i++)
+                {
+                    // Probe volumes are not lights and therefore should not affect light classification.
+                    LightFeatureFlags featureFlags = 0;
+                    AddBoxVolumeDataAndBound(probeVolumes.bounds[i], LightCategory.ProbeVolume, featureFlags, worldToViewCR, camera.stereoEnabled);
+                }
+
+
+                m_lightCount = m_lightList.lights.Count + m_lightList.envLights.Count + decalDatasCount + m_densityVolumeCount + m_probeVolumeCount;
                 Debug.Assert(m_lightCount == m_lightList.bounds.Count);
                 Debug.Assert(m_lightCount == m_lightList.lightVolumes.Count);
 
@@ -2200,6 +2216,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetGlobalInt(HDShaderIDs._EnvLightIndexShift, m_lightList.lights.Count);
                 cmd.SetGlobalInt(HDShaderIDs._DecalIndexShift, m_lightList.lights.Count + m_lightList.envLights.Count);
                 cmd.SetGlobalInt(HDShaderIDs._DensityVolumeIndexShift, m_lightList.lights.Count + m_lightList.envLights.Count + decalDatasCount);
+                cmd.SetGlobalInt(HDShaderIDs._ProbeVolumeIndexShift, m_lightList.lights.Count + m_lightList.envLights.Count + decalDatasCount + m_densityVolumeCount);
             }
 
             m_enableBakeShadowMask = m_enableBakeShadowMask && hdCamera.frameSettings.IsEnabled(FrameSettingsField.ShadowMask);
@@ -2455,6 +2472,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     {
                         baseFeatureFlags |= LightDefinitions.s_MaterialFeatureMaskFlags;
                     }
+                    if (m_FrameSettings.IsEnabled(FrameSettingsField.ProbeVolume) && m_probeVolumeCount > 0)
+                    {
+                        // TODO: Verify that we should be globally enabling ProbeVolume feature for all tiles here, or if we should be using per-tile culling.
+                        baseFeatureFlags |= (uint)LightFeatureFlags.ProbeVolume;
+                    }
                     cmd.SetComputeIntParam(buildPerTileLightListShader, HDShaderIDs.g_BaseFeatureFlags, (int)baseFeatureFlags);
                     cmd.SetComputeBufferParam(buildPerTileLightListShader, genListPerTileKernel, HDShaderIDs.g_TileFeatureFlags, s_TileFeatureFlags);
                 }
@@ -2477,6 +2499,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     {
                         buildMaterialFlagsKernel = s_BuildMaterialFlagsWriteKernel;
                         baseFeatureFlags |= LightDefinitions.s_LightFeatureMaskFlags;
+                    }
+                    if (m_FrameSettings.IsEnabled(FrameSettingsField.ProbeVolume) && m_probeVolumeCount > 0)
+                    {
+                        // TODO: Verify that we should be globally enabling ProbeVolume feature for all tiles here, or if we should be using per-tile culling.
+                        baseFeatureFlags |= (uint)LightFeatureFlags.ProbeVolume;
                     }
 
                     cmd.SetComputeIntParam(buildMaterialFlagsShader, HDShaderIDs.g_BaseFeatureFlags, (int)baseFeatureFlags);
