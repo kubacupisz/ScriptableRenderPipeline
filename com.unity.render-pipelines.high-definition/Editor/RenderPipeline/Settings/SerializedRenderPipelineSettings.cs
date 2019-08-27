@@ -33,6 +33,7 @@ namespace UnityEditor.Rendering.HighDefinition
         public SerializedProperty supportTransparentBackface;
         public SerializedProperty supportTransparentDepthPrepass;
         public SerializedProperty supportTransparentDepthPostpass;
+        public SerializedProperty supportProbeVolume;
 
 
         public SerializedGlobalLightLoopSettings lightLoopSettings;
@@ -56,9 +57,9 @@ namespace UnityEditor.Rendering.HighDefinition
             supportLightLayers              = root.Find((RenderPipelineSettings s) => s.supportLightLayers);
             colorBufferFormat               = root.Find((RenderPipelineSettings s) => s.colorBufferFormat);
             supportedLitShaderMode          = root.Find((RenderPipelineSettings s) => s.supportedLitShaderMode);
-            
+
             supportDecals                   = root.Find((RenderPipelineSettings s) => s.supportDecals);
-            MSAASampleCount                 = root.Find((RenderPipelineSettings s) => s.msaaSampleCount);                        
+            MSAASampleCount                 = root.Find((RenderPipelineSettings s) => s.msaaSampleCount);
             supportMotionVectors            = root.Find((RenderPipelineSettings s) => s.supportMotionVectors);
             supportRuntimeDebugDisplay      = root.Find((RenderPipelineSettings s) => s.supportRuntimeDebugDisplay);
             supportDitheringCrossFade       = root.Find((RenderPipelineSettings s) => s.supportDitheringCrossFade);
@@ -67,6 +68,7 @@ namespace UnityEditor.Rendering.HighDefinition
             supportTransparentBackface      = root.Find((RenderPipelineSettings s) => s.supportTransparentBackface);
             supportTransparentDepthPrepass  = root.Find((RenderPipelineSettings s) => s.supportTransparentDepthPrepass);
             supportTransparentDepthPostpass = root.Find((RenderPipelineSettings s) => s.supportTransparentDepthPostpass);
+            supportProbeVolume              = root.Find((RenderPipelineSettings s) => s.supportProbeVolume);
 
             supportRayTracing               = root.Find((RenderPipelineSettings s) => s.supportRayTracing);
             supportedRaytracingTier         = root.Find((RenderPipelineSettings s) => s.supportedRaytracingTier);
