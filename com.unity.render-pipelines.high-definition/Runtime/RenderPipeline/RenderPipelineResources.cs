@@ -81,7 +81,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public Shader cubeToPanoPS;
             public Shader blitCubeTextureFacePS;
             public Shader filterAreaLightCookiesPS;
-            
+
             // Shadow
             public Shader shadowClearPS;
             public ComputeShader evsmBlurCS;
@@ -148,7 +148,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // Indirect Diffuse
             public RaytracingShader indirectDiffuseRaytracing;
-            public ComputeShader indirectDiffuseAccumulation;            
+            public ComputeShader indirectDiffuseAccumulation;
 
             // Ambient Occlusion
             public RaytracingShader aoRaytracing;
@@ -157,6 +157,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // Ray count
             public ComputeShader countTracedRays;
 #endif
+
+            public ComputeShader probeVolumeAtlasBlitCS;
+            public Shader debugDisplayProbeVolumePS;
         }
 
         [Serializable]
@@ -250,7 +253,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 subsurfaceScatteringCS = Load<ComputeShader>(HDRenderPipelinePath + "Material/SubsurfaceScattering/SubsurfaceScattering.compute"),
                 combineLightingPS = Load<Shader>(HDRenderPipelinePath + "Material/SubsurfaceScattering/CombineLighting.shader"),
-                
+
                 // General
                 cameraMotionVectorsPS = Load<Shader>(HDRenderPipelinePath + "RenderPipeline/RenderPass/MotionVectors/CameraMotionVectors.shader"),
                 copyStencilBufferPS = Load<Shader>(HDRenderPipelinePath + "ShaderLibrary/CopyStencilBuffer.shader"),
@@ -293,7 +296,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 // Decal
                 decalNormalBufferPS = Load<Shader>(HDRenderPipelinePath + "Material/Decal/DecalNormalBuffer.shader"),
-                
+
                 // Ambient occlusion
                 aoDownsample1CS = Load<ComputeShader>(HDRenderPipelinePath + "Lighting/ScreenSpaceLighting/AmbientOcclusionDownsample1.compute"),
                 aoDownsample2CS = Load<ComputeShader>(HDRenderPipelinePath + "Lighting/ScreenSpaceLighting/AmbientOcclusionDownsample2.compute"),
@@ -344,7 +347,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 // Reflection
                 reflectionRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingReflections.raytrace"),
                 reflectionBilateralFilterCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingReflectionFilter.compute"),
-                
+
                 // Indirect Diffuse
                 indirectDiffuseRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingIndirectDiffuse.raytrace"),
                 indirectDiffuseAccumulation = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingAccumulation.compute"),
@@ -352,14 +355,17 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 // Primary Visibility
                 forwardRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingRenderer.raytrace"),
                 raytracingFlagMask = Load<Shader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingFlagMask.shader"),
-                
+
                 // Light cluster
                 lightClusterBuildCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingLightCluster.compute"),
                 lightClusterDebugCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/DebugLightCluster.compute"),
-                
+
                 // Ray count
 				countTracedRays = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/CountTracedRays.compute"),
 #endif
+                probeVolumeAtlasBlitCS = Load<ComputeShader>(HDRenderPipelinePath + "Lighting/ProbeVolume/ProbeVolumeAtlasBlit.compute"),
+                debugDisplayProbeVolumePS = Load<Shader>(HDRenderPipelinePath + "Lighting/ProbeVolume/DebugDisplayProbeVolume.shader"),
+
         };
 
             // Materials

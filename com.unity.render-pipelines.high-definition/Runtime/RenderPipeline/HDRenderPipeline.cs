@@ -186,7 +186,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         readonly LightLoop m_LightLoop = new LightLoop();
         readonly VolumetricLightingSystem m_VolumetricLightingSystem = new VolumetricLightingSystem();
         readonly AmbientOcclusionSystem m_AmbientOcclusionSystem;
-        readonly ProbeVolumeSystem m_ProbeVolumeSystem = new ProbeVolumeSystem();
+        public readonly ProbeVolumeSystem m_ProbeVolumeSystem = new ProbeVolumeSystem();
 
         // Debugging
         MaterialPropertyBlock m_SharedPropertyBlock = new MaterialPropertyBlock();
@@ -1484,7 +1484,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             DensityVolumeList densityVolumes = m_VolumetricLightingSystem.PrepareVisibleDensityVolumeList(hdCamera, cmd, m_Time);
 
             // Frustum cull probe volumes on the CPU. Can be performed as soon as the camera is set up.
-            ProbeVolumeList probeVolumes = m_ProbeVolumeSystem.PrepareVisibleProbeVolumeList(hdCamera, cmd);
+            ProbeVolumeList probeVolumes = m_ProbeVolumeSystem.PrepareVisibleProbeVolumeList(renderContext, hdCamera, cmd);
 
             // Note: Legacy Unity behave like this for ShadowMask
             // When you select ShadowMask in Lighting panel it recompile shaders on the fly with the SHADOW_MASK keyword.

@@ -26,6 +26,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         SingleShadow,
     }
 
+    [GenerateHLSL]
+    public enum ProbeVolumeDebugMode
+    {
+        None,
+        VisualizeAtlas
+    }
+
     [Serializable]
     public class LightingDebugSettings
     {
@@ -37,7 +44,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 || overrideNormal
                 || overrideSpecularColor
                 || overrideEmissiveColor
-                || shadowDebugMode == ShadowMapDebugMode.SingleShadow;
+                || shadowDebugMode == ShadowMapDebugMode.SingleShadow
+                || probeVolumeDebugMode == ProbeVolumeDebugMode.VisualizeAtlas;
         }
 
         public bool IsDebugDisplayRemovePostprocess()
@@ -47,6 +55,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         public DebugLightingMode    debugLightingMode = DebugLightingMode.None;
         public ShadowMapDebugMode   shadowDebugMode = ShadowMapDebugMode.None;
+        public ProbeVolumeDebugMode probeVolumeDebugMode = ProbeVolumeDebugMode.None;
+        public float                probeVolumeMinValue = 0.0f;
+        public float                probeVolumeMaxValue = 1.0f;
         public bool                 shadowDebugUseSelection = false;
         public uint                 shadowMapIndex = 0;
         public uint                 shadowAtlasIndex = 0;

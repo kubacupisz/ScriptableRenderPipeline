@@ -48,4 +48,7 @@
     TEXTURE2D(_IndirectDiffuseTexture);
 #endif
 
+    TEXTURE2D(_ProbeVolumeAtlas);
+    float4 _ProbeVolumeAtlasResolutionAndInverse;
+
 #endif

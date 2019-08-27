@@ -111,12 +111,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public int colorPickerDebugModeEnumIndex;
             public int msaaSampleDebugModeEnumIndex;
             public int debugCameraToFreezeEnumIndex;
+            public int probeVolumeDebugModeEnumIndex;
         }
         DebugData m_Data;
 
         public DebugData data { get => m_Data; }
 
-        public static GUIContent[] renderingFullScreenDebugStrings => s_RenderingFullScreenDebugStrings; 
+        public static GUIContent[] renderingFullScreenDebugStrings => s_RenderingFullScreenDebugStrings;
         public static int[] renderingFullScreenDebugValues => s_RenderingFullScreenDebugValues;
 
         public DebugDisplaySettings()
@@ -135,9 +136,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             m_Data = new DebugData();
         }
-        
+
         Action IDebugData.GetReset() => () => m_Data = new DebugData();
-        
+
         public int GetDebugMaterialIndex()
         {
             return data.materialDebugSettings.GetDebugMaterialIndex();
@@ -253,7 +254,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             if (data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.SingleShadow)
                 value = 0;
-            
+
             data.fullScreenDebugMode = value;
         }
 
@@ -263,6 +264,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (value == ShadowMapDebugMode.SingleShadow)
                 data.fullScreenDebugMode = 0;
             data.lightingDebugSettings.shadowDebugMode = value;
+        }
+
+        public void SetProbeVolumeDebugMode(ProbeVolumeDebugMode value)
+        {
+            data.lightingDebugSettings.probeVolumeDebugMode = value;
         }
 
         public void SetDebugLightingMode(DebugLightingMode value)
@@ -417,6 +423,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             });
 
             list.Add(new DebugUI.EnumField { displayName = "Shadow Debug Mode", getter = () => (int)data.lightingDebugSettings.shadowDebugMode, setter = value => SetShadowDebugMode((ShadowMapDebugMode)value), autoEnum = typeof(ShadowMapDebugMode), onValueChanged = RefreshLightingDebug, getIndex = () => data.shadowDebugModeEnumIndex, setIndex = value => data.shadowDebugModeEnumIndex = value });
+
+            list.Add(new DebugUI.EnumField { displayName = "Probe Volume Debug Mode", getter = () => (int)data.lightingDebugSettings.probeVolumeDebugMode, setter = value => SetProbeVolumeDebugMode((ProbeVolumeDebugMode)value), autoEnum = typeof(ProbeVolumeDebugMode), onValueChanged = RefreshLightingDebug, getIndex = () => data.probeVolumeDebugModeEnumIndex, setIndex = value => data.probeVolumeDebugModeEnumIndex = value });
+            list.Add(new DebugUI.FloatField { displayName = "Probe Volume Range Min Value", getter = () => data.lightingDebugSettings.probeVolumeMinValue, setter = value => data.lightingDebugSettings.probeVolumeMinValue = value });
+            list.Add(new DebugUI.FloatField { displayName = "Probe Volume Range Max Value", getter = () => data.lightingDebugSettings.probeVolumeMaxValue, setter = value => data.lightingDebugSettings.probeVolumeMaxValue = value });
 
             if (data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.VisualizeShadowMap || data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.SingleShadow)
             {
@@ -654,13 +664,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     }
                 }
             });
-            
+
             widgetList.Add(new DebugUI.BoolField  { displayName = "False Color Mode", getter = () => data.falseColorDebugSettings.falseColor, setter = value => data.falseColorDebugSettings.falseColor = value, onValueChanged = RefreshRenderingDebug });
             if (data.falseColorDebugSettings.falseColor)
             {
                 widgetList.Add(new DebugUI.Container{
                     flags = DebugUI.Flags.EditorOnly,
-                    children = 
+                    children =
                     {
                         new DebugUI.FloatField { displayName = "Range Threshold 0", getter = () => data.falseColorDebugSettings.colorThreshold0, setter = value => data.falseColorDebugSettings.colorThreshold0 = Mathf.Min(value, data.falseColorDebugSettings.colorThreshold1) },
                         new DebugUI.FloatField { displayName = "Range Threshold 1", getter = () => data.falseColorDebugSettings.colorThreshold1, setter = value => data.falseColorDebugSettings.colorThreshold1 = Mathf.Clamp(value, data.falseColorDebugSettings.colorThreshold0, data.falseColorDebugSettings.colorThreshold2) },
@@ -753,7 +763,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 s_CameraNames.Add(new GUIContent(name));
                 needsRefreshingCameraFreezeList = true;
             }
-            
+
             var history = FrameSettingsHistory.RegisterDebug(camera, additionalData);
             DebugManager.instance.RegisterData(history);
         }
