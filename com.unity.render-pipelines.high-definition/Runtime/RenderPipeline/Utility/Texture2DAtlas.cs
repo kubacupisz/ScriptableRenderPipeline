@@ -118,6 +118,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     public class Texture2DAtlas
     {
         private RTHandleSystem.RTHandle m_AtlasTexture = null;
+        private bool isAtlasTextureOwner = false;
         private int m_Width;
         private int m_Height;
         private GraphicsFormat m_Format;
@@ -154,6 +155,18 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     MSAASamples.None,
                     false,
                     false);
+            isAtlasTextureOwner = true;
+
+            m_AtlasAllocator = new AtlasAllocator(width, height);
+        }
+
+        public Texture2DAtlas(int width, int height, RTHandleSystem.RTHandle atlasTexture)
+        {
+            m_Width = width;
+            m_Height = height;
+            m_Format = atlasTexture.rt.graphicsFormat;
+            m_AtlasTexture = atlasTexture;
+            isAtlasTextureOwner = false;
 
             m_AtlasAllocator = new AtlasAllocator(width, height);
         }
@@ -161,7 +174,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public void Release()
         {
             ResetAllocator();
-            RTHandles.Release(m_AtlasTexture);
+            if (isAtlasTextureOwner) { RTHandles.Release(m_AtlasTexture); }
         }
 
         public void ResetAllocator()
@@ -193,6 +206,17 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     return false;
                 }
             }
+            return true;
+        }
+
+        public bool EnsureTextureSlot(out bool isUploadNeeded, ref Vector4 scaleBias, int key, int width, int height)
+        {
+            isUploadNeeded = false;
+            if (m_AllocationCache.TryGetValue(key, out scaleBias)) { return true; }
+            if (!m_AtlasAllocator.Allocate(ref scaleBias, width, height)) { return false; }
+            isUploadNeeded = true;
+            scaleBias.Scale(new Vector4(1.0f / m_Width, 1.0f / m_Height, 1.0f / m_Width, 1.0f / m_Height));
+            m_AllocationCache.Add(key, scaleBias);
             return true;
         }
     }

@@ -400,6 +400,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         Material[] m_deferredLightingMaterial;
         Material m_DebugViewTilesMaterial;
         Material m_DebugHDShadowMapMaterial;
+        Material m_DebugDisplayProbeVolumeMaterial;
         Material m_CubeToPanoMaterial;
 
         Light m_CurrentSunLight;
@@ -502,6 +503,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             m_DebugViewTilesMaterial = CoreUtils.CreateEngineMaterial(m_Resources.shaders.debugViewTilesPS);
             m_DebugHDShadowMapMaterial = CoreUtils.CreateEngineMaterial(m_Resources.shaders.debugHDShadowMapPS);
+            m_DebugDisplayProbeVolumeMaterial = CoreUtils.CreateEngineMaterial(m_Resources.shaders.debugDisplayProbeVolumePS);
             m_CubeToPanoMaterial = CoreUtils.CreateEngineMaterial(m_Resources.shaders.cubeToPanoPS);
 
             m_MaxDirectionalLightsOnScreen = lightLoopSettings.maxDirectionalLightsOnScreen;
@@ -754,6 +756,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             CoreUtils.Destroy(m_DebugViewTilesMaterial);
             CoreUtils.Destroy(m_DebugHDShadowMapMaterial);
+            CoreUtils.Destroy(m_DebugDisplayProbeVolumeMaterial);
             CoreUtils.Destroy(m_CubeToPanoMaterial);
         }
 
@@ -3023,6 +3026,21 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (lightingDebug.displayLightVolumes)
             {
                 s_lightVolumes.RenderLightVolumes(cmd, hdCamera, cullResults, lightingDebug, finalRT);
+            }
+
+            if (lightingDebug.probeVolumeDebugMode != ProbeVolumeDebugMode.None)
+            {
+                using (new ProfilingSample(cmd, "Probe Volume Debug", CustomSamplerId.ProbeVolumeDebug.GetSampler()))
+                {
+                    if (lightingDebug.probeVolumeDebugMode == ProbeVolumeDebugMode.VisualizeAtlas)
+                    {
+                        HDRenderPipeline hdrp = RenderPipelineManager.currentPipeline as HDRenderPipeline;
+                        ProbeVolumeSystem pvs = hdrp.m_ProbeVolumeSystem;
+                        pvs.DisplayProbeVolumeAtlas(cmd, m_DebugDisplayProbeVolumeMaterial, x, y, overlaySize, overlaySize, lightingDebug.probeVolumeMinValue, lightingDebug.probeVolumeMaxValue);
+                        HDUtils.NextOverlayCoord(ref x, ref y, overlaySize, overlaySize, hdCamera);
+                    }
+
+                }
             }
         }
 

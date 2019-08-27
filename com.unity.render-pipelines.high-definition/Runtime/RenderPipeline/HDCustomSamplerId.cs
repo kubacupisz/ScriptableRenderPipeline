@@ -109,6 +109,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         FXAA,
         FinalPost,
 
+        PrepareProbeVolumeList,
+        ProbeVolumeDebug,
+
         Max
     }
 
