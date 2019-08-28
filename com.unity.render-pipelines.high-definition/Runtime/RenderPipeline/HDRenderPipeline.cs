@@ -867,7 +867,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 visualEnv.PushFogShaderParameters(hdCamera, cmd);
 
                 PushVolumetricLightingGlobalParams(hdCamera, cmd, m_FrameCount);
-                //m_ProbeVolumeSystem.PushGlobalParams(hdCamera, cmd, m_FrameCount); // TODO(Nicholas)
+                m_ProbeVolumeSystem.PushGlobalParams(hdCamera, cmd, m_FrameCount); // TODO(Nicholas): make symmetrical with the other volumes
 
                 SetMicroShadowingSettings(cmd);
 
