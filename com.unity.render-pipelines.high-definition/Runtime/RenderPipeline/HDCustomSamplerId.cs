@@ -116,6 +116,9 @@ namespace UnityEngine.Rendering.HighDefinition
         SMAA,
         FinalPost,
 
+        PrepareProbeVolumeList,
+        ProbeVolumeDebug,
+
         Max
     }
 
