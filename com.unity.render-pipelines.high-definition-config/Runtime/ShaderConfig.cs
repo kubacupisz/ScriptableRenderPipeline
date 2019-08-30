@@ -31,6 +31,10 @@ namespace UnityEngine.Rendering.HighDefinition
         AreaLights = 1,
 
         DeferredShadowFiltering = HDShadowFilteringQuality.Medium
+        
+//custom-begin: The Heretic project
+        , IsTheHeretic = 1
+//custom-end:
     };
 
     // Note: #define can't be use in include file in C# so we chose this way to configure both C# and hlsl
