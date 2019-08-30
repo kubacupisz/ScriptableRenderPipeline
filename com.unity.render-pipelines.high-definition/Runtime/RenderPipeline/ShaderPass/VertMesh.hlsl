@@ -111,6 +111,34 @@ VaryingsMeshType VertMesh(AttributesMesh input)
     input = ApplyMeshModification(input, _TimeParameters.xyz);
 #endif
 
+//custom-begin: wires
+#ifdef _WIRES
+    input = ApplyWireDeformation(input);
+#endif
+//custom-end
+
+//custom-begin: Vertex lattice deformations, corridor warp
+#if defined(_LATTICE_DEFORM) || defined(WARP) || defined(WARP2)
+	#ifdef ATTRIBUTES_NEED_NORMAL
+		float3 normal = input.normalOS;
+	#else
+		float3 normal = float3(0.0, 0.0, 0.0); // We need this case to be able to compile ApplyVertexModification that doesn't use normal.
+	#endif
+    #ifdef _LATTICE_DEFORM
+	    LatticeDeform(input.positionOS, normal);
+    #endif
+    #ifdef WARP
+        CorridorWarpVertex(PARAM_FRAME_CURR, input.positionOS, normal, input.uv0, input.uv1, input.uv2);
+    #endif
+    #ifdef WARP2
+        CorridorWarpVertex2(PARAM_FRAME_CURR, input.positionOS, normal, input.uv0, input.uv1, input.uv2);
+    #endif
+	#ifdef ATTRIBUTES_NEED_NORMAL
+		input.normalOS = normal;
+	#endif
+#endif
+//custom-end:
+
     // This return the camera relative position (if enable)
     float3 positionRWS = TransformObjectToWorld(input.positionOS);
 #ifdef ATTRIBUTES_NEED_NORMAL

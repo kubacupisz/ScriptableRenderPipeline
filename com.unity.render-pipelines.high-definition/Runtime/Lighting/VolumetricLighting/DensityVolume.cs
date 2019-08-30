@@ -69,7 +69,10 @@ namespace UnityEngine.Rendering.HighDefinition
             //Update scrolling based on deltaTime
             if (volumeMask != null)
             {
-                float animationTime = animate ? time : 0.0f;
+//custom-begin: fix non-scaled time
+                float scaledTime = Application.isPlaying ? Time.time : time;
+                float animationTime = animate ? scaledTime : 0.0f;
+//custom-end
                 volumeScrollingAmount = (textureScrollingSpeed * animationTime);
                 // Switch from right-handed to left-handed coordinate system.
                 volumeScrollingAmount.x = -volumeScrollingAmount.x;

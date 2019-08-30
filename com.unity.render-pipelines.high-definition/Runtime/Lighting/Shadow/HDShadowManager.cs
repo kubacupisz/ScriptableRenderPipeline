@@ -63,6 +63,9 @@ namespace UnityEngine.Rendering.HighDefinition
     class HDShadowRequest
     {
         public Matrix4x4            view;
+//custom-begin: wire shadow culling
+        public Matrix4x4            viewAbsolute;
+//custom-end
         // Use the y flipped device projection matrix as light projection matrix
         public Matrix4x4            deviceProjectionYFlip;
         public Matrix4x4            deviceProjection;
@@ -663,8 +666,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
             m_DirectionalShadowData.cascadeDirection.w = VolumeManager.instance.stack.GetComponent<HDShadowSettings>().cascadeShadowSplitCount.value;
         }
-
-        public void RenderShadows(ScriptableRenderContext renderContext, CommandBuffer cmd, CullingResults cullResults, HDCamera hdCamera)
+//custom-begin: shadow callbacks
+        public void RenderShadows(ScriptableRenderContext renderContext, CommandBuffer cmd, CullingResults cullResults, HDCamera hdCamera, Action<Matrix4x4, CommandBuffer> onBeforeShadows)
+//custom-end:
         {
             // Avoid to do any commands if there is no shadow to draw
             if (m_ShadowRequestCount == 0)
@@ -673,18 +677,24 @@ namespace UnityEngine.Rendering.HighDefinition
             // Clear atlas render targets and draw shadows
             using (new ProfilingSample(cmd, "Punctual Lights Shadows rendering", CustomSamplerId.RenderShadowMaps.GetSampler()))
             {
-                m_Atlas.RenderShadows(cullResults, hdCamera.frameSettings, renderContext, cmd);
+//custom-begin: shadow callbacks
+                m_Atlas.RenderShadows(cullResults, hdCamera.frameSettings, renderContext, cmd, onBeforeShadows);
+//custom-end:
             }
 
             using (new ProfilingSample(cmd, "Directional Light Shadows rendering", CustomSamplerId.RenderShadowMaps.GetSampler()))
             {
-                m_CascadeAtlas.RenderShadows(cullResults, hdCamera.frameSettings, renderContext, cmd);
+//custom-begin: shadow callbacks
+                m_CascadeAtlas.RenderShadows(cullResults, hdCamera.frameSettings, renderContext, cmd, onBeforeShadows);
+//custom-end:
             }
 
             using (new ProfilingSample(cmd, "Area Light Shadows rendering", CustomSamplerId.RenderShadowMaps.GetSampler()))
             {
                 if (ShaderConfig.s_AreaLights == 1)
-                    m_AreaLightShadowAtlas.RenderShadows(cullResults, hdCamera.frameSettings, renderContext, cmd);
+//custom-begin: shadow callbacks
+                    m_AreaLightShadowAtlas.RenderShadows(cullResults, hdCamera.frameSettings, renderContext, cmd, onBeforeShadows);
+//custom-end:
             }
         }
 

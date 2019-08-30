@@ -1,3 +1,7 @@
+//custom-begin: less destructive taa
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Filtering.hlsl"
+//custom-end:
+
 #define HDR_MAPUNMAP        1
 #define CLIP_AABB           1
 #define RADIUS              0.75
@@ -38,6 +42,16 @@ float2 Fetch4Array(Texture2DArray tex, uint slot, float2 coords, float2 offset, 
     float2 uv = (coords + offset * _ScreenSize.zw) * scale;
     return SAMPLE_TEXTURE2D_ARRAY_LOD(tex, s_linear_clamp_sampler, uv, slot, 0).xy;
 }
+
+//custom-begin: less destructive taa
+float3 FetchBicubic(TEXTURE2D_X(tex), float2 coords, float2 offset, float2 scale)
+{
+    float4 bicubicWnd = float4(_ScreenSize.xy * rcp(_RTHandleScale.xy), 1.0 / (_ScreenSize.xy * rcp(_RTHandleScale.xy)));
+    float2 maxCoord = (_RTHandleScale.xy - bicubicWnd.zw);
+    float2 uv = min(maxCoord, (coords + offset * _ScreenSize.zw) * scale);
+    return SampleTexture2DBicubic(TEXTURE2D_X_ARGS(tex, s_linear_clamp_sampler), uv, bicubicWnd, maxCoord, 0).xyz;
+}
+//custom-end:
 
 float3 Map(float3 x)
 {

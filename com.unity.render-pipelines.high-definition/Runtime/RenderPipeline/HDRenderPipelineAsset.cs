@@ -151,6 +151,10 @@ namespace UnityEngine.Rendering.HighDefinition
         // Return the current use RenderPipelineSettings (i.e for the current platform)
         public RenderPipelineSettings currentPlatformRenderPipelineSettings => m_RenderPipelineSettings;
 
+//custom-begin: Volumetrics quality override
+        public bool VolumetricLightingForceHighQuality { get; set; }
+//custom-end:
+
         [SerializeField]
         internal bool allowShaderVariantStripping = true;
         [SerializeField]
@@ -331,7 +335,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             // Is ray tracing supported for this project and this platform?
             bool raytracingSupport = AggreateRayTracingSupport(currentPlatformRenderPipelineSettings);
-            
+
             // Update all the individual defines
             bool needUpdate = false;
             needUpdate |= UpdateDefineList(raytracingSupport, "ENABLE_RAYTRACING");

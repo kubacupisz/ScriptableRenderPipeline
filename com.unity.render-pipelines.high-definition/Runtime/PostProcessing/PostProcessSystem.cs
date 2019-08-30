@@ -70,6 +70,9 @@ namespace UnityEngine.Rendering.HighDefinition
         ChromaticAberration m_ChromaticAberration;
         LensDistortion m_LensDistortion;
         Vignette m_Vignette;
+//custom-begin: support for external lut grading
+        ColorLookup m_ColorLookup;
+//custom-end:
         Tonemapping m_Tonemapping;
         WhiteBalance m_WhiteBalance;
         ColorAdjustments m_ColorAdjustments;
@@ -79,6 +82,9 @@ namespace UnityEngine.Rendering.HighDefinition
         ShadowsMidtonesHighlights m_ShadowsMidtonesHighlights;
         ColorCurves m_Curves;
         FilmGrain m_FilmGrain;
+//custom-begin: lens flare
+        LensFlare m_LensFlare;
+//custom-end:
 
         // Prefetched frame settings (updated on every frame)
         bool m_ExposureControlFS;
@@ -266,6 +272,9 @@ namespace UnityEngine.Rendering.HighDefinition
             m_ChromaticAberration       = stack.GetComponent<ChromaticAberration>();
             m_LensDistortion            = stack.GetComponent<LensDistortion>();
             m_Vignette                  = stack.GetComponent<Vignette>();
+//custom-begin: support for external lut grading
+            m_ColorLookup               = stack.GetComponent<ColorLookup>();
+//custom-end:
             m_Tonemapping               = stack.GetComponent<Tonemapping>();
             m_WhiteBalance              = stack.GetComponent<WhiteBalance>();
             m_ColorAdjustments          = stack.GetComponent<ColorAdjustments>();
@@ -275,6 +284,9 @@ namespace UnityEngine.Rendering.HighDefinition
             m_ShadowsMidtonesHighlights = stack.GetComponent<ShadowsMidtonesHighlights>();
             m_Curves                    = stack.GetComponent<ColorCurves>();
             m_FilmGrain                 = stack.GetComponent<FilmGrain>();
+//custom-begin: lens flare
+            m_LensFlare                 = stack.GetComponent<LensFlare>();
+//custom-end:
 
             // Prefetch frame settings - these aren't free to pull so we want to do it only once
             // per frame
@@ -442,7 +454,9 @@ namespace UnityEngine.Rendering.HighDefinition
                     // done and before bloom kicks in
                     // This is one effect that would benefit from an overscan mode or supersampling in
                     // HDRP to reduce the amount of resolution lost at the center of the screen
-                    if (m_PaniniProjection.IsActive() && !isSceneView && m_PaniniProjectionFS)
+//custom-begin: disable panini in scene view, unless user has enabled it specifically in preferences (under "scene view extras")
+                    if (m_PaniniProjection.IsActive() && (!isSceneView || PaniniProjectionSceneView.enabled) && m_PaniniProjectionFS)
+//custom-end:
                     {
                         using (new ProfilingSample(cmd, "Panini Projection", CustomSamplerId.PaniniProjection.GetSampler()))
                         {
@@ -451,6 +465,16 @@ namespace UnityEngine.Rendering.HighDefinition
                             PoolSource(ref source, destination);
                         }
                     }
+
+//custom-begin: lens flare
+                    if (m_LensFlare.IsActive() && camera.camera.cameraType != CameraType.SceneView)
+                    {
+                        using (new ProfilingSample(cmd, "Lens Flares", CustomSamplerId.LensFlare.GetSampler()))
+                        {
+                            LensFlareSettings.Instance.Render(cmd, source, camera, m_PaniniProjection);
+                        }
+                    }
+//custom-end:
 
                     // Combined post-processing stack - always runs if postfx is enabled
                     using (new ProfilingSample(cmd, "Uber", CustomSamplerId.UberPost.GetSampler()))
@@ -767,7 +791,10 @@ namespace UnityEngine.Rendering.HighDefinition
             if (m_ResetHistory)
             {
                 m_TAAHistoryBlitPropertyBlock.SetTexture(HDShaderIDs._BlitTexture, source);
-                m_TAAHistoryBlitPropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, new Vector4(1.0f, 1.0f, 0.0f, 0.0f));
+//custom-begin: fix history reset rt-scale glitch
+                var rtScaleSource = source.rtHandleProperties.rtHandleScale;
+                m_TAAHistoryBlitPropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, new Vector4(rtScaleSource.x, rtScaleSource.y, 0.0f, 0.0f));
+//custom-end:
                 m_TAAHistoryBlitPropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, 0);
                 HDUtils.DrawFullScreen(cmd, HDUtils.GetBlitMaterial(source.rt.dimension), prevHistory, m_TAAHistoryBlitPropertyBlock, 0);
                 HDUtils.DrawFullScreen(cmd, HDUtils.GetBlitMaterial(source.rt.dimension), nextHistory, m_TAAHistoryBlitPropertyBlock, 0);
@@ -781,6 +808,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
             CoreUtils.SetRenderTarget(cmd, destination, depthBuffer);
             cmd.SetRandomWriteTarget(1, nextHistory);
+//custom-begin: fix history reset rt-scale glitch
+            cmd.SetGlobalVector(HDShaderIDs._RTHandleScale, destination.rtHandleProperties.rtHandleScale);// necessary because the above blits also do so
+//custom-end:
             cmd.DrawProcedural(Matrix4x4.identity, m_TemporalAAMaterial, 0, MeshTopology.Triangles, 3, 1, m_TAAPropertyBlock);
             cmd.ClearRandomWriteTargets();
         }
@@ -1914,7 +1944,18 @@ namespace UnityEngine.Rendering.HighDefinition
             var builderCS = m_Resources.shaders.lutBuilder3DCS;
             string kernelName = "KBuild_NoTonemap";
 
-            if (m_Tonemapping.IsActive())
+//custom-begin: migrate custom support for external lut grading to built-in support
+            var useExternalLut = m_ColorLookup.IsActive() && m_ColorLookup.contribution.value > 0.0f;
+            if (useExternalLut)
+            {
+                tonemappingMode = TonemappingMode.External;
+                {
+                    m_Tonemapping.lutContribution.value = m_ColorLookup.contribution.value;
+                    m_Tonemapping.lutTexture.value = m_ColorLookup.texture.value;
+                }
+            }
+            if (useExternalLut || m_Tonemapping.IsActive())
+//custom-end:
             {
                 switch (tonemappingMode)
                 {
@@ -2230,6 +2271,13 @@ namespace UnityEngine.Rendering.HighDefinition
                     if (m_FilmGrain.type.value != FilmGrainLookup.Custom)
                         texture = m_Resources.textures.filmGrainTex[(int)m_FilmGrain.type.value];
 
+//custom-begin: disable grain in scene view
+                    if (camera.camera.cameraType == CameraType.SceneView)
+                    {
+                        m_FinalPassMaterial.SetVector(HDShaderIDs._GrainParams, new Vector2(0.0f, 0.0f));
+                    }
+                    else
+//custom-end:
                     if (texture != null) // Fail safe if the resources asset breaks :/
                     {
                         #if HDRP_DEBUG_STATIC_POSTFX

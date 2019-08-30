@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+//custom-begin: allow rebake multi-selection of probes
+using System.Linq;
+//custom-end:
 using UnityEditorInternal;
 using System.Reflection;
 using UnityEngine;
@@ -352,7 +355,9 @@ namespace UnityEditor.Rendering.HighDefinition
                                     },
                                     GUILayout.ExpandWidth(true)))
                             {
-                                HDBakedReflectionSystem.BakeProbes(new HDProbe[] { serialized.target });
+//custom-begin: allow rebake multi-selection of probes
+                                HDBakedReflectionSystem.BakeProbes(serialized.serializedObject.targetObjects.OfType<HDProbe>().ToArray());
+//custom-end:
                                 GUIUtility.ExitGUI();
                             }
 

@@ -46,7 +46,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public int frameOfCacheValidity { get; private set; }
         public int atlasShapeID { get; private set; }
 
-        // TODO: This whole caching system needs to be refactored. At the moment there is lots of unecessary data being copied often. 
+        // TODO: This whole caching system needs to be refactored. At the moment there is lots of unecessary data being copied often.
         HDShadowResolutionRequest[] m_CachedResolutionRequests;
         int m_CachedResolutionRequestsCounter = 0;
 
@@ -212,7 +212,7 @@ namespace UnityEngine.Rendering.HighDefinition
             // Since we are starting caching light resolution requests, it means that data cached from now on will be valid.
             frameOfCacheValidity++;
 
-            // If it is already registered, we do nothing. 
+            // If it is already registered, we do nothing.
             int shadowIndex = -1;
             for(int i=0; i< m_ListOfCachedShadowRequests.Count; ++i)
             {
@@ -225,7 +225,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             if (shadowIndex == -1)
             {
-                // First we search if we have a hole we can fill with it. 
+                // First we search if we have a hole we can fill with it.
                 float resolutionOfNewLight = request.atlasViewport.width;
                 request.lastFrameActive = frameCounter;
 
@@ -319,12 +319,12 @@ namespace UnityEngine.Rendering.HighDefinition
                             m_HasResizedAtlas = true;
                             return true;
                         }
-                        
+
                         return false;
                     }
                     else
                     {
-                        // We can still prune 
+                        // We can still prune
                         PruneDeadCachedLightSlots();
                         // Remove cached slots from the currently sorted list (instead of rebuilding it).
                         // Since it is ordered, the order post deletion is guaranteed.
@@ -442,7 +442,9 @@ namespace UnityEngine.Rendering.HighDefinition
             atlasShapeID++;
         }
 
-        public void RenderShadows(CullingResults cullResults, FrameSettings frameSettings, ScriptableRenderContext renderContext, CommandBuffer cmd)
+//custom-begin: shadow callback
+        public void RenderShadows(CullingResults cullResults, FrameSettings frameSettings, ScriptableRenderContext renderContext, CommandBuffer cmd, Action<Matrix4x4, CommandBuffer> onBeforeShadows)
+//custom-end
         {
             if (m_ShadowRequests.Count == 0)
                 return;
@@ -451,7 +453,9 @@ namespace UnityEngine.Rendering.HighDefinition
             shadowDrawSettings.useRenderingLayerMaskTest = frameSettings.IsEnabled(FrameSettingsField.LightLayers);
 
             var parameters = PrepareRenderShadowsParameters();
-            RenderShadows(parameters, m_Atlas, shadowDrawSettings, renderContext, cmd);
+//custom-begin: shadow callback
+            RenderShadows(parameters, m_Atlas, shadowDrawSettings, renderContext, cmd, onBeforeShadows);
+//custom-end:
 
             if (parameters.blurAlgorithm == BlurAlgorithm.IM)
             {
@@ -504,7 +508,10 @@ namespace UnityEngine.Rendering.HighDefinition
                                     RTHandle                atlasRenderTexture,
                                     ShadowDrawingSettings   shadowDrawSettings,
                                     ScriptableRenderContext renderContext,
-                                    CommandBuffer           cmd)
+//custom-begin: shadow callback
+                                    CommandBuffer           cmd,
+                                    Action<Matrix4x4, CommandBuffer> onBeforeShadows = null)
+//custom-end:
         {
             cmd.SetRenderTarget(atlasRenderTexture);
             cmd.SetGlobalVector(parameters.atlasSizeShaderID, new Vector4(atlasRenderTexture.rt.width, atlasRenderTexture.rt.height, 1.0f / atlasRenderTexture.rt.width, 1.0f / atlasRenderTexture.rt.height));
@@ -535,6 +542,13 @@ namespace UnityEngine.Rendering.HighDefinition
                 cmd.SetGlobalMatrix(HDShaderIDs._ViewProjMatrix, viewProjection);
                 cmd.SetGlobalMatrix(HDShaderIDs._InvViewProjMatrix, viewProjection.inverse);
                 cmd.SetGlobalVectorArray(HDShaderIDs._ShadowClipPlanes, shadowRequest.frustumPlanes);
+
+//custom-begin: shadow callback
+                var viewMat = shadowRequest.viewAbsolute;
+                var projMat = shadowRequest.deviceProjectionYFlip;
+                var shadowFrustum = projMat * viewMat;
+                onBeforeShadows?.Invoke(shadowFrustum, cmd);
+//custom-end
 
                 // TODO: remove this execute when DrawShadows will use a CommandBuffer
                 renderContext.ExecuteCommandBuffer(cmd);

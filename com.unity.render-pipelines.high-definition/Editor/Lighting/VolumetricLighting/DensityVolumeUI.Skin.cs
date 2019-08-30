@@ -40,6 +40,10 @@ namespace UnityEditor.Rendering.HighDefinition
                 new Color(180 / 255f, 180 / 255f, 180 / 255f, 255 / 255f).gamma,
                 new Color(180 / 255f, 180 / 255f, 180 / 255f, 255 / 255f).gamma
             };
+
+//custom-begin: exponential fog
+            public static readonly GUIContent s_ExponentLabel = new GUIContent("Exponent", "Exponential height fog. Multiplies by 1 at the bottom of the volume, by 0 at the top. Higher exponent pulls the mid values down. Set to 0 for constant density.");
+//custom-end:
         }
     }
 }

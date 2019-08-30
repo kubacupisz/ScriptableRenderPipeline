@@ -1,3 +1,8 @@
+//custom-begin: allow including MaterialUtilities.hlsl before LitData.hlsl
+#ifndef __MATERIALUTILITIES_HLSL__
+#define __MATERIALUTILITIES_HLSL__
+//custom-end
+
 // Return camera relative probe volume world to object transformation
 float4x4 GetProbeVolumeWorldToObject()
 {
@@ -226,3 +231,22 @@ void PostInitBuiltinData(   float3 V, PositionInputs posInput, SurfaceData surfa
 #endif
     ApplyDebugToBuiltinData(builtinData);
 }
+
+//custom-begin: screen space dither mask
+float SampleScreenSpaceDither(uint2 positionSS)
+{
+    uint2 repeatMask = uint2(_ScreenSpaceDitherMask_AnimRepeat.zw);
+    uint2 repeatPositionSS = positionSS & repeatMask;
+    return LOAD_TEXTURE2D(_ScreenSpaceDitherMask, repeatPositionSS).r;
+}
+
+float SampleScreenSpaceDitherAnimated(uint2 positionSS)
+{
+    uint2 animSS = uint2(_ScreenSpaceDitherMask_AnimRepeat.xy);
+    return SampleScreenSpaceDither(positionSS + animSS);
+}
+//custom-end
+
+//custom-begin: allow including MaterialUtilities.hlsl before LitData.hlsl
+#endif
+//custom-end

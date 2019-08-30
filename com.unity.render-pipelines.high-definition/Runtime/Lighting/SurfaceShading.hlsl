@@ -74,6 +74,12 @@ DirectLighting ShadeSurface_Directional(LightLoopContext lightLoopContext,
     DirectLighting lighting;
     ZERO_INITIALIZE(DirectLighting, lighting);
 
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+    LIGHTLOOP_LIGHT_TRANSFORM(lightLoopContext.lightTransformData, posInput, light);
+#endif
+//custom-end: lightloop light transform
+
     float3 L = -light.forward;
 
     // Is it worth evaluating the light?
@@ -159,6 +165,12 @@ DirectLighting ShadeSurface_Punctual(LightLoopContext lightLoopContext,
 {
     DirectLighting lighting;
     ZERO_INITIALIZE(DirectLighting, lighting);
+
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+    LIGHTLOOP_LIGHT_TRANSFORM(lightLoopContext.lightTransformData, posInput, light);
+#endif
+//custom-end: lightloop light transform
 
     float3 L;
     float4 distances; // {d, d^2, 1/d, d_proj}

@@ -16,6 +16,7 @@
     float4 _ExpFogParameters;
     float _VBufferLastSliceDist;
     int _EnableDistantFog;
+    float _Extinction;
 
 
 #endif

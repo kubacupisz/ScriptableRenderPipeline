@@ -2998,10 +2998,15 @@ namespace UnityEngine.Rendering.HighDefinition
             }
         }
 
-        void RenderShadowMaps(ScriptableRenderContext renderContext, CommandBuffer cmd, CullingResults cullResults, HDCamera hdCamera)
+//custom-begin: shadow callback
+        void RenderShadowMaps(ScriptableRenderContext renderContext, CommandBuffer cmd, CullingResults cullResults, HDCamera hdCamera, Action<Matrix4x4, CommandBuffer> onBeforeShadows)
+//custom-end
         {
             // kick off the shadow jobs here
-            m_ShadowManager.RenderShadows(renderContext, cmd, cullResults, hdCamera);
+//custom-begin: shadow callback
+            m_ShadowManager.RenderShadows(renderContext, cmd, cullResults, hdCamera, onBeforeShadows);
+//custom-end
+
         }
 
         bool WillRenderContactShadow()

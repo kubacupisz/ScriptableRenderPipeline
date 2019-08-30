@@ -69,6 +69,11 @@ namespace UnityEditor.Rendering.HighDefinition
         const string kBentNormalMapOS = "_BentNormalMapOS";
         const string kNormalMapSpace = "_NormalMapSpace";
 
+//custom-begin: slope mask feature
+        // Slope mask
+        const string kSlopeMaskMode = "_SlopeMaskMode";
+//custom-end: slope mask feature
+
         const string kHeightMap = "_HeightMap";
 
         const string kSubsurfaceMaskMap = "_SubsurfaceMaskMap";
@@ -227,6 +232,10 @@ namespace UnityEditor.Rendering.HighDefinition
                 CoreUtils.SetKeyword(material, "_LAYER_MASK_VERTEX_COLOR_MUL", false);
                 CoreUtils.SetKeyword(material, "_LAYER_MASK_VERTEX_COLOR_ADD", false);
             }
+
+//custom-begin: slope mask feature
+            CoreUtils.SetKeyword(material, "_LAYER_MASK_SLOPE_MASK_MUL", material.GetFloat(kSlopeMaskMode) != 0.0f);
+//custom-end: slope mask feature
 
             bool useHeightBasedBlend = material.GetFloat(kUseHeightBasedBlend) != 0.0f;
             CoreUtils.SetKeyword(material, "_HEIGHT_BASED_BLEND", useHeightBasedBlend);

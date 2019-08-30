@@ -15,6 +15,9 @@ namespace UnityEditor.Rendering.HighDefinition
         SerializedDataParameter m_Anisotropy;
         SerializedDataParameter m_GlobalLightProbeDimmer;
         SerializedDataParameter m_EnableDistantFog;
+//custom-begin: extinction tweak
+        SerializedDataParameter m_Extinction;
+//custom-end
 
         static GUIContent s_AlbedoLabel                 = new GUIContent("Fog Albedo", "Specifies the color this fog scatters light to.");
         static GUIContent s_MeanFreePathLabel           = new GUIContent("Fog Attenuation Distance", "Controls the density at the base level (per color channel). Distance at which fog reduces background light intensity by 63%. Units: m.");
@@ -23,6 +26,9 @@ namespace UnityEditor.Rendering.HighDefinition
         static GUIContent s_AnisotropyLabel             = new GUIContent("Global Anisotropy", "Controls the angular distribution of scattered light. 0 is isotropic, 1 is forward scattering, and -1 is backward scattering.");
         static GUIContent s_GlobalLightProbeDimmerLabel = new GUIContent("Global Light Probe Dimmer", "Controls the intensity reduction of the global Light Probe that the sky generates.");
         static GUIContent s_EnableDistantFog            = new GUIContent("Distant Fog", "When enabled, activates fog with precomputed lighting behind the volumetric section of the Camera’s frustum.");
+//custom-begin: extinction tweak
+        static GUIContent s_Extinction                  = new GUIContent("Extinction", "Tweak the extinction amount. 1 is the full, correct amount.");
+//custom-end
 
         public override void OnEnable()
         {
@@ -36,6 +42,9 @@ namespace UnityEditor.Rendering.HighDefinition
             m_Anisotropy             = Unpack(o.Find(x => x.anisotropy));
             m_GlobalLightProbeDimmer = Unpack(o.Find(x => x.globalLightProbeDimmer));
             m_EnableDistantFog       = Unpack(o.Find(x => x.enableDistantFog));
+//custom-begin: extinction tweak
+            m_Extinction             = Unpack(o.Find(x => x.extinction));
+//custom-end
         }
 
         public override void OnInspectorGUI()
@@ -48,6 +57,9 @@ namespace UnityEditor.Rendering.HighDefinition
             PropertyField(m_GlobalLightProbeDimmer, s_GlobalLightProbeDimmerLabel);
             PropertyField(m_MaxFogDistance);
             PropertyField(m_EnableDistantFog,       s_EnableDistantFog);
+//custom-begin: extinction tweak
+            PropertyField(m_Extinction,             s_Extinction);
+//custom-end
 
             if (m_MaximumHeight.value.floatValue < m_BaseHeight.value.floatValue)
             {

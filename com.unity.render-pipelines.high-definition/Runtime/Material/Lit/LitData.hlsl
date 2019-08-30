@@ -202,6 +202,14 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
     float alpha = GetSurfaceData(input, layerTexCoord, surfaceData, normalTS, bentNormalTS);
     GetNormalWS(input, normalTS, surfaceData.normalWS, doubleSidedConstants);
 
+//custom-begin: View angle dependent smoothness tweak. Do this once, after combining all source smoothness, and calculating world space normal.
+    float NdotV = ClampNdotV(dot(surfaceData.normalWS, V));
+    float invNdotV = 1.f - NdotV;
+
+    surfaceData.perceptualSmoothness += _SmoothnessViewAngleOffset * invNdotV;
+    surfaceData.perceptualSmoothness = min(surfaceData.perceptualSmoothness, 1.f);
+//custom-end:
+
     // Use bent normal to sample GI if available
 #ifdef _BENTNORMALMAP
     GetNormalWS(input, bentNormalTS, bentNormalWS, doubleSidedConstants);
@@ -228,6 +236,12 @@ void GetSurfaceAndBuiltinData(FragInputs input, float3 V, inout PositionInputs p
 
     // This is use with anisotropic material
     surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
+
+//custom-begin: added hooks for modifying SurfaceData and BuiltinData
+#if defined(LIT_SURFACE_DATA_MODIFIER)
+    LIT_SURFACE_DATA_MODIFIER(input, surfaceData);
+#endif
+//custom-end:
 
 #if HAVE_DECALS
     if (_EnableDecals)

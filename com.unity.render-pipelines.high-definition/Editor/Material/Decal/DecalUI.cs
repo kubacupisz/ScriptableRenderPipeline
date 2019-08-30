@@ -139,6 +139,11 @@ namespace UnityEditor.Rendering.HighDefinition
         protected MaterialProperty emissiveColorHDR = null;
         protected const string kEmissiveColorHDR = "_EmissiveColorHDR";
 
+//custom-begin: add decal mode for blurring normal buffer
+        protected MaterialProperty blurNormalsMode = new MaterialProperty();
+        protected const string kBlurNormalsMode = "_BlurNormalsMode";
+//custom-end:
+
         void LoadMaterialProperties(MaterialProperty[] properties)
         {
             normalBlendSrc = FindProperty(kNormalBlendSrc, properties);
@@ -154,6 +159,9 @@ namespace UnityEditor.Rendering.HighDefinition
             emissiveIntensity = FindProperty(kEmissiveIntensity, properties);
             emissiveColorLDR = FindProperty(kEmissiveColorLDR, properties);
             emissiveColorHDR = FindProperty(kEmissiveColorHDR, properties);
+//custom-begin: add decal mode for blurring normal buffer
+            blurNormalsMode = FindProperty(kBlurNormalsMode, properties);
+//custom-end:
         }
 
         // All Setup Keyword functions must be static. It allow to create script to automatically update the shaders with a script if code change
@@ -166,9 +174,19 @@ namespace UnityEditor.Rendering.HighDefinition
             CoreUtils.SetKeyword(material, "_NORMALMAP", material.GetTexture(kNormalMap));
             CoreUtils.SetKeyword(material, "_MASKMAP", material.GetTexture(kMaskMap));
             CoreUtils.SetKeyword(material, "_EMISSIVEMAP", material.GetTexture(kEmissiveColorMap));
+//custom-begin: add decal mode for blurring normal buffer
+            CoreUtils.SetKeyword(material, "_BLURNORMALBUFFER", material.GetFloat(kBlurNormalsMode) == 1.0f);
+//custom-end:
 
             material.SetInt(kDecalStencilWriteMask, (int)HDRenderPipeline.StencilBitMask.Decals);
             material.SetInt(kDecalStencilRef, (int)HDRenderPipeline.StencilBitMask.Decals);
+//custom-begin: add decal mode for blurring normal buffer
+            if (material.GetFloat(kBlurNormalsMode) == 1.0f)
+            {
+                material.SetInt(kDecalStencilWriteMask, (int)HDRenderPipeline.StencilBitMask.Decals | (int)HDRenderPipeline.StencilBitMask.DecalsBlurNormalBuffer);
+                material.SetInt(kDecalStencilRef, (int)HDRenderPipeline.StencilBitMask.Decals | (int)HDRenderPipeline.StencilBitMask.DecalsBlurNormalBuffer);
+            }
+//custom-end:
             material.SetShaderPassEnabled(HDShaderPassNames.s_MeshDecalsMStr, false);
             material.SetShaderPassEnabled(HDShaderPassNames.s_MeshDecalsAOStr, false);
             material.SetShaderPassEnabled(HDShaderPassNames.s_MeshDecalsMAOStr, false);

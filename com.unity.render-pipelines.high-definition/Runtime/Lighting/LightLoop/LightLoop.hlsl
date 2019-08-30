@@ -126,6 +126,11 @@ void ApplyDebug(LightLoopContext context, PositionInputs posInput, BSDFData bsdf
 }
 
 void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BSDFData bsdfData, BuiltinData builtinData, uint featureFlags,
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+                LIGHTLOOP_LIGHT_TRANSFORM_DATA lightTransformData,
+#endif
+//custom-end: lightloop light transform
                 out float3 diffuseLighting,
                 out float3 specularLighting)
 {
@@ -134,6 +139,11 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
     context.shadowContext    = InitShadowContext();
     context.shadowValue      = 1;
     context.sampleReflection = 0;
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+    context.lightTransformData = lightTransformData;
+#endif
+//custom-end: lightloop light transform
 
     // With XR single-pass instancing and camera-relative: offset position to do lighting computations from the combined center view (original camera matrix).
     // This is required because there is only one list of lights generated on the CPU. Shadows are also generated once and shared between the instanced views.

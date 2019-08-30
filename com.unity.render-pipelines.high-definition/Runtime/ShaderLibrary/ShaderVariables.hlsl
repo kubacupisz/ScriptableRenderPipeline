@@ -109,6 +109,10 @@ SAMPLER(samplerunity_ShadowMask);
 TEXTURE3D(unity_ProbeVolumeSH);
 SAMPLER(samplerunity_ProbeVolumeSH);
 
+//custom-begin: screen space dither mask
+TEXTURE2D(_ScreenSpaceDitherMask);
+//custom-end
+
 // Exposure texture - 1x1 RG16F (r: exposure mult, g: exposure EV100)
 TEXTURE2D(_ExposureTexture);
 TEXTURE2D(_PrevExposureTexture);
@@ -224,6 +228,10 @@ CBUFFER_START(UnityGlobal)
     float4 _VBufferPrevUvScaleAndLimit;
     float4 _VBufferPrevDepthEncodingParams;
     float4 _VBufferPrevDepthDecodingParams;
+
+//custom-begin: screen space dither mask
+    float4 _ScreenSpaceDitherMask_AnimRepeat;
+//custom-end
 
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/ShaderVariablesLightLoop.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/ScreenSpaceLighting/ShaderVariablesScreenSpaceLighting.hlsl"

@@ -113,7 +113,9 @@ void ApplyAmbientOcclusionFactor(AmbientOcclusionFactor aoFactor, inout BuiltinD
     builtinData.bakeDiffuseLighting *= aoFactor.indirectAmbientOcclusion;
     lighting.indirect.specularReflected *= aoFactor.indirectSpecularOcclusion;
     lighting.direct.diffuse *= aoFactor.directAmbientOcclusion;
-    lighting.direct.specular *= aoFactor.directAmbientOcclusion;
+//custom-begin: Apply direct _specular_ occlusion, not direct ambient occlusion.
+    lighting.direct.specular *= aoFactor.directSpecularOcclusion;
+//custom-end:
 }
 
 #ifdef DEBUG_DISPLAY

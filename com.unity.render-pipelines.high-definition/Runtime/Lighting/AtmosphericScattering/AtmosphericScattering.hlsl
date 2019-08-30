@@ -326,6 +326,9 @@ void EvaluateAtmosphericScattering(PositionInputs posInput, float3 V, out float3
 
             fogColor   = volFog.rgb; // Pre-multiplied by design
             fogOpacity = volFog.a;
+//custom-begin: extinction tweak
+            fogOpacity *= _Extinction;
+//custom-end
             break;
         }
     }

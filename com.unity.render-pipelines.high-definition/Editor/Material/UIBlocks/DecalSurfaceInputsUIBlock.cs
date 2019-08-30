@@ -47,6 +47,10 @@ namespace UnityEditor.Rendering.HighDefinition
                 new GUIContent("Mask Map", "Specifies the Mask Map for this Material - Ambient Occlusion(G), Opacity(B), Smoothness(A)"), // Decal.MaskBlendFlags.AO | Decal.MaskBlendFlags.Smoothness:
                 new GUIContent("Mask Map", "Specifies the Mask Map for this Material - Metal(R), Ambient Occlusion(G), Opacity(B), Smoothness(A)") // Decal.MaskBlendFlags.Metal | Decal.MaskBlendFlags.AO | Decal.MaskBlendFlags.Smoothness:
             };
+
+//custom-begin: add decal mode for blurring normal buffer
+            public static GUIContent blurNormalsText = new GUIContent("Blur Normal Buffer", "Enable to blur normal buffer to edge of decal");
+//custom-end:
         }
 
         Expandable  m_ExpandableBit;
@@ -152,6 +156,11 @@ namespace UnityEditor.Rendering.HighDefinition
         MaterialProperty emissiveExposureWeight = null;
         const string kEmissiveExposureWeight = "_EmissiveExposureWeight";
 
+//custom-begin: add decal mode for blurring normal buffer
+        protected MaterialProperty blurNormalsMode = new MaterialProperty();
+        protected const string kBlurNormalsMode = "_BlurNormalsMode";
+//custom-end:
+
         public DecalSurfaceInputsUIBlock(Expandable expandableBit)
         {
             m_ExpandableBit = expandableBit;
@@ -188,6 +197,10 @@ namespace UnityEditor.Rendering.HighDefinition
             emissiveColorLDR = FindProperty(kEmissiveColorLDR);
             emissiveColorHDR = FindProperty(kEmissiveColorHDR);
             emissiveExposureWeight = FindProperty(kEmissiveExposureWeight);
+
+//custom-begin: add decal mode for blurring normal buffer
+            blurNormalsMode = FindProperty(kBlurNormalsMode);
+//custom-end:
 
             // always instanced
             SerializedProperty instancing = materialEditor.serializedObject.FindProperty("m_EnableInstancingVariants");
@@ -322,6 +335,10 @@ namespace UnityEditor.Rendering.HighDefinition
 
                     materialEditor.ShaderProperty(emissiveExposureWeight, Styles.emissiveExposureWeightText);
                 }
+
+//custom-begin: add decal mode for blurring normal buffer
+                materialEditor.ShaderProperty(blurNormalsMode, Styles.blurNormalsText);
+//custom-end:
 
                 EditorGUILayout.HelpBox(
                     "Enable 'Metal and AO properties' in your HDRP Asset if you want to control the Metal and AO properties of decals.\nThere is a performance cost of enabling this option.",

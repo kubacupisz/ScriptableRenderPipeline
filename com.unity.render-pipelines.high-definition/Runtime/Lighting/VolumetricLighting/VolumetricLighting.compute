@@ -496,7 +496,10 @@ void FillVolumetricLightingBuffer(LightLoopContext context, uint featureFlags,
     // SampleSH9() evaluates the 3-band SH in a given direction.
     // The probe is already pre-convolved with the phase function.
     // Note: anisotropic, no jittering.
-    float3 probeInScatteredRadiance = SampleSH9(_AmbientProbeCoeffs, ray.centerDirWS);
+//custom-begin: disable ambient probe for volumetrics
+    //float3 probeInScatteredRadiance = SampleSH9(_AmbientProbeCoeffs, ray.centerDirWS);
+    float3 probeInScatteredRadiance = 0;
+//custom-end
 
     float3 totalRadiance = 0;
     float  opticalDepth  = 0;

@@ -19,6 +19,12 @@ struct LightLoopContext
     uint contactShadow;         // a bit mask of 24 bits that tell if the pixel is in a contact shadow or not
     real contactShadowFade;    // combined fade factor of all contact shadows 
     real shadowValue;          // Stores the value of the cascade shadow map
+
+//custom-begin: lightloop light transform
+#if defined(LIGHTLOOP_LIGHT_TRANSFORM)
+    LIGHTLOOP_LIGHT_TRANSFORM_DATA lightTransformData;
+#endif
+//custom-end: lightloop light transform
 };
 
 //-----------------------------------------------------------------------------

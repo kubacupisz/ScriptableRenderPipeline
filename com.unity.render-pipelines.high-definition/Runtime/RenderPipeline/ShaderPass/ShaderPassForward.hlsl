@@ -197,6 +197,15 @@ void Frag(PackedVaryingsToPS packedInput,
             outColor = EvaluateAtmosphericScattering(posInput, V, outColor);
 #endif
 
+//custom-begin: warp
+#ifdef WARP
+        outColor.rgb = CorridorWarpFragment(outColor.rgb, posInput.positionNDC, input.texCoord0.xy, input.texCoord1.xy, input.texCoord2.xy, builtinData.opacity);
+#endif
+#ifdef WARP2
+        outColor.rgb = CorridorWarpFragment2(outColor.rgb, posInput.positionNDC, input.texCoord0.xy, input.texCoord1.xy, input.texCoord2.xy, builtinData.opacity);
+#endif
+//custom-end
+
 #ifdef _WRITE_TRANSPARENT_MOTION_VECTOR
             VaryingsPassToPS inputPass = UnpackVaryingsPassToPS(packedInput.vpass);
             bool forceNoMotion = any(unity_MotionVectorsParams.yw == 0.0);

@@ -97,13 +97,25 @@ void ADD_IDX(ComputeLayerTexCoord)( // Uv related parameters
 }
 
 // Caution: Duplicate from GetBentNormalTS - keep in sync!
+//custom-begin: slope mask feature
+#if defined(_LAYER_MASK_SLOPE_MASK_MUL)
+float3 ADD_IDX(GetNormalTS)(FragInputs input, LayerTexCoord layerTexCoord, float3 detailNormalTS, float detailMask, float normalLodBias)
+#else
 float3 ADD_IDX(GetNormalTS)(FragInputs input, LayerTexCoord layerTexCoord, float3 detailNormalTS, float detailMask)
+#endif
+//custom-end: slope mask feature
 {
     float3 normalTS;
 
 #ifdef _NORMALMAP_IDX
     #ifdef _NORMALMAP_TANGENT_SPACE_IDX
+//custom-begin: slope mask feature
+        #if defined(_LAYER_MASK_SLOPE_MASK_MUL)
+        normalTS = SAMPLE_UVMAPPING_NORMALMAP_BIAS(ADD_IDX(_NormalMap), SAMPLER_NORMALMAP_IDX, ADD_IDX(layerTexCoord.base), ADD_IDX(_NormalScale), normalLodBias);
+        #else
         normalTS = SAMPLE_UVMAPPING_NORMALMAP(ADD_IDX(_NormalMap), SAMPLER_NORMALMAP_IDX, ADD_IDX(layerTexCoord.base), ADD_IDX(_NormalScale));
+        #endif
+//custom-begin: slope mask feature
     #else // Object space
         // We forbid scale in case of object space as it make no sense
         // To be able to combine object space normal with detail map then later we will re-transform it to world space.
@@ -136,6 +148,15 @@ float3 ADD_IDX(GetNormalTS)(FragInputs input, LayerTexCoord layerTexCoord, float
 
     return normalTS;
 }
+
+//custom-begin: slope mask feature
+#if defined(_LAYER_MASK_SLOPE_MASK_MUL)
+float3 ADD_IDX(GetNormalTS)(FragInputs input, LayerTexCoord layerTexCoord, float3 detailNormalTS, float detailMask)
+{
+    return ADD_IDX(GetNormalTS)(input, layerTexCoord, detailNormalTS, detailMask, 0);
+}
+#endif
+//custom-end: slope mask feature
 
 // Caution: Duplicate from GetNormalTS - keep in sync!
 float3 ADD_IDX(GetBentNormalTS)(FragInputs input, LayerTexCoord layerTexCoord, float3 normalTS, float3 detailNormalTS, float detailMask)
@@ -176,13 +197,20 @@ float3 ADD_IDX(GetBentNormalTS)(FragInputs input, LayerTexCoord layerTexCoord, f
 }
 
 // Return opacity
+//custom-begin: slope mask feature
+#if defined(_LAYER_MASK_SLOPE_MASK_MUL)
+float ADD_IDX(GetSurfaceData)(FragInputs input, LayerTexCoord layerTexCoord, out SurfaceData surfaceData, out float3 normalTS, out float3 bentNormalTS, float normalLodBias)
+#else
 float ADD_IDX(GetSurfaceData)(FragInputs input, LayerTexCoord layerTexCoord, out SurfaceData surfaceData, out float3 normalTS, out float3 bentNormalTS)
+#endif
+//custom-end: slope mask feature
 {
     float alpha = SAMPLE_UVMAPPING_TEXTURE2D(ADD_IDX(_BaseColorMap), ADD_ZERO_IDX(sampler_BaseColorMap), ADD_IDX(layerTexCoord.base)).a * ADD_IDX(_BaseColor).a;
 
     // Perform alha test very early to save performance (a killed pixel will not sample textures)
 #if defined(_ALPHATEST_ON) && !defined(LAYERED_LIT_SHADER)
     float alphaCutoff = _AlphaCutoff;
+
     #ifdef CUTOFF_TRANSPARENT_DEPTH_PREPASS
     alphaCutoff = _AlphaCutoffPrepass;
     #elif defined(CUTOFF_TRANSPARENT_DEPTH_POSTPASS)
@@ -230,7 +258,13 @@ float ADD_IDX(GetSurfaceData)(FragInputs input, LayerTexCoord layerTexCoord, out
     surfaceData.normalWS = float3(0.0, 0.0, 0.0); // Need to init this to keep quiet the compiler, but this is overriden later (0, 0, 0) so if we forget to override the compiler may comply.
     surfaceData.geomNormalWS = float3(0.0, 0.0, 0.0); // Not used, just to keep compiler quiet.
 
+//custom-begin: slope mask feature
+#if defined(_LAYER_MASK_SLOPE_MASK_MUL)
+    normalTS = ADD_IDX(GetNormalTS)(input, layerTexCoord, detailNormalTS, detailMask, normalLodBias);
+#else
     normalTS = ADD_IDX(GetNormalTS)(input, layerTexCoord, detailNormalTS, detailMask);
+#endif
+//custom-end: slope mask feature
     bentNormalTS = ADD_IDX(GetBentNormalTS)(input, layerTexCoord, normalTS, detailNormalTS, detailMask);
 
 #if defined(_MASKMAP_IDX)
@@ -410,3 +444,12 @@ float ADD_IDX(GetSurfaceData)(FragInputs input, LayerTexCoord layerTexCoord, out
 
     return alpha;
 }
+
+//custom-begin: slope mask feature
+#if defined(_LAYER_MASK_SLOPE_MASK_MUL)
+float ADD_IDX(GetSurfaceData)(FragInputs input, LayerTexCoord layerTexCoord, out SurfaceData surfaceData, out float3 normalTS, out float3 bentNormalTS)
+{
+    return ADD_IDX(GetSurfaceData)(input, layerTexCoord, surfaceData, normalTS, bentNormalTS, 0);
+}
+#endif
+//custom-end: slope mask feature

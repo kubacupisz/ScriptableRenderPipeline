@@ -1819,6 +1819,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
             // Make light position camera relative:
             // TODO: think about VR (use different camera position for each eye)
+//custom-begin: wire shadow culling
+            shadowRequest.viewAbsolute = shadowRequest.view;
+//custom-end
             if (ShaderConfig.s_CameraRelativeRendering != 0)
             {
                 var translation = Matrix4x4.Translate(cameraPos);

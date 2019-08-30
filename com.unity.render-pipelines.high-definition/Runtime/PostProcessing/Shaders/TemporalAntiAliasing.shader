@@ -59,6 +59,42 @@ Shader "Hidden/HDRP/TemporalAntialiasing"
 
             float2 uv = input.texcoord - jitter;
 
+//custom-begin: less destructive taa
+#define DEMO 1
+#define DEMO_FETCH Fetch// FetchBicubic
+
+#if DEMO
+
+            float3 history = Map(DEMO_FETCH(_InputHistoryTexture, input.texcoord - motionVector, 0.0, _RTHandleScaleHistory.xy));
+            float3 color = Map(DEMO_FETCH(_InputTexture, uv, 0.0, _RTHandleScale.xy));
+            float colorLuma = Luminance(color);
+
+            // 3x3 neighbourhood
+            #define SAMPLE_NEIGHBOUR(i,j) DEMO_FETCH(_InputTexture, uv, float2(j-1, i-1), _RTHandleScale.xy)
+            float3 _00 = SAMPLE_NEIGHBOUR(0, 0).rgb;
+            float3 _01 = SAMPLE_NEIGHBOUR(0, 1).rgb;
+            float3 _02 = SAMPLE_NEIGHBOUR(0, 2).rgb;
+            float3 _10 = SAMPLE_NEIGHBOUR(1, 0).rgb;
+            float3 _11 = SAMPLE_NEIGHBOUR(1, 1).rgb;
+            float3 _12 = SAMPLE_NEIGHBOUR(1, 2).rgb;
+            float3 _20 = SAMPLE_NEIGHBOUR(2, 0).rgb;
+            float3 _21 = SAMPLE_NEIGHBOUR(2, 1).rgb;
+            float3 _22 = SAMPLE_NEIGHBOUR(2, 2).rgb;
+
+            // 3x3 minmax
+            #ifndef Min3
+            #define Min3(a,b,c) min(a,min(b,c))
+            #endif
+            #ifndef Max3
+            #define Max3(a,b,c) max(a,max(b,c))
+            #endif
+            #define Min9(a,b,c,d,e,f,g,h,i) Min3(Min3(a,b,c),Min3(d,e,f),Min3(g,h,i))
+            #define Max9(a,b,c,d,e,f,g,h,i) Max3(Max3(a,b,c),Max3(d,e,f),Max3(g,h,i))
+            float3 minimum = Map(Min9(_00, _01, _02, _10, _11, _12, _20, _21, _22));
+            float3 maximum = Map(Max9(_00, _01, _02, _10, _11, _12, _20, _21, _22));
+
+#else
+//custom-end:
             float3 color = Fetch(_InputTexture, uv, 0.0, _RTHandleScale.xy);
             float3 history = Fetch(_InputHistoryTexture, input.texcoord - motionVector, 0.0, _RTHandleScaleHistory.xy);
 
@@ -91,6 +127,10 @@ Shader "Hidden/HDRP/TemporalAntialiasing"
             float3 maximum = max(topLeft, bottomRight) + nudge;
 
             history = Map(history);
+
+//custom-begin: less destructive taa
+#endif
+//custom-end:
 
             // Clip history samples
     #if CLIP_AABB

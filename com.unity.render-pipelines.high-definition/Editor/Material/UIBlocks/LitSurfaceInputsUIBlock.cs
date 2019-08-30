@@ -95,6 +95,10 @@ namespace UnityEditor.Rendering.HighDefinition
             public static readonly GUIContent useHeightBasedBlendText = EditorGUIUtility.TrTextContent("Use Height Based Blend", "When enabled, HDRP blends the layer with the underlying layer based on the height.");
             public static readonly GUIContent useMainLayerInfluenceModeText = EditorGUIUtility.TrTextContent("Main Layer Influence", "Switches between regular layers mode and base/layers mode.");
             public static readonly GUIContent heightTransition = EditorGUIUtility.TrTextContent("Height Transition", "Sets the size, in world units, of the smooth transition between layers.");
+
+//custom-begin: slope mask feature
+            public static readonly GUIContent slopeMaskModeText = EditorGUIUtility.TrTextContent("Slope Mask Mode", "The Slope Mask is multiplied with the mask .");
+//custom-end: slope mask feature
         }
 
         MaterialProperty[] UVBase = new MaterialProperty[kMaxLayerCount];
@@ -118,6 +122,10 @@ namespace UnityEditor.Rendering.HighDefinition
         const string kSmoothnessRemapMin = "_SmoothnessRemapMin";
         MaterialProperty[] smoothnessRemapMax = new MaterialProperty[kMaxLayerCount];
         const string kSmoothnessRemapMax = "_SmoothnessRemapMax";
+//custom-begin: View angle dependent smoothness tweak
+        MaterialProperty[] smoothnessViewAngleOffset = new MaterialProperty[kMaxLayerCount];
+        const string kSmoothnessViewAngleOffset = "_SmoothnessViewAngleOffset";
+//custom-end:
         MaterialProperty[] aoRemapMin = new MaterialProperty[kMaxLayerCount];
         const string kAORemapMin = "_AORemapMin";
         MaterialProperty[] aoRemapMax = new MaterialProperty[kMaxLayerCount];
@@ -223,6 +231,10 @@ namespace UnityEditor.Rendering.HighDefinition
         const string kLayerInfluenceMaskMap = "_LayerInfluenceMaskMap";
         MaterialProperty vertexColorMode = null;
         const string kVertexColorMode = "_VertexColorMode";
+//custom-begin: slope mask feature
+        MaterialProperty slopeMaskMode = null;
+        const string kSlopeMaskMode = "_SlopeMaskMode";
+//custom-end: slope mask feature
         MaterialProperty objectScaleAffectTile = null;
         const string kObjectScaleAffectTile = "_ObjectScaleAffectTile";
         MaterialProperty UVBlendMask = null;
@@ -271,6 +283,9 @@ namespace UnityEditor.Rendering.HighDefinition
             smoothness = FindPropertyLayered(kSmoothness, m_LayerCount);
             smoothnessRemapMin = FindPropertyLayered(kSmoothnessRemapMin, m_LayerCount);
             smoothnessRemapMax = FindPropertyLayered(kSmoothnessRemapMax, m_LayerCount);
+//custom-begin: View angle dependent smoothness tweak
+            smoothnessViewAngleOffset = FindPropertyLayered(kSmoothnessViewAngleOffset, m_LayerCount);
+//custom-end:
             aoRemapMin = FindPropertyLayered(kAORemapMin, m_LayerCount);
             aoRemapMax = FindPropertyLayered(kAORemapMax, m_LayerCount);
             maskMap = FindPropertyLayered(kMaskMap, m_LayerCount);
@@ -334,6 +349,9 @@ namespace UnityEditor.Rendering.HighDefinition
             layerMaskMap = FindProperty(kLayerMaskMap);
             layerInfluenceMaskMap = FindProperty(kLayerInfluenceMaskMap);
             vertexColorMode = FindProperty(kVertexColorMode);
+//custom-begin: slope mask feature
+            slopeMaskMode = FindProperty(kSlopeMaskMode);
+//custom-end: slope mask feature
             objectScaleAffectTile = FindProperty(kObjectScaleAffectTile);
             UVBlendMask = FindProperty(kUVBlendMask);
             UVMappingMaskBlendMask = FindProperty(kUVMappingMaskBlendMask);
@@ -404,6 +422,11 @@ namespace UnityEditor.Rendering.HighDefinition
                     aoRemapMax[m_LayerIndex].floatValue = aoMax;
                 }
             }
+
+//custom-begin: View angle dependent smoothness tweak
+            if(smoothnessViewAngleOffset[m_LayerIndex] != null)
+                materialEditor.ShaderProperty(smoothnessViewAngleOffset[m_LayerIndex], smoothnessViewAngleOffset[m_LayerIndex].displayName);
+//custom-end:
 
             materialEditor.TexturePropertySingleLine((materialIdValue == MaterialId.LitSpecular) ? Styles.maskMapSpecularText : Styles.maskMapSText, maskMap[m_LayerIndex]);
 
@@ -670,6 +693,19 @@ namespace UnityEditor.Rendering.HighDefinition
             EditorGUI.indentLevel--;
 
             materialEditor.ShaderProperty(vertexColorMode, Styles.vertexColorModeText);
+
+//custom-begin: slope mask feature
+            if(slopeMaskMode != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                EditorGUI.showMixedValue = slopeMaskMode.hasMixedValue;
+                bool slopeMaskModeEnable = EditorGUILayout.Toggle(Styles.slopeMaskModeText, slopeMaskMode.floatValue > 0.0f);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    slopeMaskMode.floatValue = slopeMaskModeEnable ? 1.0f : 0.0f;
+                }
+            }
+//custom-end: slope mask feature
 
             EditorGUI.BeginChangeCheck();
             EditorGUI.showMixedValue = useMainLayerInfluence.hasMixedValue;

@@ -4352,6 +4352,20 @@ void PostEvaluateBSDF(  LightLoopContext lightLoopContext,
     // (also cf lit deferred EncodeToGBuffer function).
     diffuseLighting = (modifiedDiffuseColor * lighting.direct.diffuse) + (builtinData.bakeDiffuseLighting * diffuseOcclusion) + builtinData.emissiveColor;
 
+//custom-begin: added support for direct specular occlusion
+    {
+        float3 indirectSpecularOcclusion = lerp(
+            preLightData.hemiSpecularOcclusion[BASE_LOBEA_IDX],
+            preLightData.hemiSpecularOcclusion[BASE_LOBEB_IDX],
+            bsdfData.lobeMix);
+
+        float directSpecularOcclusionTerm = lerp(1.0, bsdfData.specularOcclusionCustomInput, _AmbientOcclusionParam.w);
+        float3 directSpecularOcclusion = GTAOMultiBounce(directSpecularOcclusionTerm, bsdfData.fresnel0);
+
+        lighting.direct.specular *= min(directSpecularOcclusion, indirectSpecularOcclusion);
+    }
+//custom-end:
+
     specularLighting = lighting.direct.specular + lighting.indirect.specularReflected;
 
 #ifdef DEBUG_DISPLAY

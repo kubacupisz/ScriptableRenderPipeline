@@ -130,6 +130,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public bool isMainGameView { get { return camera.cameraType == CameraType.Game && camera.targetTexture == null; } }
 
+//custom-begin: Camera cut frame motion override
+        public int prevViewMatrixOverrideFrame;
+        public Matrix4x4 prevViewMatrixOverride;
+//custom-end: Camera cut frame motion override
+
         // Helper property to inform how many views are rendered simultaneously
         public int viewCount { get => Math.Max(1, xr.viewCount); }
 
@@ -258,7 +263,9 @@ namespace UnityEngine.Rendering.HighDefinition
                 int numVolumetricBuffersRequired = isVolumetricHistoryRequired ? 2 : 0; // History + feedback
 
                 if ((m_NumColorPyramidBuffersAllocated != numColorPyramidBuffersRequired) ||
-                    (m_NumVolumetricBuffersAllocated != numVolumetricBuffersRequired))
+//custom-begin: Re-alloc if volumetric quality changed
+                    (m_NumVolumetricBuffersAllocated != numVolumetricBuffersRequired) || hdrp.VolumetricQualityChangedThisFrame)
+//custom-end:
                 {
                     // Reinit the system.
                     colorPyramidHistoryIsValid = false;
@@ -507,6 +514,19 @@ namespace UnityEngine.Rendering.HighDefinition
                     viewConstants.prevViewProjMatrix = viewConstants.nonJitteredViewProjMatrix;
                     viewConstants.prevViewProjMatrixNoCameraTrans = viewConstants.prevViewProjMatrix;
                 }
+//custom-begin: Camera cut frame motion override
+                if (prevViewMatrixOverrideFrame == Time.frameCount)
+                {
+                    viewConstants.prevWorldSpaceCameraPos = prevViewMatrixOverride.inverse.GetColumn(3);
+
+                    Matrix4x4 overrideViewMatrix = prevViewMatrixOverride;
+                    if (ShaderConfig.s_CameraRelativeRendering != 0)
+                        overrideViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
+                    viewConstants.prevViewProjMatrix = gpuNonJitteredProj * overrideViewMatrix;
+                    viewConstants.prevViewProjMatrixNoCameraTrans = viewConstants.prevViewProjMatrix;
+                }
+//custom-end:
+
             }
 
             viewConstants.viewMatrix = gpuView;
@@ -529,10 +549,28 @@ namespace UnityEngine.Rendering.HighDefinition
             else
             {
                 Matrix4x4 noTransViewMatrix = viewMatrix;
+//custom-begin: Camera cut frame motion override
+                if(prevViewMatrixOverrideFrame == Time.frameCount)
+                    noTransViewMatrix = prevViewMatrixOverride;
+//custom-end:
                 noTransViewMatrix.SetColumn(3, new Vector4(0, 0, 0, 1));
                 viewConstants.prevViewProjMatrixNoCameraTrans = gpuNonJitteredProj * noTransViewMatrix;
             }
+
+//custom-begin: Camera cut frame motion override
+            /*
+			if (prevViewMatrixOverrideFrame == Time.frameCount)
+            {
+                Debug.Log($"Override Frame :\n{prevWorldSpaceCameraPos * 100}\n{prevViewProjMatrix.ToString()}");
+            }
+            if (Time.frameCount - prevViewMatrixOverrideFrame < 5 && Time.frameCount - prevViewMatrixOverrideFrame > 0)
+            {
+                Debug.Log($"Current Frame :\n{prevWorldSpaceCameraPos * 100}\n{prevViewProjMatrix.ToString()}");
+            }
+			*/
+//custom-end:
         }
+
 
         void UpdateFrustum(Matrix4x4 projMatrix, Matrix4x4 invProjMatrix, Matrix4x4 viewProjMatrix)
         {

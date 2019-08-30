@@ -19,6 +19,14 @@ namespace UnityEditor.Rendering.HighDefinition
             public static readonly GUIContent inheritBaseNormalText = EditorGUIUtility.TrTextContent("Normal influence", "Controls the strength of the normals inherited from the base layer.");
             public static readonly GUIContent inheritBaseHeightText = EditorGUIUtility.TrTextContent("Heightmap influence", "Controls the strength of the height map inherited from the base layer.");
             public static readonly GUIContent inheritBaseColorText = EditorGUIUtility.TrTextContent("BaseColor influence", "Controls the strength of the Base Color inherited from the base layer.");
+
+//custom-begin: slope mask feature
+            public static readonly GUIContent slopeAngleText = EditorGUIUtility.TrTextContent("Slope Angle", "Slope under the angle value are part of the mask. Negative Value invert the mask");
+            public static readonly GUIContent slopeBiasText = EditorGUIUtility.TrTextContent("Slope Bias", "Used to smooth the Slope Mask");
+            public static readonly GUIContent slopeMaskIntensityText = EditorGUIUtility.TrTextContent("Slope Mask Influence", "Slope Mask Influence.");
+            public static readonly GUIContent slopeReferenceDirText = EditorGUIUtility.TrTextContent("Slope Reference Direction", "The direction used to compute the slope");
+            public static readonly GUIContent slopeSmoothNormalText = EditorGUIUtility.TrTextContent("Smooth Main Layer Normal for Slope", "Smooth the main layer normal map for the slope mask generation");
+//custom-end: slope mask feature
         }
 
         // Influence
@@ -34,6 +42,22 @@ namespace UnityEditor.Rendering.HighDefinition
         const string kLayerInfluenceMaskMap = "_LayerInfluenceMaskMap";
         MaterialProperty useMainLayerInfluence = null;
         const string kkUseMainLayerInfluence = "_UseMainLayerInfluence";
+
+//custom-begin: slope mask feature
+        // Slope mask
+        MaterialProperty slopeMaskMode = null;
+        const string kSlopeMaskMode = "_SlopeMaskMode";
+        MaterialProperty slopeReferenceDir = null;
+        const string kSlopeReferenceDir = "_SlopeReferenceDir";
+        MaterialProperty slopeSmoothNormal = null;
+        const string KSlopeSmoothNormal = "_SlopeSmoothNormal";
+        MaterialProperty[] slopeAngle = new MaterialProperty[kMaxLayerCount - 1];
+        const string kSlopeAngle = "_SlopeAngle";
+        MaterialProperty[] slopeBias = new MaterialProperty[kMaxLayerCount - 1];
+        const string kSlopeBias = "_SlopeBias";
+        MaterialProperty[] slopeMaskIntensity = new MaterialProperty[kMaxLayerCount - 1];
+        const string kSlopeMaskIntensity = "_SlopeMaskIntensity";
+//custom-end: slope mask feature
 
         Expandable  m_ExpandableBit;
         int         m_LayerIndex;
@@ -58,6 +82,13 @@ namespace UnityEditor.Rendering.HighDefinition
         {
             useMainLayerInfluence = FindProperty(kkUseMainLayerInfluence);
             layerInfluenceMaskMap = FindProperty(kLayerInfluenceMaskMap);
+
+//custom-begin: slope mask feature
+            slopeMaskMode = FindProperty(kSlopeMaskMode);
+            slopeReferenceDir = FindProperty(kSlopeReferenceDir);
+            slopeSmoothNormal = FindProperty(KSlopeSmoothNormal);
+//custom-end: slope mask feature
+
             // Density/opacity mode
             opacityAsDensity = FindPropertyLayered(kOpacityAsDensity, kMaxLayerCount);
 
@@ -67,6 +98,13 @@ namespace UnityEditor.Rendering.HighDefinition
                 inheritBaseNormal[i - 1] = FindProperty(string.Format("{0}{1}", kInheritBaseNormal, i));
                 inheritBaseHeight[i - 1] = FindProperty(string.Format("{0}{1}", kInheritBaseHeight, i));
                 inheritBaseColor[i - 1] = FindProperty(string.Format("{0}{1}", kInheritBaseColor, i));
+
+//custom-begin: slope mask feature
+                    // Slope mask
+                    slopeAngle[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeAngle, i));
+                    slopeBias[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeBias, i));
+                    slopeMaskIntensity[i - 1] = FindProperty(string.Format("{0}{1}", kSlopeMaskIntensity, i));
+//custom-end: slope mask feature
             }
         }
 
@@ -84,6 +122,10 @@ namespace UnityEditor.Rendering.HighDefinition
 
         void DrawLayeringOptionsGUI()
         {
+//custom-begin: slope mask feature
+            bool mainLayerSlopeMaskModeEnable = slopeMaskMode.floatValue > 0.0f;
+//custom-end:
+
             bool mainLayerInfluenceEnable = useMainLayerInfluence.floatValue > 0.0f;
             // Main layer does not have any options but height base blend.
             if (m_LayerIndex > 0)
@@ -98,10 +140,25 @@ namespace UnityEditor.Rendering.HighDefinition
                     // We always display it as it can be tricky to know when per pixel displacement is enabled or not
                     materialEditor.ShaderProperty(inheritBaseHeight[m_LayerIndex - 1], Styles.inheritBaseHeightText);
                 }
+
+//custom-begin: slope mask feature
+                if (mainLayerSlopeMaskModeEnable)
+                {
+                    EditorGUILayout.Space();
+                    materialEditor.ShaderProperty(slopeAngle[m_LayerIndex - 1], Styles.slopeAngleText);
+                    materialEditor.ShaderProperty(slopeBias[m_LayerIndex - 1], Styles.slopeBiasText);
+                    materialEditor.ShaderProperty(slopeMaskIntensity[m_LayerIndex - 1], Styles.slopeMaskIntensityText);
+                }
+//custom-end:
             }
             else
             {
                 materialEditor.TexturePropertySingleLine(Styles.layerInfluenceMapMaskText, layerInfluenceMaskMap);
+
+//custom-begin: slope mask feature
+                materialEditor.ShaderProperty(slopeReferenceDir, Styles.slopeReferenceDirText);
+                materialEditor.ShaderProperty(slopeSmoothNormal, Styles.slopeSmoothNormalText);
+//custom-end:
             }
         }
     }

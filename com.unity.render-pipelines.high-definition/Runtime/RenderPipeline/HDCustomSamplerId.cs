@@ -83,6 +83,10 @@ namespace UnityEngine.Rendering.HighDefinition
         // Misc
         VolumeUpdate,
 
+//custom-begin: (Nick) eye rendering
+        EyeScreenSpaceReflections,
+//custom-end: (Nick) eye rendering
+
         // Low res transparency
         DownsampleDepth,
         LowResTransparent,
@@ -115,9 +119,12 @@ namespace UnityEngine.Rendering.HighDefinition
         FXAA,
         SMAA,
         FinalPost,
-
         PrepareProbeVolumeList,
         ProbeVolumeDebug,
+
+//custom-begin: lens flare
+        LensFlare,
+//custom-end:
 
         Max
     }
