@@ -11,6 +11,8 @@ namespace UnityEditor.Rendering.HighDefinition
     // The common shader stripper function
     class CommonShaderPreprocessor : BaseShaderPreprocessor
     {
+        public override int Priority => 100;
+
         public CommonShaderPreprocessor() { }
 
         public override bool ShadersStripper(HDRenderPipelineAsset hdrpAsset, Shader shader, ShaderSnippetData snippet, ShaderCompilerData inputData)
