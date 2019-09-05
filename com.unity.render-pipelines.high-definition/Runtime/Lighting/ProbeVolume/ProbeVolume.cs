@@ -174,7 +174,7 @@ namespace UnityEngine.Rendering.HighDefinition
             var res = new Vector3[parameters.resolutionX * parameters.resolutionY * parameters.resolutionZ];
             
             var nativeData = new NativeArray<SphericalHarmonicsL2>(res.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
+            //UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
 
             for (int i = 0, iLen = res.Length; i < iLen; ++i)
             {
@@ -240,8 +240,8 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             ProbeVolumeManager.manager.DeRegisterVolume(this);
 
-            if (id != -1)
-                UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
+            //if (id != -1)
+            //    UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
 
             UnityEditor.Lightmapping.bakeCompleted -= OnBakeCompleted;
         }
@@ -336,7 +336,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             m_ProbeMatricesInputHash = probeMatricesInputHash;
 
-            UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
+            //UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
         }
 
         public void DrawProbes()
