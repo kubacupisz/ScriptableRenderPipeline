@@ -149,7 +149,11 @@ namespace UnityEngine.Rendering.HighDefinition
         private Mesh m_DebugProbeMesh = null;
         private List<Matrix4x4[]> m_ProbeMatricesList;
         private Hash128 m_ProbeMatricesInputHash = new Hash128();
+
         public bool dataUpdated = false;
+
+        [SerializeField]
+        public Vector3[] data = null;
 
         public ProbeVolumeArtistParameters parameters = new ProbeVolumeArtistParameters(Color.white);
 
@@ -165,26 +169,8 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public Vector3[] GetData()
         {
-            if (!this.gameObject.activeInHierarchy)
-                return null;
-
-            if (id == -1)
-                return null;
-
-            var res = new Vector3[parameters.resolutionX * parameters.resolutionY * parameters.resolutionZ];
-            
-            var nativeData = new NativeArray<SphericalHarmonicsL2>(res.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
-
-            for (int i = 0, iLen = res.Length; i < iLen; ++i)
-            {
-                SphericalHarmonicsL2 additionalProbe = nativeData[i];
-                res[i] = new Vector3(additionalProbe[0, 0], additionalProbe[1, 0], additionalProbe[2, 0]);
-            }
-
             dataUpdated = false;
-
-            return res;
+            return data;
         }
 
         protected void Awake()
@@ -219,6 +205,23 @@ namespace UnityEngine.Rendering.HighDefinition
 
         protected void OnBakeCompleted()
         {
+            if (!this.gameObject.activeInHierarchy)
+                return;
+
+            if (id == -1)
+                return;
+
+            data = new Vector3[parameters.resolutionX * parameters.resolutionY * parameters.resolutionZ];
+
+            var nativeData = new NativeArray<SphericalHarmonicsL2>(data.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            //UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
+
+            for (int i = 0, iLen = data.Length; i < iLen; ++i)
+            {
+                SphericalHarmonicsL2 additionalProbe = nativeData[i];
+                data[i] = new Vector3(additionalProbe[0, 0], additionalProbe[1, 0], additionalProbe[2, 0]);
+            }
+
             dataUpdated = true;
         }
 
@@ -240,8 +243,8 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             ProbeVolumeManager.manager.DeRegisterVolume(this);
 
-            if (id != -1)
-                UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
+            //if (id != -1)
+            //    UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
 
             UnityEditor.Lightmapping.bakeCompleted -= OnBakeCompleted;
         }
@@ -311,7 +314,15 @@ namespace UnityEngine.Rendering.HighDefinition
                 {
                     for (int x = 0; x < parameters.resolutionX; ++x)
                     {
-                        Vector3 position = probeStartPosition + (probeSteps.x * x * obb.right) + (probeSteps.y * y * obb.up) + (probeSteps.z * z * obb.forward);
+                        // TODO: Investigate why the X-axis is flipped in the middle
+                        int xx = x;
+                        int halfX = parameters.resolutionX / 2;
+                        if (x < halfX)
+                            xx = x + halfX;
+                        else
+                            xx = x - halfX;
+
+                        Vector3 position = probeStartPosition + (probeSteps.x * xx * obb.right) + (probeSteps.y * y * obb.up) + (probeSteps.z * z * obb.forward);
                         positions[i] = position;
 
                         Matrix4x4 matrix = new Matrix4x4();
@@ -336,7 +347,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             m_ProbeMatricesInputHash = probeMatricesInputHash;
 
-            UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
+            //UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
         }
 
         public void DrawProbes()

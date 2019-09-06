@@ -551,6 +551,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
                             float2 probeVolumeAtlasUV2DBack = probeVolumeTexel2DBack * _ProbeVolumeAtlasResolutionAndInverse.zw + s_probeVolumeData.scaleBias.zw;
                             float2 probeVolumeAtlasUV2DFront = probeVolumeTexel2DFront * _ProbeVolumeAtlasResolutionAndInverse.zw + s_probeVolumeData.scaleBias.zw;
 
+                            // TODO: Use SampleProbe with three textures encoding L1
                             sample = lerp(
                                 SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlas, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack, 0).rgb,
                                 SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlas, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 0).rgb,
@@ -559,9 +560,16 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
                         }
                     }
 
+                    // TODO: Fill in L1
+                    real4 shAr = real4(0, 0, 0, sample.r);
+                    real4 shAg = real4(0, 0, 0, sample.g);
+                    real4 shAb = real4(0, 0, 0, sample.b);
+
+                    float3 sampleColor = SHEvalLinearL0L1(bsdfData.normalWS, shAr, shAg, shAb);
+
                     // TODO: Sample irradiance data from atlas and integrate against diffuse BRDF.
                     // probeVolumeDiffuseLighting += s_probeVolumeData.debugColor * sample * weight;
-                    probeVolumeDiffuseLighting += sample * weight;
+                    probeVolumeDiffuseLighting += sampleColor * weight * bsdfData.diffuseColor;
                     probeVolumeHierarchyWeight = probeVolumeHierarchyWeight + weight;
 
                 }
