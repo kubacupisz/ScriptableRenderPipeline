@@ -214,7 +214,7 @@ namespace UnityEngine.Rendering.HighDefinition
             data = new Vector3[parameters.resolutionX * parameters.resolutionY * parameters.resolutionZ];
 
             var nativeData = new NativeArray<SphericalHarmonicsL2>(data.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            //UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
+            UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
 
             for (int i = 0, iLen = data.Length; i < iLen; ++i)
             {
@@ -243,8 +243,8 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             ProbeVolumeManager.manager.DeRegisterVolume(this);
 
-            //if (id != -1)
-            //    UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
+            if (id != -1)
+               UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
 
             UnityEditor.Lightmapping.bakeCompleted -= OnBakeCompleted;
         }
@@ -271,11 +271,11 @@ namespace UnityEngine.Rendering.HighDefinition
             float debugProbeSize = 0.1f;
 
             string inputsString =
-                        id.ToString() + 
-                        debugProbeSize.ToString() + 
+                        id.ToString() +
+                        debugProbeSize.ToString() +
                         this.transform.position.ToString() +
-                        this.transform.rotation.ToString() + 
-                        parameters.size.ToString() + 
+                        this.transform.rotation.ToString() +
+                        parameters.size.ToString() +
                         parameters.resolutionX.ToString() +
                         parameters.resolutionY.ToString() +
                         parameters.resolutionZ.ToString();
@@ -314,15 +314,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 {
                     for (int x = 0; x < parameters.resolutionX; ++x)
                     {
-                        // TODO: Investigate why the X-axis is flipped in the middle
-                        int xx = x;
-                        int halfX = parameters.resolutionX / 2;
-                        if (x < halfX)
-                            xx = x + halfX;
-                        else
-                            xx = x - halfX;
-
-                        Vector3 position = probeStartPosition + (probeSteps.x * xx * obb.right) + (probeSteps.y * y * obb.up) + (probeSteps.z * z * obb.forward);
+                        Vector3 position = probeStartPosition + (probeSteps.x * x * obb.right) + (probeSteps.y * y * obb.up) + (probeSteps.z * z * obb.forward);
                         positions[i] = position;
 
                         Matrix4x4 matrix = new Matrix4x4();
@@ -347,7 +339,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             m_ProbeMatricesInputHash = probeMatricesInputHash;
 
-            //UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
+            UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
         }
 
         public void DrawProbes()
