@@ -247,7 +247,7 @@ namespace UnityEngine.Rendering.HighDefinition
             data = new SphericalHarmonicsL1[parameters.resolutionX * parameters.resolutionY * parameters.resolutionZ];
 
             var nativeData = new NativeArray<SphericalHarmonicsL2>(data.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
+            //UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, nativeData);
 
             // TODO: Remove this data copy.
             for (int i = 0, iLen = data.Length; i < iLen; ++i)
@@ -266,8 +266,8 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             UnityEditor.Lightmapping.bakeCompleted -= OnBakeCompleted;
 
-            if (id != -1)
-                UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
+            //if (id != -1)
+                //UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, null);
         }
 
         public void EnableBaking()
@@ -384,7 +384,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             m_DebugProbeInputHash = debugProbeInputHash;
 
-            UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
+            //UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, positions);
         }
 
         public void DrawProbes()
