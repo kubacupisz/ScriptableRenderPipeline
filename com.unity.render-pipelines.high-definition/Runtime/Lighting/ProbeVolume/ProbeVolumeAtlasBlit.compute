@@ -7,9 +7,12 @@
 #pragma only_renderers d3d11 ps4 xboxone vulkan metal switch
 
 // #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/ProbeVolume/ProbeVolumeSystem.cs.hlsl"
 
-StructuredBuffer<float3> _ProbeVolumeAtlasReadBuffer;
-RWTexture2D<float4> _ProbeVolumeAtlasWriteTexture;
+StructuredBuffer<SphericalHarmonicsL1> _ProbeVolumeAtlasReadBuffer;
+RWTexture2D<float4> _ProbeVolumeAtlasWriteTextureShAr;
+RWTexture2D<float4> _ProbeVolumeAtlasWriteTextureShAg;
+RWTexture2D<float4> _ProbeVolumeAtlasWriteTextureShAb;
 
 uint _ProbeVolumeAtlasReadBufferCount;
 float3 _ProbeVolumeResolution;
@@ -32,7 +35,9 @@ uint2 ComputeWriteIndexFromReadIndex(uint readIndex, float3 resolution, float3 r
     // int width = resolution.x * resolution.z;
     // int height = resolution.y;
     // scaleBias: x,y is width and height (scale) z,w offset into atlas (bias)
-    uint atlasX = x + z * (uint)resolution.x;
+    // Handle Z "vertical" flip, as in source, index z == 0 is "top" and index z == resolution.z - 1 is "bottom"
+    // but in destination atlas, z coordinate min is "bottom", and z coordinate max is "top".
+    uint atlasX = x + (resolution.z - 1 - z) * (uint)resolution.x;
     uint atlasY = y;
 
     float atlasU = (float)atlasX + scaleBias.z * atlasResolutionAndInverse.x;
@@ -57,8 +62,7 @@ void PROBE_VOLUME_ATLAS_BLIT_KERNEL(uint groupThreadId : SV_GroupThreadID, uint 
         _ProbeVolumeAtlasResolutionAndInverse
     );
 
-    float4 res;
-    res.rgb = _ProbeVolumeAtlasReadBuffer[readIndex];
-    res.a = 1.0f;
-    _ProbeVolumeAtlasWriteTexture[writeIndex] = res;
+    _ProbeVolumeAtlasWriteTextureShAr[writeIndex] = _ProbeVolumeAtlasReadBuffer[readIndex].shAr;
+    _ProbeVolumeAtlasWriteTextureShAg[writeIndex] = _ProbeVolumeAtlasReadBuffer[readIndex].shAg;
+    _ProbeVolumeAtlasWriteTextureShAb[writeIndex] = _ProbeVolumeAtlasReadBuffer[readIndex].shAb;
 }

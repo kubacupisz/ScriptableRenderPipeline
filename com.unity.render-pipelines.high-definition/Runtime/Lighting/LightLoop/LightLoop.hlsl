@@ -17,9 +17,6 @@ float ProbeVolumeComputeFadeFactor(
     float rcpDistFadeLen,
     float endTimesRcpDistFadeLen)
 {
-    // We have to account for handedness.
-    samplePositionBoxNDC.z = 1 - samplePositionBoxNDC.z;
-
     float3 posF = Remap10(samplePositionBoxNDC, rcpPosFaceFade, rcpPosFaceFade);
     float3 negF = Remap01(samplePositionBoxNDC, rcpNegFaceFade, 0);
     float  dstF = Remap10(depthWS, rcpDistFadeLen, endTimesRcpDistFadeLen);
@@ -148,7 +145,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
     // With XR single-pass instancing and camera-relative: offset position to do lighting computations from the combined center view (original camera matrix).
     // This is required because there is only one list of lights generated on the CPU. Shadows are also generated once and shared between the instanced views.
     ApplyCameraRelativeXR(posInput.positionWS);
-    
+
     // Initialize the contactShadow and contactShadowFade fields
     InitContactShadow(posInput, context);
 
@@ -225,7 +222,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
             uint s_lightIdx = ScalarizeElementIndex(v_lightIdx, fastPath);
             if (s_lightIdx == -1)
                 break;
-            
+
             LightData s_lightData = FetchLight(s_lightIdx);
 
             // If current scalar and vector light index match, we process the light. The v_lightListOffset for current thread is increased.
@@ -521,12 +518,17 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
 
                     // TODO: Implement per-probe user defined max weight.
                     float weight = 0.0;
-                    float3 sample = 0.0;
+                    float4 sampleShAr = 0.0;
+                    float4 sampleShAg = 0.0;
+                    float4 sampleShAb = 0.0;
                     {
-                        float3x3 obbFrame = float3x3(s_probeVolumeBounds.right, s_probeVolumeBounds.up, cross(s_probeVolumeBounds.up, s_probeVolumeBounds.right));
+                        float3x3 obbFrame = float3x3(s_probeVolumeBounds.right, s_probeVolumeBounds.up, cross(s_probeVolumeBounds.right, s_probeVolumeBounds.up));
                         float3 obbExtents = float3(s_probeVolumeBounds.extentX, s_probeVolumeBounds.extentY, s_probeVolumeBounds.extentZ);
 
-                        float3 samplePositionBS = mul(obbFrame, posInput.positionWS - s_probeVolumeBounds.center);
+                        // TODO: Need to adjust tile / cluster culling code to handle this bias off the surface position.
+                        // One option is to conservatively dilate the volumes in the tile / cluster culling + assignment phase based on the normal bias.
+                        float3 samplePositionWS = bsdfData.normalWS * _ProbeVolumeNormalBiasWS + posInput.positionWS;
+                        float3 samplePositionBS = mul(obbFrame, samplePositionWS - s_probeVolumeBounds.center);
                         float3 samplePositionBCS = samplePositionBS * rcp(obbExtents);
 
                         // TODO: Verify if this early out is actually improving performance.
@@ -552,29 +554,41 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
                             float3 probeVolumeUVW = clamp(samplePositionBNDC.xyz, 0.5 * s_probeVolumeData.resolutionInverse, 1.0 - s_probeVolumeData.resolutionInverse * 0.5);
                             float3 probeVolumeTexel3D = probeVolumeUVW * s_probeVolumeData.resolution;
                             float2 probeVolumeTexel2DBack = float2(
-                                max(0.5, floor(probeVolumeTexel3D.z - 0.5) + 0.5) * s_probeVolumeData.resolution.x + probeVolumeTexel3D.x,
+                                max(0.0, floor(probeVolumeTexel3D.z - 0.5)) * s_probeVolumeData.resolution.x + probeVolumeTexel3D.x,
                                 probeVolumeTexel3D.y
                             );
 
                             float2 probeVolumeTexel2DFront = float2(
-                                min(s_probeVolumeData.resolution.z - 0.5, floor(probeVolumeTexel3D.z - 0.5) + 1.5) * s_probeVolumeData.resolution.x + probeVolumeTexel3D.x,
+                                max(0.0, floor(probeVolumeTexel3D.z + 0.5)) * s_probeVolumeData.resolution.x + probeVolumeTexel3D.x,
                                 probeVolumeTexel3D.y
                             );
 
                             float2 probeVolumeAtlasUV2DBack = probeVolumeTexel2DBack * _ProbeVolumeAtlasResolutionAndInverse.zw + s_probeVolumeData.scaleBias.zw;
                             float2 probeVolumeAtlasUV2DFront = probeVolumeTexel2DFront * _ProbeVolumeAtlasResolutionAndInverse.zw + s_probeVolumeData.scaleBias.zw;
-
-                            sample = lerp(
-                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlas, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack, 0).rgb,
-                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlas, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 0).rgb,
-                                frac(probeVolumeTexel3D.z - 0.5)
+                            float lerpZ = frac(probeVolumeTexel3D.z - 0.5);
+                            sampleShAr = lerp(
+                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlasShAr, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack, 0),
+                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlasShAr, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 0),
+                                lerpZ
+                            );
+                            sampleShAg = lerp(
+                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlasShAg, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack, 0),
+                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlasShAg, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 0),
+                                lerpZ
+                            );
+                            sampleShAb = lerp(
+                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlasShAb, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack, 0),
+                                SAMPLE_TEXTURE2D_LOD(_ProbeVolumeAtlasShAb, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 0),
+                                lerpZ
                             );
                         }
                     }
 
+                    float3 sampleOutgoingRadiance = SHEvalLinearL0L1(bsdfData.normalWS, sampleShAr, sampleShAg, sampleShAb);
+
                     // TODO: Sample irradiance data from atlas and integrate against diffuse BRDF.
                     // probeVolumeDiffuseLighting += s_probeVolumeData.debugColor * sample * weight;
-                    probeVolumeDiffuseLighting += sample * weight;
+                    probeVolumeDiffuseLighting += sampleOutgoingRadiance * weight * bsdfData.diffuseColor;
                     probeVolumeHierarchyWeight = probeVolumeHierarchyWeight + weight;
 
                 }
