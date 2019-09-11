@@ -17,6 +17,11 @@ namespace UnityEditor.Rendering.HighDefinition
 
         public override bool ShadersStripper(HDRenderPipelineAsset hdrpAsset, Shader shader, ShaderSnippetData snippet, ShaderCompilerData inputData)
         {
+//custom-begin: Strip out DXR shaders
+            if (snippet.passName.EndsWith("DXR"))
+                return true;
+//custom-end:
+
             // Strip every useless shadow configs
             var shadowInitParams = hdrpAsset.currentPlatformRenderPipelineSettings.hdShadowInitParams;
 

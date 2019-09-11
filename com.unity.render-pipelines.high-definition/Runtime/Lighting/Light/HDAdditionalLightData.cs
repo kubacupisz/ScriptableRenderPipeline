@@ -2735,7 +2735,6 @@ namespace UnityEngine.Rendering.HighDefinition
 #endregion
 
 #region Utils
-
         bool IsValidLightUnitForType(LightType type, LightTypeExtent typeExtent, LightUnit unit)
         {
             LightUnit[] allowedUnits = GetSupportedLightUnits(type, typeExtent);

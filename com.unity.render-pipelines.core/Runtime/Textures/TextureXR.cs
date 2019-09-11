@@ -21,26 +21,27 @@ namespace UnityEngine.Rendering
         public static int slices { get => m_MaxViews; }
 
         // Must be in sync with shader define in TextureXR.hlsl
-        public static bool useTexArray
-        {
-            get
-            {
-                switch (SystemInfo.graphicsDeviceType)
-                {
-                    case GraphicsDeviceType.Direct3D11:
-                    case GraphicsDeviceType.Direct3D12:
-                        return SystemInfo.graphicsDeviceType != GraphicsDeviceType.XboxOne;
-
-                    case GraphicsDeviceType.PlayStation4:
-                        return true;
-
-                    case GraphicsDeviceType.Vulkan:
-                        return true;
-                }
-
-                return false;
-            }
-        }
+//custom-begin: D3D12 doesn't yet implement mipmaps for render texture arrays so force non-array path (just disable it on all platforms since we don't run XR anyway)
+        public static bool useTexArray => false;
+//        {
+//            get
+//            {
+//                switch (SystemInfo.graphicsDeviceType)
+//                {
+//                    case GraphicsDeviceType.Direct3D11:
+//                    case GraphicsDeviceType.Direct3D12:
+//                        return SystemInfo.graphicsDeviceType != GraphicsDeviceType.XboxOne;
+//
+//                    case GraphicsDeviceType.PlayStation4:
+//                        return true;
+//
+//                    case GraphicsDeviceType.Vulkan:
+//                        return true;
+//                }
+//                return false;
+//            }
+//    }
+//custom-end:
 
         public static TextureDimension dimension
         {
