@@ -8,7 +8,9 @@
 
 // Must be in sync with C# with property useTexArray in TextureXR.cs
 #if (defined(SHADER_API_D3D11) && !defined(SHADER_API_XBOXONE)) || defined(SHADER_API_PSSL) || defined(SHADER_API_VULKAN)
-    #define UNITY_TEXTURE2D_X_ARRAY_SUPPORTED
+//custom-begin: D3D12 doesn't yet implement mipmaps for render texture arrays so force non-array path (just disable it on all platforms since we don't run XR anyway)
+    //#define UNITY_TEXTURE2D_X_ARRAY_SUPPORTED
+//custom-end:
 #endif
 
 // Validate supported platforms

@@ -7,6 +7,10 @@ namespace UnityEngine.Rendering.HighDefinition
         public abstract void SetRenderTargets(BuiltinSkyParameters builtinParams);
         // renderForCubemap: When rendering into a cube map, no depth buffer is available so user has to make sure not to use depth testing or the depth texture.
         public abstract void RenderSky(BuiltinSkyParameters builtinParams, bool renderForCubemap, bool renderSunDisk);
+//custom-begin:
+        public virtual void RenderSky(HDCamera camera, BuiltinSkyParameters builtinParams, bool renderForCubemap, bool renderSunDisk) =>
+            RenderSky(builtinParams, renderForCubemap, renderSunDisk);
+//custom-end:
         public abstract bool IsValid();
 
         protected float GetExposure(SkySettings skySettings, DebugDisplaySettings debugSettings)

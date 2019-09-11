@@ -120,10 +120,8 @@ namespace UnityEditor.Rendering.HighDefinition
 
         /// <summary>Gather all the shader preprocessors</summary>
         /// <returns>The list of shader preprocessor</returns>
-        internal static List<BaseShaderPreprocessor> GetBaseShaderPreprocessorList()
-        {
-            return UnityEngine.Rendering.CoreUtils.GetAllTypesDerivedFrom<BaseShaderPreprocessor>().Select(Activator.CreateInstance).Cast<BaseShaderPreprocessor>().ToList();
-        }
+        internal static List<BaseShaderPreprocessor> GetBaseShaderPreprocessorList() =>
+            UnityEngine.Rendering.CoreUtils.GetAllTypesDerivedFrom<BaseShaderPreprocessor>().Select(Activator.CreateInstance).Cast<BaseShaderPreprocessor>().OrderByDescending(spp => spp.Priority).ToList();
 
         static readonly GUIContent s_OverrideTooltip = EditorGUIUtility.TrTextContent("", "Override this setting in component.");
         internal static bool FlagToggle<TEnum>(TEnum v, SerializedProperty property)
