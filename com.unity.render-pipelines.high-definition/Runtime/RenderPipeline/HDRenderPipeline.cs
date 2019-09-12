@@ -86,7 +86,9 @@ namespace UnityEngine.Rendering.HighDefinition
 #endif
 
 //custom-begin: (Nick) eye rendering
+#if IS_THE_HERETIC
         readonly EyeRenderingManager m_EyeRenderingManager = new EyeRenderingManager();
+#endif
 //custom-end: (Nick) eye rendering
 
         // Renderer Bake configuration can vary depends on if shadow mask is enabled or no
@@ -366,7 +368,9 @@ namespace UnityEngine.Rendering.HighDefinition
             m_AmbientOcclusionSystem = new AmbientOcclusionSystem(asset, defaultResources);
 
 //custom-begin: (Nick) eye rendering
+#if IS_THE_HERETIC
             m_EyeRenderingManager.Build(asset);
+#endif
 //custom-end: (Nick) eye rendering
 
             // Initialize various compute shader resources
@@ -535,7 +539,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
 
 //custom-begin: (Nick) eye rendering
+#if IS_THE_HERETIC
             m_EyeRenderingManager.InitBuffers(m_Asset.currentPlatformRenderPipelineSettings);
+#endif
 //custom-end: (Nick) eye rendering
             m_CameraColorBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, dimension: TextureXR.dimension, colorFormat: GetColorBufferFormat(), enableRandomWrite: true, useMipMap: false, useDynamicScale: true, name: "CameraColor");
             m_OpaqueAtmosphericScatteringBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, dimension: TextureXR.dimension, colorFormat: GetColorBufferFormat(), enableRandomWrite: true, useMipMap: false, useDynamicScale: true, name: "OpaqueAtmosphericScattering");
@@ -811,7 +817,9 @@ namespace UnityEngine.Rendering.HighDefinition
             CleanupSubsurfaceScattering();
             m_SharedRTManager.Cleanup();
 //custom-begin: (Nick) eye rendering
+#if IS_THE_HERETIC
             m_EyeRenderingManager.Cleanup();
+#endif
 //custom-end: (Nick) eye rendering
             m_XRSystem.Cleanup();
             m_SkyManager.Cleanup();
@@ -914,7 +922,9 @@ namespace UnityEngine.Rendering.HighDefinition
                 var visualEnv = VolumeManager.instance.stack.GetComponent<VisualEnvironment>();
                 visualEnv.PushFogShaderParameters(hdCamera, cmd);
 //custom-begin: (Nick) eye rendering
+#if IS_THE_HERETIC
                 m_EyeRenderingManager.PushGlobalParams(hdCamera, cmd, m_FrameCount);
+#endif
 //custom-end: (Nick) eye rendering
 
                 PushVolumetricLightingGlobalParams(hdCamera, cmd, m_FrameCount);
@@ -929,6 +939,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 ssRefraction.PushShaderParameters(cmd);
 
 //custom-begin: screen space dither mask
+#if IS_THE_HERETIC
                 var screenSpaceDitherMask = asset.renderPipelineResources.textures.screenSpaceDitherMask;
                 if (screenSpaceDitherMask != null)
                 {
@@ -956,6 +967,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     cmd.SetGlobalTexture(HDShaderIDs._ScreenSpaceDitherMask, Texture2D.blackTexture);
                     cmd.SetGlobalVector(HDShaderIDs._ScreenSpaceDitherMask_AnimRepeat, Vector4.zero);
                 }
+#endif
 //custom-end
 
                 // Set up UnityPerView CBuffer.
@@ -2126,6 +2138,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 RenderSky(hdCamera, cmd);
 
 //custom-begin: (Nick) eye rendering
+#if IS_THE_HERETIC
                 // FIXME: Eye screen space reflections are still rendering AFTER eyes, and since target is not clearned,
                 // eyes sample from one frame behind SSR. Need to make eyes render in ForwardPass.PreRefraction.
                 //
@@ -2138,6 +2151,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 // Depth + Color Pyramids must also be available at this point, as eye-SSR marches through them.
                 // hdCamera.frameSettings.enableRoughRefraction must be set to TRUE for this to occur.
                 m_EyeRenderingManager.SetupScreenSpaceReflectionsData(hdCamera, cmd, m_CameraColorBuffer, m_SharedRTManager.GetDepthStencilBuffer(), m_SharedRTManager.GetDepthTexture(), m_SharedRTManager.GetDepthBufferMipChainInfo());
+#endif
 //custom-end: (Nick) eye rendering
 
                 RenderTransparentDepthPrepass(cullingResults, hdCamera, renderContext, cmd);
