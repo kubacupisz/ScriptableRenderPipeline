@@ -343,42 +343,47 @@ namespace UnityEngine.Rendering.HighDefinition
             // if (rtEnv.raytracedAO)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.aoLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // If Reflection is on flag its RAS needUpdate
             // if (rtEnv.raytracedReflections)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.reflLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // If Area Shadow is on flag its RAS needUpdate
             //if (rtEnv.raytracedShadows)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.shadowLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // If Primary Visibility is on flag its RAS needUpdate
             // if (rtEnv.raytracedObjects)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.raytracedLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // If indirect diffuse is on flag its RAS needUpdate
             // if (rtEnv.raytracedIndirectDiffuse)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.indirectDiffuseLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // Let's go through all the sub-scenes that are flagged needUpdate and update their RAS
             foreach (var subScene in m_SubScenes)
             {
                 HDRayTracingSubScene currentSubScene = subScene.Value;
-                if (currentSubScene.accelerationStructure != null && currentSubScene.needUpdate)
+                if (currentSubScene != null && currentSubScene.accelerationStructure != null && currentSubScene.needUpdate)
                 {
                     for (var i = 0; i < currentSubScene.targetRenderers.Count; i++)
                     {
@@ -412,21 +417,24 @@ namespace UnityEngine.Rendering.HighDefinition
             // if (rtEnv.raytracedReflections)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.reflLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // If Primary Visibility is on flag its light cluster
             // if (rtEnv.raytracedObjects)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.raytracedLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // If indirect diffuse is on flag its light cluster
             // if (rtEnv.raytracedIndirectDiffuse)
             {
                 HDRayTracingSubScene currentSubScene = RequestSubScene(rtEnv.indirectDiffuseLayerMask);
-                currentSubScene.needUpdate = true;
+                if (currentSubScene != null)
+                    currentSubScene.needUpdate = true;
             }
 
             // Let's go through all the sub-scenes that are flagged needUpdate and update their light clusters
@@ -435,7 +443,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 HDRayTracingSubScene currentSubScene = subScene.Value;
 
                 // If it need update, go through it
-                if (currentSubScene.needUpdate)
+                if (currentSubScene != null && currentSubScene.needUpdate)
                 {
                     // Evaluate the light cluster
                     currentSubScene.lightCluster.EvaluateLightClusters(cmd, hdCamera, currentSubScene.lights);
