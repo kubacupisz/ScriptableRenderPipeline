@@ -48,9 +48,9 @@
     TEXTURE2D_X(_IndirectDiffuseTexture);
 #endif
 
-    TEXTURE2D(_ProbeVolumeAtlasShAr);
+    /*TEXTURE2D(_ProbeVolumeAtlasShAr);
     TEXTURE2D(_ProbeVolumeAtlasShAg);
-    TEXTURE2D(_ProbeVolumeAtlasShAb);
+    TEXTURE2D(_ProbeVolumeAtlasShAb);*/
     float4 _ProbeVolumeAtlasResolutionAndInverse;
     float _ProbeVolumeNormalBiasWS;
 
