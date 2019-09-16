@@ -74,3 +74,40 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
     rayIntersection.color = bsdfData.color * GetInverseCurrentExposureMultiplier() + builtinData.emissiveColor;
 #endif
 }
+
+
+[shader("anyhit")]
+void AnyHitMain(inout RayIntersection rayIntersection : SV_RayPayload, AttributeData attributeData : SV_IntersectionAttributes)
+{
+    // The first thing that we should do is grab the intersection vertice
+    IntersectionVertex currentvertex;
+    GetCurrentIntersectionVertex(attributeData, currentvertex);
+
+    // Build the Frag inputs from the intersection vertice
+    FragInputs fragInput;
+    BuildFragInputsFromIntersection(currentvertex, rayIntersection.incidentDirection, fragInput);
+
+    // Compute the view vector
+    float3 viewWS = -rayIntersection.incidentDirection;
+
+    // Make sure to add the additional travel distance
+    float3 pointWSPos = GetAbsolutePositionWS(fragInput.positionRWS);
+    float travelDistance = length(pointWSPos - rayIntersection.origin);
+    rayIntersection.t = travelDistance;
+    rayIntersection.cone.width += travelDistance * rayIntersection.cone.spreadAngle;
+
+    PositionInputs posInput;
+    posInput.positionWS = fragInput.positionRWS;
+    posInput.positionSS = uint2(0, 0);
+
+    // Build the surfacedata and builtindata
+    SurfaceData surfaceData;
+    BuiltinData builtinData;
+    bool isVisible = GetSurfaceDataFromIntersection(fragInput, viewWS, posInput, currentvertex, rayIntersection.cone, surfaceData, builtinData);
+
+    // If this fella should be culled, then we cull it
+    if (!isVisible)
+    {
+        IgnoreHit();
+    }
+}
