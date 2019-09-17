@@ -612,7 +612,7 @@ namespace UnityEngine.Rendering.HighDefinition
         void UpdateVolumeParameters()
         {
             volumeAnchor = null;
-            volumeLayerMask = -1;
+            volumeLayerMask = 0;
             if (m_AdditionalCameraData != null)
             {
                 volumeLayerMask = m_AdditionalCameraData.volumeLayerMask;
