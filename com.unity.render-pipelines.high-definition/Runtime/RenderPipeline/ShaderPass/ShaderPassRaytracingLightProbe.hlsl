@@ -30,7 +30,6 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
     BuiltinData builtinData;
     GetSurfaceDataFromIntersection(fragInput, viewWS, posInput, currentvertex, rayIntersection.cone, surfaceData, builtinData);
 
-#ifdef ENABLE_RTPV
     if (!fragInput.isFrontFace)
     {
         rayIntersection.color = float3(0.0, 0.0, 0.0);
@@ -42,7 +41,6 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
         rayIntersection.t *= 0.2;
         return;
     }
-#endif
 
     // Compute the bsdf data
     BSDFData bsdfData = ConvertSurfaceDataToBSDFData(posInput.positionSS, surfaceData);

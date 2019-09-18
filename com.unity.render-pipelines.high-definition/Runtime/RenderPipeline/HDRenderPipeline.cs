@@ -899,15 +899,16 @@ namespace UnityEngine.Rendering.HighDefinition
 
             if (resolutionChanged || LightLoopNeedResize(hdCamera, m_TileAndClusterData))
             {
+                // update recorded window resolution
+                m_MaxCameraWidth = Mathf.Max(m_MaxCameraWidth, hdCamera.actualWidth);
+                m_MaxCameraHeight = Mathf.Max(m_MaxCameraHeight, hdCamera.actualHeight);
+
                 if (m_MaxCameraWidth > 0 && m_MaxCameraHeight > 0)
                     LightLoopReleaseResolutionDependentBuffers();
 
-                LightLoopAllocResolutionDependentBuffers(hdCamera);
+                LightLoopAllocResolutionDependentBuffers(hdCamera, m_MaxCameraWidth, m_MaxCameraHeight);
             }
 
-            // update recorded window resolution
-            m_MaxCameraWidth = Mathf.Max(m_MaxCameraWidth, hdCamera.actualWidth);
-            m_MaxCameraHeight = Mathf.Max(m_MaxCameraHeight, hdCamera.actualHeight);
         }
 
         void PushGlobalParams(HDCamera hdCamera, CommandBuffer cmd)
@@ -1113,6 +1114,7 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             if (!m_ValidAPI || cameras.Length == 0)
                 return;
+
 
             GetOrCreateDefaultVolume();
 
