@@ -562,7 +562,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     {
                         // Grab the current renderer
                         Renderer currentRenderer = subScene.targetRenderers[i];
-                        bool singleSided = false;
+                        bool doubleSided = false;
                         if (currentRenderer.sharedMaterials != null)
                         {
                             int subMeshCount = 0;
@@ -602,15 +602,14 @@ namespace UnityEngine.Rendering.HighDefinition
                                     || (HDRenderQueue.k_RenderQueue_OpaqueAlphaTest.lowerBound <= currentMaterial.renderQueue
                                     && HDRenderQueue.k_RenderQueue_OpaqueAlphaTest.upperBound >= currentMaterial.renderQueue);
 
-                                    // Force it to be non single sided if it has the keyword if there is a reason
-                                    bool doubleSided = currentMaterial.doubleSidedGI || currentMaterial.IsKeywordEnabled("_DOUBLESIDED_ON");
-                                    singleSided |= !doubleSided;
+                                    // Is the material double-sided?
+                                    bool currentDoubleSided = currentMaterial.doubleSidedGI || currentMaterial.IsKeywordEnabled("_DOUBLESIDED_ON");
+                                    doubleSided |= currentDoubleSided;
                                 }
                                 else
                                 {
                                     subMeshFlagArray[materialIdx] = false;
                                     subMeshCutoffArray[materialIdx] = false;
-                                    singleSided = true;
                                 }
                             }
 
@@ -622,7 +621,7 @@ namespace UnityEngine.Rendering.HighDefinition
                             }
 
                             // Add it to the acceleration structure
-                            subScene.accelerationStructure.AddInstance(currentRenderer, subMeshMask: subMeshFlagArray, subMeshTransparencyFlags: subMeshCutoffArray, enableTriangleCulling: singleSided, mask: instanceFlag);
+                            subScene.accelerationStructure.AddInstance(currentRenderer, subMeshMask: subMeshFlagArray, subMeshTransparencyFlags: subMeshCutoffArray, enableTriangleCulling: !doubleSided, mask: instanceFlag);
                         }
                     }
                 }
