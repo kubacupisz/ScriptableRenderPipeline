@@ -614,6 +614,13 @@ namespace UnityEngine.Rendering.HighDefinition
                                 }
                             }
 
+                            // Clear the remaining entries in sub-mesh data arrays
+                            for (int materialIdx = count; materialIdx < maxNumSubMeshes; ++materialIdx)
+                            {
+                                subMeshFlagArray[materialIdx] = false;
+                                subMeshCutoffArray[materialIdx] = false;
+                            }
+
                             // Add it to the acceleration structure
                             subScene.accelerationStructure.AddInstance(currentRenderer, subMeshMask: subMeshFlagArray, subMeshTransparencyFlags: subMeshCutoffArray, enableTriangleCulling: singleSided, mask: instanceFlag);
                         }
