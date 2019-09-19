@@ -562,20 +562,30 @@ namespace UnityEngine.Rendering.HighDefinition
                     {
                         // Grab the current renderer
                         Renderer currentRenderer = subScene.targetRenderers[i];
-                        bool singleSided = false;
+                        bool doubleSided = false;
                         if (currentRenderer.sharedMaterials != null)
                         {
+                            int subMeshCount = 0;
+                            MeshFilter currentFilter = currentRenderer.GetComponent<MeshFilter>();
+                            if (currentFilter != null && currentFilter.sharedMesh != null)
+                            {
+                                subMeshCount = currentFilter.sharedMesh.subMeshCount;
+                            }
+
                             // For every sub-mesh/sub-material let's build the right flags
-                            int numSubMeshes = currentRenderer.sharedMaterials.Length;
+                            int materialCount = currentRenderer.sharedMaterials.Length;
+
+                            // Sub-mesh and material arrays are not guaranteed to be in sync
+                            int count = Mathf.Min(subMeshCount, materialCount);
 
                             uint instanceFlag = 0xff;
-                            for (int meshIdx = 0; meshIdx < numSubMeshes; ++meshIdx)
+                            for (int materialIdx = 0; materialIdx < count; ++materialIdx)
                             {
-                                Material currentMaterial = currentRenderer.sharedMaterials[meshIdx];
+                                Material currentMaterial = currentRenderer.sharedMaterials[materialIdx];
                                 // The material is transparent if either it has the requested keyword or is in the transparent queue range
                                 if (currentMaterial != null)
                                 {
-                                    subMeshFlagArray[meshIdx] = true;
+                                    subMeshFlagArray[materialIdx] = true;
 
                                     // Is the material transparent?
                                     bool materialIsTransparent = currentMaterial.IsKeywordEnabled("_SURFACE_TYPE_TRANSPARENT")
@@ -588,24 +598,30 @@ namespace UnityEngine.Rendering.HighDefinition
                                     instanceFlag = materialIsTransparent ? (uint)0xf0 : (uint)0x0f;
 
                                     // Is the material alpha tested?
-                                    subMeshCutoffArray[meshIdx] = currentMaterial.IsKeywordEnabled("_ALPHATEST_ON")
+                                    subMeshCutoffArray[materialIdx] = currentMaterial.IsKeywordEnabled("_ALPHATEST_ON")
                                     || (HDRenderQueue.k_RenderQueue_OpaqueAlphaTest.lowerBound <= currentMaterial.renderQueue
                                     && HDRenderQueue.k_RenderQueue_OpaqueAlphaTest.upperBound >= currentMaterial.renderQueue);
 
-                                    // Force it to be non single sided if it has the keyword if there is a reason
-                                    bool doubleSided = currentMaterial.doubleSidedGI || currentMaterial.IsKeywordEnabled("_DOUBLESIDED_ON");
-                                    singleSided |= !doubleSided;
+                                    // Is the material double-sided?
+                                    bool currentDoubleSided = currentMaterial.doubleSidedGI || currentMaterial.IsKeywordEnabled("_DOUBLESIDED_ON");
+                                    doubleSided |= currentDoubleSided;
                                 }
                                 else
                                 {
-                                    subMeshFlagArray[meshIdx] = false;
-                                    subMeshCutoffArray[meshIdx] = false;
-                                    singleSided = true;
+                                    subMeshFlagArray[materialIdx] = false;
+                                    subMeshCutoffArray[materialIdx] = false;
                                 }
                             }
 
+                            // Clear the remaining entries in sub-mesh data arrays
+                            for (int materialIdx = count; materialIdx < maxNumSubMeshes; ++materialIdx)
+                            {
+                                subMeshFlagArray[materialIdx] = false;
+                                subMeshCutoffArray[materialIdx] = false;
+                            }
+
                             // Add it to the acceleration structure
-                            subScene.accelerationStructure.AddInstance(currentRenderer, subMeshMask: subMeshFlagArray, subMeshTransparencyFlags: subMeshCutoffArray, enableTriangleCulling: singleSided, mask: instanceFlag);
+                            subScene.accelerationStructure.AddInstance(currentRenderer, subMeshMask: subMeshFlagArray, subMeshTransparencyFlags: subMeshCutoffArray, enableTriangleCulling: !doubleSided, mask: instanceFlag);
                         }
                     }
                 }
