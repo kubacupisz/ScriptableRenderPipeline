@@ -501,10 +501,11 @@ namespace UnityEngine.Rendering.HighDefinition
                         for (int rendererIdx = 0; rendererIdx < currentLOD.renderers.Length; ++rendererIdx)
                         {
                             Renderer currentRenderer = currentLOD.renderers[rendererIdx];
-                            // Add this fella to the renderer list
-                            rendererReference.Add(currentRenderer.GetInstanceID(), 1);
-                        }
 
+                            // Add this fella to the renderer list
+                            if (!rendererReference.ContainsKey(currentRenderer.GetInstanceID()))
+                                rendererReference.Add(currentRenderer.GetInstanceID(), 1);
+                        }
                     }
                 }
 

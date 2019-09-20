@@ -7,7 +7,11 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Sampling.hlsl"
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Sky/PhysicallyBasedSky/PhysicallyBasedSkyRenderer.cs.hlsl"
 
+#if SHADER_STAGE_RAY_TRACING
+RAY_TRACING_GLOBAL_CBUFFER_START(UnityPhysicallyBasedSky, UNITY_PHYSICALLY_BASED_SKY_CBUFFER_REGISTER)
+#else
 CBUFFER_START(UnityPhysicallyBasedSky)
+#endif
     // All the distance-related entries use km and 1/km units.
     float  _PlanetaryRadius;
     float  _RcpPlanetaryRadius;
