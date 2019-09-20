@@ -8,6 +8,8 @@
 
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/TextureXR.hlsl"
 
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/RayTracingGlobalShaderVariables.hlsl"
+
 // CAUTION:
 // Currently the shaders compiler always include regualr Unity shaderVariables, so I get a conflict here were UNITY_SHADER_VARIABLES_INCLUDED is already define, this need to be fixed.
 // As I haven't change the variables name yet, I simply don't define anything, and I put the transform function at the end of the file outside the guard header.
@@ -124,7 +126,11 @@ TEXTURE2D(_PrevExposureTexture);
 
 // Important: please use macros or functions to access the CBuffer data.
 // The member names and data layout can (and will) change!
+#if SHADER_STAGE_RAY_TRACING
+RAY_TRACING_GLOBAL_CBUFFER_START(UnityGlobal, UNITY_GLOBAL_CBUFFER_REGISTER)
+#else
 CBUFFER_START(UnityGlobal)
+#endif
     // ================================
     //     PER VIEW CONSTANTS
     // ================================

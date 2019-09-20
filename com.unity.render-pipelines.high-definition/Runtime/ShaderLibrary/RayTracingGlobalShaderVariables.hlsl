@@ -1,0 +1,12 @@
+
+// Global Constant Buffers
+#define UNITY_GLOBAL_CBUFFER_REGISTER                           b0
+#define UNITY_PHYSICALLY_BASED_SKY_CBUFFER_REGISTER             b1
+#define UNITY_RAY_TRACING_LIGHT_LOOP_CBUFFER_REGISTER           b2
+#define UNITY_RAY_TRACING_GLOBAL_CBUFFER_REGISTER               b3
+
+// Global Textures and Buffers
+#define GLOBAL_RAY_TRACING_ACCELERATION_STRUCTURE_REGISTER      t0
+#define GLOBAL_RAY_TRACING_LIGHT_CLUSTER_REGISTER               t1
+#define GLOBAL_RAY_TRACING_LIGHT_DATA_REGISTER                  t2
+#define GLOBAL_RAY_TRACING_ENV_LIGHT_DATA_REGISTER              t3
