@@ -580,6 +580,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                             // Sub-mesh and material arrays are not guaranteed to be in sync
                             int count = Mathf.Min(subMeshCount, materialCount);
+                            count = Mathf.Min(count, maxNumSubMeshes);
 
                             uint instanceFlag = 0xff;
                             for (int materialIdx = 0; materialIdx < count; ++materialIdx)
