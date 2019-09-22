@@ -501,6 +501,8 @@ namespace UnityEngine.Rendering.HighDefinition
                         for (int rendererIdx = 0; rendererIdx < currentLOD.renderers.Length; ++rendererIdx)
                         {
                             Renderer currentRenderer = currentLOD.renderers[rendererIdx];
+                            if (!currentRenderer)
+                                continue;
 
                             // Add this fella to the renderer list
                             if (!rendererReference.ContainsKey(currentRenderer.GetInstanceID()))
