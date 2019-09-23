@@ -468,12 +468,6 @@ namespace UnityEngine.Rendering.HighDefinition
                 return;
             }
 
-            // Also we need to build the light list data
-            if (m_LightDataGPUArray == null || m_LightDataGPUArray.count != lightArray.Count)
-            {
-                ResizeLightDataBuffer(lightArray.Count);
-            }
-
             m_LightDataCPUArray.Clear();
 
             // Build the data for every light
@@ -490,6 +484,9 @@ namespace UnityEngine.Rendering.HighDefinition
                     continue;
                 }
                 Light light = additionalLightData.gameObject.GetComponent<Light>();
+
+                if (!light.enabled)
+                    continue;
 
                 // Both of these positions are non-camera-relative.
                 float distanceToCamera = (light.gameObject.transform.position - hdCamera.camera.transform.position).magnitude;
@@ -684,8 +681,15 @@ namespace UnityEngine.Rendering.HighDefinition
                 m_LightDataCPUArray.Add(lightData);
             }
 
+            // Also we need to build the light list data
+            if (m_LightDataGPUArray == null || m_LightDataGPUArray.count != m_LightDataCPUArray.Count)
+            {
+                ResizeLightDataBuffer(m_LightDataCPUArray.Count);
+            }
+
             // Push the data to the GPU
-            m_LightDataGPUArray.SetData(m_LightDataCPUArray);
+            if (m_LightDataGPUArray != null)
+                m_LightDataGPUArray.SetData(m_LightDataCPUArray);
         }
 
         void BuildEnvLightData(CommandBuffer cmd, HDCamera hdCamera, HDRayTracingLights lights)
