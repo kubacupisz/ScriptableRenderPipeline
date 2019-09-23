@@ -1831,7 +1831,8 @@ namespace UnityEngine.Rendering.HighDefinition
 
         void LightLoopUpdateCullingParameters(ref ScriptableCullingParameters cullingParams)
         {
-            m_ShadowManager.UpdateCullingParameters(ref cullingParams);
+            if (m_ShadowManager != null)
+                m_ShadowManager.UpdateCullingParameters(ref cullingParams);
 
             // In HDRP we don't need per object light/probe info so we disable the native code that handles it.
             cullingParams.cullingOptions |= CullingOptions.DisablePerObjectCulling;
