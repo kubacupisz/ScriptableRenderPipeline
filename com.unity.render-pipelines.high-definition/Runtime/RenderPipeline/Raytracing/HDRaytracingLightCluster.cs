@@ -670,12 +670,12 @@ namespace UnityEngine.Rendering.HighDefinition
                     lightData.nonLightMappedOnly = 0;
                 }
 
-                if (ShaderConfig.s_CameraRelativeRendering != 0)
+                /*if (ShaderConfig.s_CameraRelativeRendering != 0)
                 {
                     // Caution: 'LightData.positionWS' is camera-relative after this point.
                     Vector3 camPosWS = hdCamera.mainViewConstants.worldSpaceCameraPos;
                     lightData.positionRWS -= camPosWS;
-                }
+                }*/
 
                 // Set the data for this light
                 m_LightDataCPUArray.Add(lightData);
