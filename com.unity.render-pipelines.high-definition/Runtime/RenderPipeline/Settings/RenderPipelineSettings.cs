@@ -65,6 +65,8 @@ namespace UnityEngine.Rendering.HighDefinition
             lowresTransparentSettings = GlobalLowResolutionTransparencySettings.@default,
             supportRayTracing = false,
             supportedRaytracingTier = RaytracingTier.Tier2,
+            supportProbeVolume = false,
+            probeVolumeSettings = GlobalProbeVolumeSettings.@default,
         };
 
         // Lighting
@@ -103,6 +105,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public bool supportRayTracing;
         public RaytracingTier supportedRaytracingTier;
 
+        public GlobalProbeVolumeSettings probeVolumeSettings;
         public GlobalLightLoopSettings lightLoopSettings;
         public HDShadowInitParameters hdShadowInitParams;
         public GlobalDecalSettings decalSettings;

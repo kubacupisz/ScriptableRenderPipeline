@@ -42,6 +42,7 @@ namespace UnityEditor.Rendering.HighDefinition
         public SerializedGlobalPostProcessSettings postProcessSettings;
         public SerializedDynamicResolutionSettings dynamicResolutionSettings;
         public SerializedLowResTransparencySettings lowresTransparentSettings;
+        public SerializedGlobalProbeVolumeSettings probeVolumeSettings;
 
         public SerializedRenderPipelineSettings(SerializedProperty root)
         {
@@ -79,6 +80,7 @@ namespace UnityEditor.Rendering.HighDefinition
             postProcessSettings = new SerializedGlobalPostProcessSettings(root.Find((RenderPipelineSettings s) => s.postProcessSettings));
             dynamicResolutionSettings = new SerializedDynamicResolutionSettings(root.Find((RenderPipelineSettings s) => s.dynamicResolutionSettings));
             lowresTransparentSettings = new SerializedLowResTransparencySettings(root.Find((RenderPipelineSettings s) => s.lowresTransparentSettings));
+			probeVolumeSettings = new SerializedGlobalProbeVolumeSettings(root.Find((RenderPipelineSettings s) => s.probeVolumeSettings));
         }
     }
 }
