@@ -326,7 +326,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     obb.center -= camOffset;
 
                     // Frustum cull on the CPU for now. TODO: do it on the GPU.
-                    if (GeometryUtils.Overlap(obb, hdCamera.frustum, hdCamera.frustum.planes.Length, hdCamera.frustum.corners.Length))
+                    if (GeometryUtils.Overlap(obb, hdCamera.frustum))
                     {
                         var logVolume = CalculateProbeVolumeLogVolume(volume.parameters.size);
 
