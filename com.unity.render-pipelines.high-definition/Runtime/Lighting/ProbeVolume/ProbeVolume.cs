@@ -258,8 +258,9 @@ namespace UnityEngine.Rendering.HighDefinition
             SphericalHarmonicsL1[] data = new SphericalHarmonicsL1[parameters.resolutionX * parameters.resolutionY * parameters.resolutionZ];
 
             var nativeData = new NativeArray<SphericalHarmonicsL2>(data.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+#if PROBEBAKE_API
             UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(GetID(), nativeData);
-
+#endif
             for (int i = 0, iLen = data.Length; i < iLen; ++i)
             {
                 data[i].shAr = new Vector4(nativeData[i][0, 1], nativeData[i][0, 2], nativeData[i][0, 3], nativeData[i][0, 0]);
@@ -285,21 +286,22 @@ namespace UnityEngine.Rendering.HighDefinition
         public void DisableBaking()
         {
             UnityEditor.Lightmapping.bakeCompleted -= OnBakeCompleted;
-
+#if PROBEBAKE_API
             UnityEditor.Lightmapping.lightingDataCleared -= OnLightingDataCleared;
             UnityEditor.Lightmapping.lightingDataAssetCleared -= OnLightingDataAssetCleared;
 
             if (GetID() != -1)
                 UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(GetID(), null);
+#endif
         }
 
         public void EnableBaking()
         {
             UnityEditor.Lightmapping.bakeCompleted += OnBakeCompleted;
-
+#if PROBEBAKE_API
             UnityEditor.Lightmapping.lightingDataCleared += OnLightingDataCleared;
             UnityEditor.Lightmapping.lightingDataAssetCleared += OnLightingDataAssetCleared;
-
+#endif
             // Reset matrices hash to recreate all positions
             m_DebugProbeInputHash = new Hash128();
 
@@ -312,9 +314,11 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             if (!this.gameObject.activeInHierarchy)
                 return;
-
+#if PROBEBAKE_API
             float debugProbeSize = Gizmos.probeSize;
-
+#else
+            float debugProbeSize = 1.0f;
+#endif
             string inputString = GetID().ToString() + debugProbeSize.ToString();
             Hash128 debugProbeInputHash = Hash128.Compute(inputString);
             Hash128 settingsHash = Hash;
@@ -403,8 +407,9 @@ namespace UnityEngine.Rendering.HighDefinition
             }
 
             m_DebugProbeInputHash = debugProbeInputHash;
-
+#if PROBEBAKE_API
             UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(GetID(), positions);
+#endif
         }
 
         protected static bool ShouldDrawGizmos(ProbeVolume probeVolume)
@@ -470,4 +475,4 @@ namespace UnityEngine.Rendering.HighDefinition
     }
 #endif
 
-} // UnityEngine.Experimental.Rendering.HDPipeline
+        } // UnityEngine.Experimental.Rendering.HDPipeline

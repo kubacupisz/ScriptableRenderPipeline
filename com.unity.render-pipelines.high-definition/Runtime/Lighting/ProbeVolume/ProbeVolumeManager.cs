@@ -46,8 +46,9 @@ namespace UnityEngine.Rendering.HighDefinition
             {
                 v.EnableBaking();
             }
-
+#if PROBEBAKE_API
             UnityEditor.Lightmapping.additionalBakedProbesCompleted -= ReactivateProbes;
+#endif
         }
         public static void BakeSingle(ProbeVolume probeVolume)
         {
@@ -61,10 +62,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 v.DisableBaking();
             }
-
+#if PROBEBAKE_API
             UnityEditor.Lightmapping.additionalBakedProbesCompleted += manager.ReactivateProbes;
+#endif
             UnityEditor.Lightmapping.BakeAsync();
         }
     }
 #endif
-}
+        }
