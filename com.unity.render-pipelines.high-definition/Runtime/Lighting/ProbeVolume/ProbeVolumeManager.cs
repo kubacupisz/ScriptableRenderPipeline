@@ -57,14 +57,20 @@ namespace UnityEngine.Rendering.HighDefinition
             UnityEditor.Lightmapping.additionalBakedProbesCompleted -= ReactivateProbes;
 #endif
         }
-        public static void BakeSingle(ProbeVolume probeVolume)
+        public static void BakeSingle()
         {
-            if (!probeVolume)
-                return;
+            List<ProbeVolume> selectedProbeVolumes = new List<ProbeVolume>();
+
+            foreach (GameObject go in UnityEditor.Selection.gameObjects)
+            {
+                ProbeVolume probeVolume = go.GetComponent<ProbeVolume>();
+                if (probeVolume)
+                    selectedProbeVolumes.Add(probeVolume);
+            }
 
             foreach (ProbeVolume v in manager.volumes)
             {
-                if (v == probeVolume)
+                if (selectedProbeVolumes.Contains(v))
                     continue;
 
                 v.DisableBaking();
