@@ -80,6 +80,6 @@ namespace UnityEngine.Rendering.HighDefinition
 #endif
             UnityEditor.Lightmapping.BakeAsync();
         }
-    }
 #endif
+    }
         }
