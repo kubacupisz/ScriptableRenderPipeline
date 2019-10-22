@@ -7,6 +7,12 @@
 float _AlembicMotionVectorsScale;
 //custom-end:
 
+//custom-begin: object motion override
+    float override_Matrix;
+    float4x4 override_MatrixPreviousM;
+    float4x4 override_MatrixPreviousMI;
+//custom-end:
+
 // Available semantic start from TEXCOORD4
 struct AttributesPass
 {
@@ -134,6 +140,14 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
     }
     else
     {
+//custom-begin: object motion override
+        if (override_Matrix == 1.0)
+        {
+            unity_MatrixPreviousM = override_MatrixPreviousM;
+            unity_MatrixPreviousMI = override_MatrixPreviousMI;
+        }
+//custom-end:
+
         bool hasDeformation = unity_MotionVectorsParams.x > 0.0; // Skin or morph target
 
         float3 effectivePositionOS = (hasDeformation ? inputPass.previousPositionOS : inputMesh.positionOS);

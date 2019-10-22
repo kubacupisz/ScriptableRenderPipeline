@@ -16,6 +16,9 @@ namespace UnityEditor.Rendering.HighDefinition
         [UnityEngine.Serialization.FormerlySerializedAs("supportVolumetric")]
         public SerializedProperty supportVolumetrics;
         public SerializedProperty increaseResolutionOfVolumetrics;
+//custom-begin: custom high-quality volumetrics level
+        public SerializedProperty volumetricsHQTileSize;
+//custom-end:
         public SerializedProperty supportLightLayers;
         public SerializedProperty supportedLitShaderMode;
         public SerializedProperty colorBufferFormat;
@@ -53,6 +56,9 @@ namespace UnityEditor.Rendering.HighDefinition
             increaseSssSampleCount          = root.Find((RenderPipelineSettings s) => s.increaseSssSampleCount);
             supportVolumetrics              = root.Find((RenderPipelineSettings s) => s.supportVolumetrics);
             increaseResolutionOfVolumetrics = root.Find((RenderPipelineSettings s) => s.increaseResolutionOfVolumetrics);
+//custom-begin: custom high-quality volumetrics level
+            volumetricsHQTileSize           = root.Find((RenderPipelineSettings s) => s.volumetricsHQTileSize);
+//custom-end:
             supportLightLayers              = root.Find((RenderPipelineSettings s) => s.supportLightLayers);
             colorBufferFormat               = root.Find((RenderPipelineSettings s) => s.colorBufferFormat);
             supportedLitShaderMode          = root.Find((RenderPipelineSettings s) => s.supportedLitShaderMode);

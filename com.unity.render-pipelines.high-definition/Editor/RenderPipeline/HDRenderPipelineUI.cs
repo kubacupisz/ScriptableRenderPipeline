@@ -592,6 +592,9 @@ namespace UnityEditor.Rendering.HighDefinition
             {
                 ++EditorGUI.indentLevel;
                 EditorGUILayout.PropertyField(serialized.renderPipelineSettings.increaseResolutionOfVolumetrics, k_VolumetricResolutionContent);
+//custom-begin: custom high-quality volumetrics level
+                EditorGUILayout.PropertyField(serialized.renderPipelineSettings.volumetricsHQTileSize, k_VolumetricsHQTileSize);
+//custom-end:
                 --EditorGUI.indentLevel;
             }
 

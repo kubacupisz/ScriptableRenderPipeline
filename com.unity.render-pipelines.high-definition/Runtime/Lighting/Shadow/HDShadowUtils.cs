@@ -4,7 +4,9 @@ namespace UnityEngine.Rendering.HighDefinition
     static class HDShadowUtils
     {
         public static readonly float k_MinShadowNearPlane = 0.0001f;
-        public static readonly float k_MaxShadowNearPlane = 10.0f;
+//custom-begin: Change range
+        public static readonly float k_MaxShadowNearPlane = 500f;
+//custom-end:
 
         public static float Asfloat(uint val) { unsafe { return *((float*)&val); } }
         public static float Asfloat(int val)  { unsafe { return *((float*)&val); } }

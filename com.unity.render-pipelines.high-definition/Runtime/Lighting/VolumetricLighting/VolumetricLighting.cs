@@ -165,6 +165,9 @@ namespace UnityEngine.Rendering.HighDefinition
         VolumetricLightingPreset      volumetricLightingConfigPreset = VolumetricLightingPreset.Off;
 //custon-end:
         VolumetricLightingPreset      volumetricLightingPreset = VolumetricLightingPreset.Off;
+//custom-begin: custom high-quality volumetrics level
+        int volumetricHQTileSize = 0;
+//custom-end:
 
         ComputeShader                 m_VolumeVoxelizationCS      = null;
         ComputeShader                 m_VolumetricLightingCS      = null;
@@ -227,6 +230,9 @@ namespace UnityEngine.Rendering.HighDefinition
 //custom-end:
                 ? VolumetricLightingPreset.High
                 : VolumetricLightingPreset.Medium;
+//custom-begin: custom high-quality volumetrics level
+            volumetricHQTileSize = asset.currentPlatformRenderPipelineSettings.volumetricsHQTileSize;
+//custom-end:
 
             m_VolumeVoxelizationCS = defaultResources.shaders.volumeVoxelizationCS;
             m_VolumetricLightingCS = defaultResources.shaders.volumetricLightingCS;
@@ -268,25 +274,28 @@ namespace UnityEngine.Rendering.HighDefinition
         // RTHandleSystem API expects a function which computes the resolution. We define it here.
         Vector2Int ComputeVBufferResolutionXY(Vector2Int screenSize)
         {
-            Vector3Int resolution = ComputeVBufferResolution(volumetricLightingPreset, screenSize.x, screenSize.y);
-
+//custom-begin: custom high-quality volumetrics level
+            Vector3Int resolution = ComputeVBufferResolution(volumetricLightingPreset, screenSize.x, screenSize.y, ComputeVBufferTileSize(volumetricLightingPreset, volumetricHQTileSize));
+//custom-erd:
             return new Vector2Int(resolution.x, resolution.y);
         }
 
 //custom-begin: Allocate both quality levels
-        static Vector2Int ComputeVBufferResolutionXY_MQ(Vector2Int screenSize)
+        Vector2Int ComputeVBufferResolutionXY_MQ(Vector2Int screenSize)
         {
-            Vector3Int resolution = ComputeVBufferResolution(VolumetricLightingPreset.Medium, screenSize.x, screenSize.y);
+//custom-begin: custom high-quality volumetrics level
+            Vector3Int resolution = ComputeVBufferResolution(VolumetricLightingPreset.Medium, screenSize.x, screenSize.y, ComputeVBufferTileSize(VolumetricLightingPreset.Medium, volumetricHQTileSize));
+//custom-erd:
             return new Vector2Int(resolution.x, resolution.y);
         }
 
-        static Vector2Int ComputeVBufferResolutionXY_HQ(Vector2Int screenSize)
+        Vector2Int ComputeVBufferResolutionXY_HQ(Vector2Int screenSize)
         {
-            Vector3Int resolution = ComputeVBufferResolution(VolumetricLightingPreset.High, screenSize.x, screenSize.y);
+//custom-begin: custom high-quality volumetrics level
+            Vector3Int resolution = ComputeVBufferResolution(VolumetricLightingPreset.High, screenSize.x, screenSize.y, ComputeVBufferTileSize(VolumetricLightingPreset.High, volumetricHQTileSize));
+//custom-erd:
             return new Vector2Int(resolution.x, resolution.y);
         }
-
-        static ScaleFunc[] fnComputeVBufferResolutionXY = { null, ComputeVBufferResolutionXY_MQ, ComputeVBufferResolutionXY_HQ };
 //custom-end:
 
         void CreateVolumetricLightingBuffers()
@@ -305,8 +314,9 @@ namespace UnityEngine.Rendering.HighDefinition
             for (var i = (int)VolumetricLightingPreset.Medium; i <= (int)VolumetricLightingPreset.High; ++i)
             {
                 int d = ComputeVBufferSliceCount((VolumetricLightingPreset)i, true);
+                var scaleFunc = i == (int)VolumetricLightingPreset.Medium ? (ScaleFunc)ComputeVBufferResolutionXY_MQ : (ScaleFunc)ComputeVBufferResolutionXY_HQ;
 
-                m_DensityBufferHandles[(int)i] = RTHandles.Alloc(scaleFunc: fnComputeVBufferResolutionXY[i],
+                m_DensityBufferHandles[(int)i] = RTHandles.Alloc(scaleFunc: scaleFunc,
                     slices:            d,
                     dimension:         TextureDimension.Tex3D,
                     colorFormat:       GraphicsFormat.R16G16B16A16_SFloat, // 8888_sRGB is not precise enough
@@ -315,7 +325,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     /* useDynamicScale: true, // <- TODO */
                     name:              "VBufferDensity");
 
-                m_LightingBufferHandles[(int)i] = RTHandles.Alloc(scaleFunc: fnComputeVBufferResolutionXY[i],
+                m_LightingBufferHandles[(int)i] = RTHandles.Alloc(scaleFunc: scaleFunc,
                     slices:            d,
                     dimension:         TextureDimension.Tex3D,
                     colorFormat:       GraphicsFormat.R16G16B16A16_SFloat,
@@ -330,7 +340,9 @@ namespace UnityEngine.Rendering.HighDefinition
         // For the initial allocation, no suballocation happens (the texture is full size).
         VBufferParameters ComputeVBufferParameters(HDCamera hdCamera)
         {
-            Vector3Int viewportResolution = ComputeVBufferResolution(volumetricLightingPreset, hdCamera.actualWidth, hdCamera.actualHeight);
+//custom-begin: custom high-quality volumetrics level
+            Vector3Int viewportResolution = ComputeVBufferResolution(volumetricLightingPreset, hdCamera.actualWidth, hdCamera.actualHeight, ComputeVBufferTileSize(volumetricLightingPreset, volumetricHQTileSize));
+//custom-end:
 
             var controller = VolumeManager.instance.stack.GetComponent<VolumetricLightingController>();
 
@@ -449,15 +461,17 @@ namespace UnityEngine.Rendering.HighDefinition
             m_VolumetricLightingCS = null;
         }
 
-        static int ComputeVBufferTileSize(VolumetricLightingPreset preset)
+//custom-begin: custom high-quality volumetrics level
+        static int ComputeVBufferTileSize(VolumetricLightingPreset preset, int hqTileSize)
+//custom-end:
         {
             switch (preset)
             {
                 case VolumetricLightingPreset.Medium:
                     return 8;
                 case VolumetricLightingPreset.High:
-//custom-begin: less extreme high
-                    return 6/*4*/;
+//custom-begin: custom high-quality volumetrics level
+                    return hqTileSize;
 //custom-end:
                 case VolumetricLightingPreset.Off:
                     return 0;
@@ -497,9 +511,11 @@ namespace UnityEngine.Rendering.HighDefinition
             return result;
         }
 
-        static Vector3Int ComputeVBufferResolution(VolumetricLightingPreset preset, int screenWidth, int screenHeight)
+//custom-begin: custom high-quality volumetrics level
+        static Vector3Int ComputeVBufferResolution(VolumetricLightingPreset preset, int screenWidth, int screenHeight, int tileSize)
         {
-            int t = ComputeVBufferTileSize(preset);
+            int t = tileSize;
+//custom-end:
 
             int w = HDUtils.DivRoundUp(screenWidth,  t);
             int h = HDUtils.DivRoundUp(screenHeight, t);
@@ -657,6 +673,10 @@ namespace UnityEngine.Rendering.HighDefinition
             parameters.numBigTileY = GetNumTileBigTileY(hdCamera);
 
             parameters.tiledLighting = HasLightToCull() && hdCamera.frameSettings.IsEnabled(FrameSettingsField.BigTilePrepass);
+//custom-begin: Custom tile size param fixup
+            if (volumetricLightingPreset == VolumetricLightingPreset.High && !Mathf.IsPowerOfTwo(volumetricHQTileSize))
+                parameters.tiledLighting = false;
+//custom-end:
             bool highQuality = volumetricLightingPreset == VolumetricLightingPreset.High;
 
             parameters.voxelizationCS = m_VolumeVoxelizationCS;
@@ -803,6 +823,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
             // Only available in the Play Mode because all the frame counters in the Edit Mode are broken.
             parameters.tiledLighting = hdCamera.frameSettings.IsEnabled(FrameSettingsField.BigTilePrepass);
+//custom-begin: Custom tile size param fixup
+            if (volumetricLightingPreset == VolumetricLightingPreset.High && !Mathf.IsPowerOfTwo(volumetricHQTileSize))
+                parameters.tiledLighting = false;
+//custom-end:
+
             parameters.enableReprojection = Application.isPlaying && hdCamera.camera.cameraType == CameraType.Game &&
                                           hdCamera.frameSettings.IsEnabled(FrameSettingsField.ReprojectionForVolumetrics);
             bool enableAnisotropy = fog.anisotropy.value != 0;
