@@ -45,6 +45,9 @@ namespace UnityEngine.Rendering.HighDefinition
             supportSSAO = true,
             supportSubsurfaceScattering = true,
             supportVolumetrics = true,
+//custom-begin: custom high-quality volumetrics level
+            volumetricsHQTileSize = 6,
+//custom-end:
             supportDistortion = true,
             supportTransparentBackface = true,
             supportTransparentDepthPrepass = true,
@@ -77,6 +80,9 @@ namespace UnityEngine.Rendering.HighDefinition
         public bool increaseSssSampleCount;
         public bool supportVolumetrics;
         public bool increaseResolutionOfVolumetrics;
+//custom-begin: custom high-quality volumetrics level
+        [Range(2, 6)] public int volumetricsHQTileSize;
+//custom-end:
         public bool supportLightLayers;
         public bool supportDistortion;
         public bool supportTransparentBackface;

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEditor.Rendering.HighDefinition.Drawing.Slots;
 using UnityEditor.Graphing;
 using UnityEditor.ShaderGraph;
+// custom-begin
+using UnityEditor.ShaderGraph.Internal;
+// custom-end
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.ShaderGraph.Drawing.Controls;

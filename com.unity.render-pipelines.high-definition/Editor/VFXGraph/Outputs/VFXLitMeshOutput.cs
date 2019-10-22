@@ -9,7 +9,13 @@ namespace UnityEditor.VFX
     class VFXLitMeshOutput : VFXAbstractParticleHDRPLitOutput
     {
         public override string name { get { return "Lit Mesh Output"; } }
-        public override string codeGeneratorTemplate { get { return RenderPipeTemplate("VFXParticleLitMesh"); } }
+        
+//custom-begin: no depth pass option
+        [VFXSetting(VFXSettingAttribute.VisibleFlags.InInspector), SerializeField, Header("Lighting")]
+        protected bool forceNoDepthPass = false;
+
+        public override string codeGeneratorTemplate { get { return RenderPipeTemplate(forceNoDepthPass ? "VFXParticleLitMeshNoDepth" : "VFXParticleLitMesh"); } }
+//custom-end:
         public override VFXTaskType taskType { get { return VFXTaskType.ParticleMeshOutput; } }
         public override bool supportsUV { get { return true; } }
         public override bool implementsMotionVector { get { return true; } }

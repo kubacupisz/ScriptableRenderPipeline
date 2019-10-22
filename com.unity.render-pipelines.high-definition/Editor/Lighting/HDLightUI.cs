@@ -618,8 +618,19 @@ namespace UnityEditor.Rendering.HighDefinition
                         }
                     }
 
-                    EditorGUILayout.Slider(serialized.serializedLightData.shadowNearPlane, HDShadowUtils.k_MinShadowNearPlane, HDShadowUtils.k_MaxShadowNearPlane, s_Styles.shadowNearPlane);
-
+//custom-begin: Change range
+                    EditorGUILayout.BeginHorizontal();
+                    using (var chanceScope = new EditorGUI.ChangeCheckScope())
+                    {
+                        var slider = serialized.serializedLightData.shadowNearPlane.floatValue;
+                        slider = EditorGUILayout.Slider(s_Styles.shadowNearPlane, slider, HDShadowUtils.k_MinShadowNearPlane, 10f);
+                        if (chanceScope.changed)
+                            serialized.serializedLightData.shadowNearPlane.floatValue = slider;
+                    }
+                    EditorGUILayout.PropertyField(serialized.serializedLightData.shadowNearPlane, GUIContent.none, GUILayout.MaxWidth(80f));
+                    EditorGUILayout.EndHorizontal();
+//custom-end:
+                    
                     if (serialized.settings.isMixed)
                     {
                         using (new EditorGUI.DisabledScope(!(GraphicsSettings.renderPipelineAsset as HDRenderPipelineAsset).currentPlatformRenderPipelineSettings.supportShadowMask))

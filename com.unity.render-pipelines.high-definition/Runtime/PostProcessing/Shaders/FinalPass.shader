@@ -158,5 +158,41 @@ Shader "Hidden/HDRP/FinalPass"
 
             ENDHLSL
         }
+        
+//custom-begin: dust particles
+        Pass
+        {
+            Cull Off ZWrite Off
+            ZTest Less // Required for XR occlusion mesh optimization
+
+            HLSLPROGRAM
+
+                #pragma vertex Vert
+                #pragma fragment FragParticles
+
+                float4 FragParticles(Varyings input) : SV_Target0
+                {
+                    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+        
+                    float2 positionNDC = input.texcoord;
+                    uint2 positionSS = input.texcoord * _ScreenSize.xy;
+        
+                    // Flip logic
+                    positionSS = positionSS * _UVTransform.xy + _UVTransform.zw * (_ScreenSize.xy - 1.0);
+                    positionNDC = positionNDC * _UVTransform.xy + _UVTransform.zw;
+        
+                    float3 outColor = LOAD_TEXTURE2D_X(_InputTexture, positionSS).xyz;
+        
+                    // Apply AfterPostProcess target
+                    float4 afterPostColor = SAMPLE_TEXTURE2D_X_LOD(_AfterPostProcessTexture, s_point_clamp_sampler, positionNDC.xy * _RTHandleScale.xy, 0);
+                    // After post objects are blended according to the method described here: https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch23.html
+                    outColor.xyz = afterPostColor.a * outColor.xyz + afterPostColor.xyz;
+        
+                    return float4(outColor, 1.0);
+                }
+        
+            ENDHLSL
+        }
+//custom-end:
     }
 }

@@ -432,6 +432,19 @@ namespace UnityEngine.Rendering.HighDefinition
                         }
                     }
 
+//custom-begin: dust particles
+                    using (new ProfilingSample(cmd, "Dust Particles"))
+                    {
+                        var destination = m_Pool.Get(Vector2.one, k_ColorFormat);
+                        Rect backBufferRect = camera.finalViewport;
+                        backBufferRect.x = backBufferRect.y = 0;
+                        cmd.SetGlobalTexture(HDShaderIDs._InputTexture, source);
+                        cmd.SetGlobalTexture(HDShaderIDs._AfterPostProcessTexture, afterPostProcessTexture);
+                        HDUtils.DrawFullScreen(cmd, backBufferRect, m_FinalPassMaterial, destination, depthBuffer, shaderPassId: 1);
+                        PoolSource(ref source, destination);
+                    }
+//custom-end:
+
                     // Depth of Field is done right after TAA as it's easier to just re-project the CoC
                     // map rather than having to deal with all the implications of doing it before TAA
                     if (m_DepthOfField.IsActive() && !isSceneView && m_DepthOfFieldFS)
@@ -2250,7 +2263,10 @@ namespace UnityEngine.Rendering.HighDefinition
             // to the backbuffer eventually
 
             m_FinalPassMaterial.shaderKeywords = null;
-            m_FinalPassMaterial.SetTexture(HDShaderIDs._InputTexture, source);
+//custom-begin: dust particles
+            cmd.SetGlobalTexture(HDShaderIDs._InputTexture, source);
+            //m_FinalPassMaterial.SetTexture(HDShaderIDs._InputTexture, source);
+//custom-end:
 
             var dynResHandler = DynamicResolutionHandler.instance;
             bool dynamicResIsOn = camera.isMainGameView && dynResHandler.DynamicResolutionEnabled();
@@ -2346,15 +2362,17 @@ namespace UnityEngine.Rendering.HighDefinition
                 backBufferRect.x = backBufferRect.y = 0;
             }
 
-            if (camera.frameSettings.IsEnabled(FrameSettingsField.AfterPostprocess))
-            {
-                m_FinalPassMaterial.EnableKeyword("APPLY_AFTER_POST");
-                m_FinalPassMaterial.SetTexture(HDShaderIDs._AfterPostProcessTexture, afterPostProcessTexture);
-            }
-            else
-            {
-                m_FinalPassMaterial.SetTexture(HDShaderIDs._AfterPostProcessTexture, TextureXR.GetBlackTexture());
-            }
+//custom-begin: dust particles
+//            if (camera.frameSettings.IsEnabled(FrameSettingsField.AfterPostprocess))
+//            {
+//                m_FinalPassMaterial.EnableKeyword("APPLY_AFTER_POST");
+//                m_FinalPassMaterial.SetTexture(HDShaderIDs._AfterPostProcessTexture, afterPostProcessTexture);
+//            }
+//            else
+//            {
+//                m_FinalPassMaterial.SetTexture(HDShaderIDs._AfterPostProcessTexture, TextureXR.GetBlackTexture());
+//            }
+//custom-end:
 
             HDUtils.DrawFullScreen(cmd, backBufferRect, m_FinalPassMaterial, destination, depthBuffer);
         }

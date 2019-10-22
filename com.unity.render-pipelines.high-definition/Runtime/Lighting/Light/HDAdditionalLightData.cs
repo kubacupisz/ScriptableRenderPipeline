@@ -312,7 +312,7 @@ namespace UnityEngine.Rendering.HighDefinition
         /// </summary>
         public float volumetricDimmer
         {
-            get => m_VolumetricDimmer;
+            get => useVolumetric ? m_VolumetricDimmer : 0.0f;
             set
             {
                 if (m_VolumetricDimmer == value)
@@ -1219,7 +1219,7 @@ namespace UnityEngine.Rendering.HighDefinition
         /// </summary>
         public float volumetricShadowDimmer
         {
-            get => m_VolumetricShadowDimmer;
+            get => useVolumetric ? m_VolumetricShadowDimmer : 0.0f;
             set
             {
                 if (m_VolumetricShadowDimmer == value)
@@ -1386,7 +1386,9 @@ namespace UnityEngine.Rendering.HighDefinition
         [SerializeField, FormerlySerializedAs("useOldInspector")]
         bool useOldInspector = false;
         [SerializeField, FormerlySerializedAs("useVolumetric")]
-        bool useVolumetric = true;
+// custom-begin : malte : need this for property volume components
+        public bool useVolumetric = true;
+// custom-end
         [SerializeField, FormerlySerializedAs("featuresFoldout")]
         bool featuresFoldout = true;
         [SerializeField, FormerlySerializedAs("showAdditionalSettings")]

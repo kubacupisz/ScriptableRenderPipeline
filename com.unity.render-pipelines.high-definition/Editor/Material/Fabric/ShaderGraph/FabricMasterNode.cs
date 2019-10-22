@@ -3,6 +3,9 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEditor.Graphing;
 using UnityEditor.ShaderGraph;
+// custom-begin
+using UnityEditor.ShaderGraph.Internal;
+// custom-end
 using UnityEditor.ShaderGraph.Drawing.Controls;
 using UnityEngine;
 using UnityEngine.UIElements;

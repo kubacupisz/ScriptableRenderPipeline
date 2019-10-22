@@ -219,7 +219,13 @@ void GetAmbientOcclusionFactor(float3 indirectAmbientOcclusion, float3 indirectS
 
 float3 GetNormalForShadowBias(BSDFData bsdfData)
 {
+//custom-begin: let skin shader emulate shadow bias from deferred Lit (which has dithered falloff through not using geometric normal)
+#ifdef STACKLIT_EMULATE_DEFERRED_LIT_SHADOW_BIAS
+    return bsdfData.normalWS;
+#else
     return bsdfData.geomNormalWS;
+#endif
+//custom-end:
 }
 
 float GetAmbientOcclusionForMicroShadowing(BSDFData bsdfData)
