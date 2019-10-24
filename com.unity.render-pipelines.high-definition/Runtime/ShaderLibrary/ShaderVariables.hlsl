@@ -126,11 +126,7 @@ TEXTURE2D(_PrevExposureTexture);
 
 // Important: please use macros or functions to access the CBuffer data.
 // The member names and data layout can (and will) change!
-#if SHADER_STAGE_RAY_TRACING
-RAY_TRACING_GLOBAL_CBUFFER_START(UnityGlobal, UNITY_GLOBAL_CBUFFER_REGISTER)
-#else
 CBUFFER_START(UnityGlobal)
-#endif
     // ================================
     //     PER VIEW CONSTANTS
     // ================================

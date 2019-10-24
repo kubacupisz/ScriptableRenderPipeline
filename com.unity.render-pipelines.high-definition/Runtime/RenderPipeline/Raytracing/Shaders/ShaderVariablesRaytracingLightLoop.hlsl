@@ -8,11 +8,7 @@ StructuredBuffer<LightData>                 _LightDatasRT;
 StructuredBuffer<EnvLightData>              _EnvLightDatasRT;
 #endif
 
-#if SHADER_STAGE_RAY_TRACING
-RAY_TRACING_GLOBAL_CBUFFER_START(UnityRayTracingLightLoop, UNITY_RAY_TRACING_LIGHT_LOOP_CBUFFER_REGISTER)
-#else
 CBUFFER_START(UnityRayTracingLightLoop)
-#endif
 
 uint                                        _LightPerCellCount;
 float3                                      _MinClusterPos;
