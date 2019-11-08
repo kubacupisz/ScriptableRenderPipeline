@@ -1967,20 +1967,7 @@ namespace UnityEngine.Rendering.HighDefinition
             var builderCS = m_Resources.shaders.lutBuilder3DCS;
             string kernelName = "KBuild_NoTonemap";
 
-//custom-begin: migrate custom support for external lut grading to built-in support
-#if IS_THE_HERETIC
-            var useExternalLut = m_ColorLookup.IsActive() && m_ColorLookup.contribution.value > 0.0f;
-            if (useExternalLut)
-            {
-                tonemappingMode = TonemappingMode.External;
-                {
-                    m_Tonemapping.lutContribution.value = m_ColorLookup.contribution.value;
-                    m_Tonemapping.lutTexture.value = m_ColorLookup.texture.value;
-                }
-            }
-            if (useExternalLut || m_Tonemapping.IsActive())
-#endif
-//custom-end:
+            if (m_Tonemapping.IsActive())
             {
                 switch (tonemappingMode)
                 {
@@ -1991,7 +1978,34 @@ namespace UnityEngine.Rendering.HighDefinition
                 }
             }
 
+//custom-begin: support blending external lut after tonemap
+#if IS_THE_HERETIC
+            var overlayExternalLUT = m_ColorLookup.IsActive() && m_ColorLookup.contribution.value > 0.0f;
+            if (overlayExternalLUT)
+            {
+                switch (tonemappingMode)
+                {
+                    case TonemappingMode.None:		kernelName = "KBuild_NoTonemap_WithLUT"; break;
+                    case TonemappingMode.Neutral:	kernelName = "KBuild_NeutralTonemap_WithLUT"; break;
+                    case TonemappingMode.ACES:		kernelName = "KBuild_AcesTonemap_WithLUT"; break;
+                    case TonemappingMode.Custom:	kernelName = "KBuild_CustomTonemap_WithLUT"; break;
+                    default:						overlayExternalLUT = false; break;
+                }
+            }
+#endif
+//custom-end:
+
             int builderKernel = builderCS.FindKernel(kernelName);
+
+//custom-begin: support blending external lut after tonemap
+#if IS_THE_HERETIC
+            if (overlayExternalLUT)
+            {
+                cmd.SetComputeTextureParam(builderCS, builderKernel, HDShaderIDs._LogLut3D, m_ColorLookup.texture.value);
+                cmd.SetComputeVectorParam(builderCS, HDShaderIDs._LogLut3D_Params, new Vector4(1f / m_LutSize, m_LutSize - 1f, m_ColorLookup.contribution.value, 0f));
+            }
+#endif
+//custom-end:
 
             // Fill-in constant buffers & textures
             cmd.SetComputeTextureParam(builderCS, builderKernel, HDShaderIDs._OutputTexture, m_InternalLogLut);
