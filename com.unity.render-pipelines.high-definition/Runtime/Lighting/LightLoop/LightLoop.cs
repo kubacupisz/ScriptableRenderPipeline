@@ -1953,8 +1953,81 @@ namespace UnityEngine.Rendering.HighDefinition
                         LightCategory lightCategory = LightCategory.Count;
                         GPULightType gpuLightType = GPULightType.Point;
                         LightVolumeType lightVolumeType = LightVolumeType.Count;
-                        HDRenderPipeline.EvaluateGPULightType(light.lightType, additionalData.lightTypeExtent, additionalData.spotLightShape,
-                                                                ref lightCategory, ref gpuLightType, ref lightVolumeType);
+
+                        if (additionalData.lightTypeExtent == LightTypeExtent.Punctual)
+                        {
+                            lightCategory = LightCategory.Punctual;
+
+                            switch (light.lightType)
+                            {
+                                case LightType.Spot:
+                                    if (punctualLightcount >= m_MaxPunctualLightsOnScreen)
+                                        continue;
+                                    switch (additionalData.spotLightShape)
+                                    {
+                                        case SpotLightShape.Cone:
+                                            gpuLightType = GPULightType.Spot;
+                                            lightVolumeType = LightVolumeType.Cone;
+                                            break;
+                                        case SpotLightShape.Pyramid:
+                                            gpuLightType = GPULightType.ProjectorPyramid;
+                                            lightVolumeType = LightVolumeType.Cone;
+                                            break;
+                                        case SpotLightShape.Box:
+                                            gpuLightType = GPULightType.ProjectorBox;
+                                            lightVolumeType = LightVolumeType.Box;
+                                            break;
+                                        default:
+                                            Debug.Assert(false, "Encountered an unknown SpotLightShape.");
+                                            break;
+                                    }
+                                    break;
+
+                                case LightType.Directional:
+                                    if (directionalLightcount >= m_MaxDirectionalLightsOnScreen)
+                                        continue;
+                                    gpuLightType = GPULightType.Directional;
+                                    // No need to add volume, always visible
+                                    lightVolumeType = LightVolumeType.Count; // Count is none
+                                    break;
+
+                                case LightType.Point:
+                                    if (punctualLightcount >= m_MaxPunctualLightsOnScreen)
+                                        continue;
+                                    gpuLightType = GPULightType.Point;
+                                    lightVolumeType = LightVolumeType.Sphere;
+                                    break;
+
+                                default:
+                                    Debug.Assert(false, "Encountered an unknown LightType.");
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            lightCategory = LightCategory.Area;
+
+                            switch (additionalData.lightTypeExtent)
+                            {
+                                case LightTypeExtent.Rectangle:
+                                    if (areaLightCount >= m_MaxAreaLightsOnScreen)
+                                        continue;
+                                    gpuLightType = GPULightType.Rectangle;
+                                    lightVolumeType = LightVolumeType.Box;
+                                    break;
+
+                                case LightTypeExtent.Tube:
+                                    if (areaLightCount >= m_MaxAreaLightsOnScreen)
+                                        continue;
+                                    gpuLightType = GPULightType.Tube;
+                                    lightVolumeType = LightVolumeType.Box;
+                                    break;
+
+                                default:
+                                    Debug.Assert(false, "Encountered an unknown LightType.");
+                                    break;
+                            }
+                        }
 
                         if (hasDebugLightFilter
                             && !debugLightFilter.IsEnabledFor(gpuLightType, additionalData.spotLightShape))
