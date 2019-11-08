@@ -141,14 +141,6 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
     }
     else
     {
-//custom-begin: object motion override
-        if (override_Matrix == 1.0)
-        {
-            unity_MatrixPreviousM = override_MatrixPreviousM;
-            unity_MatrixPreviousMI = override_MatrixPreviousMI;
-        }
-//custom-end:
-
         bool hasDeformation = unity_MotionVectorsParams.x > 0.0; // Skin or morph target
 
         float3 effectivePositionOS = (hasDeformation ? inputPass.previousPositionOS : inputMesh.positionOS);
