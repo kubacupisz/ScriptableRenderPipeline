@@ -10,6 +10,13 @@
 #pragma kernel KBuild_CustomTonemap            MAIN=KBuild_CustomTonemap             TONEMAPPING_CUSTOM
 #pragma kernel KBuild_ExternalTonemap          MAIN=KBuild_ExternalTonemap           TONEMAPPING_EXTERNAL
 
+//custom-begin: support blending external lut after tonemap
+#pragma kernel KBuild_NoTonemap_WithLUT        MAIN=KBuild_NoTonemap_WithLUT         TONEMAPPING_NONE       BLEND_EXTERNAL_LUT
+#pragma kernel KBuild_NeutralTonemap_WithLUT   MAIN=KBuild_NeutralTonemap_WithLUT    TONEMAPPING_NEUTRAL    BLEND_EXTERNAL_LUT
+#pragma kernel KBuild_AcesTonemap_WithLUT      MAIN=KBuild_AcesTonemap_WithLUT       TONEMAPPING_ACES       BLEND_EXTERNAL_LUT
+#pragma kernel KBuild_CustomTonemap_WithLUT    MAIN=KBuild_CustomTonemap_WithLUT     TONEMAPPING_CUSTOM     BLEND_EXTERNAL_LUT
+//custom-end:
+
 TEXTURE3D(_LogLut3D);
 RW_TEXTURE3D(float4, _OutputTexture);
 
@@ -231,6 +238,22 @@ void MAIN(uint3 dispatchThreadId : SV_DispatchThreadID)
     // Color grade & tonemap
     float3 gradedColor = ColorGrade(colorLutSpace);
     gradedColor = Tonemap(gradedColor);
+
+//custom-begin: support blending external lut after tonemap
+#if defined(BLEND_EXTERNAL_LUT)
+    {
+#define JUST_LIKE_GDC
+#ifdef JUST_LIKE_GDC
+        float3 colorLut = _LogLut3D.Load(uint4(dispatchThreadId, 0)).rgb;
+        gradedColor = lerp(gradedColor, colorLut, _LogLut3D_Params.z);
+#else
+        float3 gradedColorLutSpace = saturate(LinearToLogC(ColorGrade(colorLutSpace)));
+        float3 gradedColorLut = ApplyLut3D(TEXTURE3D_ARGS(_LogLut3D, sampler_LogLut3D), gradedColorLutSpace, _LogLut3D_Params.xy);
+        gradedColor = lerp(gradedColor, gradedColorLut, _LogLut3D_Params.z);
+#endif
+    }
+#endif
+//custom-end:
 
     _OutputTexture[dispatchThreadId] = float4(max(gradedColor, 0.0), 1.0);
 }

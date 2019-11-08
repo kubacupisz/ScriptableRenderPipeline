@@ -134,23 +134,25 @@ PackedVaryingsType MotionVectorVS(inout VaryingsType varyingsType, AttributesMes
 
     // Note: unity_MotionVectorsParams.y is 0 is forceNoMotion is enabled
     bool forceNoMotion = unity_MotionVectorsParams.y == 0.0;
+
     if (forceNoMotion)
     {
         varyingsType.vpass.previousPositionCS = float4(0.0, 0.0, 0.0, 1.0);
     }
     else
     {
+        bool hasDeformation = unity_MotionVectorsParams.x > 0.0; // Skin or morph target
+
+        float3 effectivePositionOS = (hasDeformation ? inputPass.previousPositionOS : inputMesh.positionOS);
 //custom-begin: object motion override
         if (override_Matrix == 1.0)
         {
             unity_MatrixPreviousM = override_MatrixPreviousM;
             unity_MatrixPreviousMI = override_MatrixPreviousMI;
+            if (hasDeformation)
+                effectivePositionOS = inputMesh.positionOS;
         }
 //custom-end:
-
-        bool hasDeformation = unity_MotionVectorsParams.x > 0.0; // Skin or morph target
-
-        float3 effectivePositionOS = (hasDeformation ? inputPass.previousPositionOS : inputMesh.positionOS);
 #if defined(_ADD_PRECOMPUTED_VELOCITY)
         effectivePositionOS -= inputPass.precomputedVelocity;
 #endif
