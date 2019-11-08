@@ -71,7 +71,9 @@ namespace UnityEngine.Rendering.HighDefinition
         LensDistortion m_LensDistortion;
         Vignette m_Vignette;
 //custom-begin: support for external lut grading
+#if IS_THE_HERETIC
         ColorLookup m_ColorLookup;
+#endif
 //custom-end:
         Tonemapping m_Tonemapping;
         WhiteBalance m_WhiteBalance;
@@ -273,7 +275,9 @@ namespace UnityEngine.Rendering.HighDefinition
             m_LensDistortion            = stack.GetComponent<LensDistortion>();
             m_Vignette                  = stack.GetComponent<Vignette>();
 //custom-begin: support for external lut grading
+#if IS_THE_HERETIC
             m_ColorLookup               = stack.GetComponent<ColorLookup>();
+#endif
 //custom-end:
             m_Tonemapping               = stack.GetComponent<Tonemapping>();
             m_WhiteBalance              = stack.GetComponent<WhiteBalance>();
@@ -285,7 +289,9 @@ namespace UnityEngine.Rendering.HighDefinition
             m_Curves                    = stack.GetComponent<ColorCurves>();
             m_FilmGrain                 = stack.GetComponent<FilmGrain>();
 //custom-begin: lens flare
+#if IS_THE_HERETIC
             m_LensFlare                 = stack.GetComponent<LensFlare>();
+#endif
 //custom-end:
 
             // Prefetch frame settings - these aren't free to pull so we want to do it only once
@@ -468,7 +474,9 @@ namespace UnityEngine.Rendering.HighDefinition
                     // This is one effect that would benefit from an overscan mode or supersampling in
                     // HDRP to reduce the amount of resolution lost at the center of the screen
 //custom-begin: disable panini in scene view, unless user has enabled it specifically in preferences (under "scene view extras")
+#if IS_THE_HERETIC
                     if (m_PaniniProjection.IsActive() && (!isSceneView || PaniniProjectionSceneView.enabled) && m_PaniniProjectionFS)
+#endif
 //custom-end:
                     {
                         using (new ProfilingSample(cmd, "Panini Projection", CustomSamplerId.PaniniProjection.GetSampler()))
@@ -480,6 +488,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     }
 
 //custom-begin: lens flare
+#if IS_THE_HERETIC
                     if (m_LensFlare.IsActive() && camera.camera.cameraType != CameraType.SceneView)
                     {
                         using (new ProfilingSample(cmd, "Lens Flares", CustomSamplerId.LensFlare.GetSampler()))
@@ -487,6 +496,7 @@ namespace UnityEngine.Rendering.HighDefinition
                             LensFlareSettings.Instance.Render(cmd, source, camera, m_PaniniProjection);
                         }
                     }
+#endif
 //custom-end:
 
                     // Combined post-processing stack - always runs if postfx is enabled
@@ -1958,6 +1968,7 @@ namespace UnityEngine.Rendering.HighDefinition
             string kernelName = "KBuild_NoTonemap";
 
 //custom-begin: migrate custom support for external lut grading to built-in support
+#if IS_THE_HERETIC
             var useExternalLut = m_ColorLookup.IsActive() && m_ColorLookup.contribution.value > 0.0f;
             if (useExternalLut)
             {
@@ -1968,6 +1979,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 }
             }
             if (useExternalLut || m_Tonemapping.IsActive())
+#endif
 //custom-end:
             {
                 switch (tonemappingMode)

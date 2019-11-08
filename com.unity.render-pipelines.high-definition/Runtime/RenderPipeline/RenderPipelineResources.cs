@@ -298,12 +298,12 @@ namespace UnityEngine.Rendering.HighDefinition
             public Cubemap     defaultHDRISky;
 
 //custom-begin: (Nick) eye rendering
-			[Reload("Assets/_ExternalContent/FreeBlueNoiseTextures/512_512/LDR_RGBA_0.png")]
+			[Reload("Runtime/RenderPipelineResources/Texture/FreeBlueNoiseTextures/512_512/LDR_RGBA_0.png")]
             public Texture2D eyeBlueNoiseTexture;
 //custom-end: (Nick) eye rendering
 
 //custom-begin: screen space dither mask
-			[Reload("Assets/_ExternalContent/FreeBlueNoiseTextures/512_512/LDR_LLL1_0.png")]
+			[Reload("Runtime/RenderPipelineResources/Texture/FreeBlueNoiseTextures/512_512/LDR_LLL1_0.png")]
             public Texture2D screenSpaceDitherMask;
 //custom-end
         }
