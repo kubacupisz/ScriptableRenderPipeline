@@ -53,7 +53,7 @@ namespace UnityEngine.Rendering.HighDefinition
             {
                 v.EnableBaking();
             }
-#if PROBEBAKE_API
+#if PROBEBAKE_API_V2
             UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted -= ReactivateProbes;
 #endif
         }
@@ -75,7 +75,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 v.DisableBaking();
             }
-#if PROBEBAKE_API
+#if PROBEBAKE_API_V2
             UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += manager.ReactivateProbes;
 #endif
             UnityEditor.Lightmapping.BakeAsync();

@@ -345,7 +345,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             var sh = new NativeArray<SphericalHarmonicsL2>(numProbes, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             var validity = new NativeArray<float>(numProbes, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-#if PROBEBAKE_API
+#if PROBEBAKE_API_V2
             UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(GetID(), sh, validity);
 #endif
             // TODO: Remove this data copy.
@@ -382,8 +382,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public void DisableBaking()
         {
+#if PROBEBAKE_API_V2
             UnityEditor.Lightmapping.bakeCompleted -= OnBakeCompleted;
-#if PROBEBAKE_API
+
             UnityEditor.Lightmapping.lightingDataCleared -= OnLightingDataCleared;
             UnityEditor.Lightmapping.lightingDataAssetCleared -= OnLightingDataAssetCleared;
 
@@ -394,8 +395,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public void EnableBaking()
         {
+#if PROBEBAKE_API_V2
             UnityEditor.Lightmapping.bakeCompleted += OnBakeCompleted;
-#if PROBEBAKE_API
+
             UnityEditor.Lightmapping.lightingDataCleared += OnLightingDataCleared;
             UnityEditor.Lightmapping.lightingDataAssetCleared += OnLightingDataAssetCleared;
 #endif
@@ -411,7 +413,7 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             if (!this.gameObject.activeInHierarchy)
                 return;
-#if PROBEBAKE_API
+#if PROBEBAKE_API_V2
             float debugProbeSize = Gizmos.probeSize;
 #else
             float debugProbeSize = 1.0f;
@@ -504,7 +506,7 @@ namespace UnityEngine.Rendering.HighDefinition
             }
 
             m_DebugProbeInputHash = debugProbeInputHash;
-#if PROBEBAKE_API
+#if PROBEBAKE_API_V2
             UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(GetID(), positions);
 #endif
         }
