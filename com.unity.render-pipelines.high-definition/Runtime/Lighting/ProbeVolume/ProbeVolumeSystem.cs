@@ -135,7 +135,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 CreateBuffersDefault();
             }
 
-        #if UNITY_EDITOR
+        #if UNITY_EDITOR && PROBEBAKE_API_V2
             UnityEditor.Lightmapping.lightingDataCleared += OnLightingDataCleared;
         #endif
         }
@@ -192,7 +192,7 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             DestroyBuffers();
 
-        #if UNITY_EDITOR
+        #if UNITY_EDITOR && PROBEBAKE_API_V2
             UnityEditor.Lightmapping.lightingDataCleared -= OnLightingDataCleared;
         #endif
         }
