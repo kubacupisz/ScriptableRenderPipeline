@@ -95,8 +95,13 @@ bool GetSurfaceDataFromIntersection(FragInputs input, float3 V, PositionInputs p
     #endif
     surfaceData.baseColor = SAMPLE_TEXTURE2D_LOD(_BaseColorMap, sampler_BaseColorMap, uvBase, lod).rgb * _BaseColor.rgb;
 
-    // Transparency Data
-    float alpha = SAMPLE_TEXTURE2D_LOD(_BaseColorMap, sampler_BaseColorMap, uvBase, lod).a * _BaseColor.a;
+    // If we are using this value to do an alpha test, we should read from the base LOD and not from the rough LOD
+    #ifdef _ALPHATEST_ON
+    float alphaLOD = baseLOD;
+    #else
+    float alphaLOD = lod;
+    #endif
+    float alpha = SAMPLE_TEXTURE2D_LOD(_BaseColorMap, sampler_BaseColorMap, uvBase, alphaLOD).a * _BaseColor.a;
 
 #ifdef _ALPHATEST_ON
     if(alpha < _AlphaCutoff)
@@ -207,8 +212,9 @@ bool GetSurfaceDataFromIntersection(FragInputs input, float3 V, PositionInputs p
     surfaceData.thickness = _Thickness;
 #endif
 
-    // Default tangentWS
+    // Default tangent and normal (non-mapped, smooth normal here)
     surfaceData.tangentWS = normalize(input.tangentToWorld[0].xyz);
+    surfaceData.geomNormalWS = input.tangentToWorld[2];
 
     // Transparency
 #if HAS_REFRACTION
@@ -222,8 +228,6 @@ bool GetSurfaceDataFromIntersection(FragInputs input, float3 V, PositionInputs p
 #endif
 
     surfaceData.atDistance = _ATDistance;
-    // Thickness already defined with SSS (from both thickness and thicknessMap)
-    surfaceData.thickness *= _ThicknessMultiplier;
     // Rough refraction don't use opacity. Instead we use opacity as a transmittance mask.
     surfaceData.transmittanceMask = (1.0 - alpha);
     alpha = 1.0;

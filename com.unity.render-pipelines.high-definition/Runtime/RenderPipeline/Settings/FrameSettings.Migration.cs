@@ -55,7 +55,6 @@ namespace UnityEngine.Rendering.HighDefinition
         DepthPrepassWithDeferredRendering = 1 << 22,
         OpaqueObjects = 1 << 24,
         TransparentObjects = 1 << 25,
-        RealtimePlanarReflection = 1 << 26,
 
         // Async settings
         AsyncCompute = 1 << 23,
@@ -159,9 +158,9 @@ namespace UnityEngine.Rendering.HighDefinition
                     throw new ArgumentException("Unknown ObsoleteLitShaderMode");
             }
 
-            newFrameSettingsFormat.SetEnabled(FrameSettingsField.Shadow, oldFrameSettingsFormat.enableShadow);
+            newFrameSettingsFormat.SetEnabled(FrameSettingsField.ShadowMaps, oldFrameSettingsFormat.enableShadow);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.ContactShadows, oldFrameSettingsFormat.enableContactShadows);
-            newFrameSettingsFormat.SetEnabled(FrameSettingsField.ShadowMask, oldFrameSettingsFormat.enableShadowMask);
+            newFrameSettingsFormat.SetEnabled(FrameSettingsField.Shadowmask, oldFrameSettingsFormat.enableShadowMask);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.SSR, oldFrameSettingsFormat.enableSSR);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.SSAO, oldFrameSettingsFormat.enableSSAO);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.SubsurfaceScattering, oldFrameSettingsFormat.enableSubsurfaceScattering);
@@ -181,7 +180,6 @@ namespace UnityEngine.Rendering.HighDefinition
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.Postprocess, oldFrameSettingsFormat.enablePostprocess);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.OpaqueObjects, oldFrameSettingsFormat.enableOpaqueObjects);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.TransparentObjects, oldFrameSettingsFormat.enableTransparentObjects);
-            newFrameSettingsFormat.SetEnabled(FrameSettingsField.RealtimePlanarReflection, oldFrameSettingsFormat.enableRealtimePlanarReflection);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.MSAA, oldFrameSettingsFormat.enableMSAA);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.ExposureControl, oldFrameSettingsFormat.enableExposureControl);
             newFrameSettingsFormat.SetEnabled(FrameSettingsField.AsyncCompute, oldFrameSettingsFormat.enableAsyncCompute);
@@ -211,13 +209,13 @@ namespace UnityEngine.Rendering.HighDefinition
                     switch(val)
                     {
                         case ObsoleteFrameSettingsOverrides.Shadow:
-                            newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.Shadow] = true;
+                            newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.ShadowMaps] = true;
                             break;
                         case ObsoleteFrameSettingsOverrides.ContactShadow:
                             newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.ContactShadows] = true;
                             break;
                         case ObsoleteFrameSettingsOverrides.ShadowMask:
-                            newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.ShadowMask] = true;
+                            newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.Shadowmask] = true;
                             break;
                         case ObsoleteFrameSettingsOverrides.SSR:
                             newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.SSR] = true;
@@ -278,9 +276,6 @@ namespace UnityEngine.Rendering.HighDefinition
                             break;
                         case ObsoleteFrameSettingsOverrides.TransparentObjects:
                             newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.TransparentObjects] = true;
-                            break;
-                        case ObsoleteFrameSettingsOverrides.RealtimePlanarReflection:
-                            newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.RealtimePlanarReflection] = true;
                             break;
                         case ObsoleteFrameSettingsOverrides.MSAA:
                             newFrameSettingsOverrideMask.mask[(int)FrameSettingsField.MSAA] = true;
@@ -350,6 +345,12 @@ namespace UnityEngine.Rendering.HighDefinition
             oldFrameSettingsFormat = null;
         }
 #pragma warning restore 618 // Type or member is obsolete
+        
+        internal static void MigrateToCustomPostprocessAndCustomPass(ref FrameSettings cameraFrameSettings)
+        {
+            cameraFrameSettings.SetEnabled(FrameSettingsField.CustomPass, true);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.CustomPostProcess, true);
+        }
 
         internal static void MigrateToAfterPostprocess(ref FrameSettings cameraFrameSettings)
         {
@@ -358,26 +359,26 @@ namespace UnityEngine.Rendering.HighDefinition
 
         internal static void MigrateToDefaultReflectionSettings(ref FrameSettings cameraFrameSettings)
         {
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnableReflectionProbe, true);
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnablePlanarProbe, true);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.ReflectionProbe, true);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.PlanarProbe, true);
             cameraFrameSettings.SetEnabled(FrameSettingsField.ReplaceDiffuseForIndirect, false);
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnableSkyLighting, true);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.SkyReflection, true);
         }
         
         internal static void MigrateToNoReflectionRealtimeSettings(ref FrameSettings cameraFrameSettings)
         {
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnableReflectionProbe, true);
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnablePlanarProbe, false);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.ReflectionProbe, true);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.PlanarProbe, false);
             cameraFrameSettings.SetEnabled(FrameSettingsField.ReplaceDiffuseForIndirect, false);
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnableSkyLighting, true);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.SkyReflection, true);
         }
 
         internal static void MigrateToNoReflectionSettings(ref FrameSettings cameraFrameSettings)
         {
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnableReflectionProbe, false);
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnablePlanarProbe, false);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.ReflectionProbe, false);
+            cameraFrameSettings.SetEnabled(FrameSettingsField.PlanarProbe, false);
             cameraFrameSettings.SetEnabled(FrameSettingsField.ReplaceDiffuseForIndirect, true);
-            cameraFrameSettings.SetEnabled(FrameSettingsField.EnableSkyLighting, false);            
+            cameraFrameSettings.SetEnabled(FrameSettingsField.SkyReflection, false);
         }
 
         internal static void MigrateToPostProcess(ref FrameSettings cameraFrameSettings)
@@ -394,6 +395,21 @@ namespace UnityEngine.Rendering.HighDefinition
             cameraFrameSettings.SetEnabled(FrameSettingsField.FilmGrain, true);
             cameraFrameSettings.SetEnabled(FrameSettingsField.Dithering, true);
             cameraFrameSettings.SetEnabled(FrameSettingsField.Antialiasing, true);
+        }
+
+        internal static void MigrateToDirectSpecularLighting(ref FrameSettings cameraFrameSettings)
+        {
+            cameraFrameSettings.SetEnabled(FrameSettingsField.DirectSpecularLighting, true);
+        }
+
+        internal static void MigrateToNoDirectSpecularLighting(ref FrameSettings cameraFrameSettings)
+        {
+            cameraFrameSettings.SetEnabled(FrameSettingsField.DirectSpecularLighting, false);
+        }
+
+        internal static void MigrateToRayTracing(ref FrameSettings cameraFrameSettings)
+        {
+            cameraFrameSettings.SetEnabled(FrameSettingsField.RayTracing, true);
         }
     }
 }

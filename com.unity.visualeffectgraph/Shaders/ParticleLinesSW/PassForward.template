@@ -46,7 +46,8 @@ Pass
 #if USE_EXPOSURE_WEIGHT
 #define VFX_VARYING_EXPOSUREWEIGHT builtInInterpolants.z
 #endif
-	
+
+    ${VFXPassForwardDefine}
 	${VFXInclude("Shaders/ParticleLinesSW/Pass.template")}	
 		
 	#pragma fragment frag
@@ -67,6 +68,7 @@ Pass
 		o.color = VFXApplyFog(o.color,i);
 		VFXClipFragmentColor(o.color.a,i);
 		o.color.a = saturate(o.color.a);
+        o.color = VFXTransformFinalColor(o.color);
 		return o;
 	}
 	ENDHLSL

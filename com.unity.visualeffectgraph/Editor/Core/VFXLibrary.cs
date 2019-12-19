@@ -159,6 +159,8 @@ namespace UnityEditor.VFX
         virtual public string runtimePath { get { return templatePath; } } //optional different path for .hlsl included in runtime
         abstract public string SRPAssetTypeStr { get; }
         abstract public Type SRPOutputDataType { get; }
+
+        public virtual void SetupMaterial(Material mat) {}
     }
 
     // Not in Universal package because we dont want to add a dependency on VFXGraph
@@ -167,6 +169,12 @@ namespace UnityEditor.VFX
         public override string templatePath { get { return "Packages/com.unity.visualeffectgraph/Shaders/RenderPipeline/Universal"; } }
         public override string SRPAssetTypeStr { get { return "UniversalRenderPipelineAsset"; } }
         public override Type SRPOutputDataType { get { return null; } }
+    }
+
+    // This is just for retrocompatibility with LWRP
+    class VFXLWRPBinder : VFXUniversalBinder
+    {
+        public override string SRPAssetTypeStr { get { return "LightweightRenderPipelineAsset"; } }
     }
 
     // This is the default binder used if no SRP is used in the project
@@ -202,6 +210,9 @@ namespace UnityEditor.VFX
             {
                 if (m_Loaded)
                 {
+                    if (VFXViewPreference.advancedLogs)
+                        Debug.Log("Clear VFX Library");
+
                     Clear(m_ContextDescs);
                     Clear(m_BlockDescs);
                     Clear(m_OperatorDescs);
@@ -241,11 +252,16 @@ namespace UnityEditor.VFX
 
         public static void Load()
         {
+            if (VFXViewPreference.advancedLogs)
+                Debug.Log("Load VFX Library");
+
             LoadSlotsIfNeeded();
 
             lock (m_Lock)
             {
-                ScriptableObject.CreateInstance<LibrarySentinel>();
+                if (m_Sentinel != null)
+                    ScriptableObject.DestroyImmediate(m_Sentinel);
+                m_Sentinel = ScriptableObject.CreateInstance<LibrarySentinel>();
                 m_ContextDescs = LoadModels<VFXContext>();
                 m_BlockDescs = LoadModels<VFXBlock>();
                 m_OperatorDescs = LoadModels<VFXOperator>();
@@ -355,7 +371,7 @@ namespace UnityEditor.VFX
                 Debug.LogError(error);
             }
 
-            return modelDescs.OrderBy(o => o.name).ToList();
+            return modelDescs.OrderBy(o => o.name).ToList(); 
         }
 
         class LibrarySentinel : ScriptableObject
@@ -429,6 +445,7 @@ namespace UnityEditor.VFX
             return types.Where(type => attributeType == null || type.GetCustomAttributes(attributeType, false).Length == 1);
         }
 
+        [NonSerialized]
         private static Dictionary<string, VFXSRPBinder> srpBinders = null;
 
         private static void LoadSRPBindersIfNeeded()
@@ -465,14 +482,16 @@ namespace UnityEditor.VFX
             {
                 LoadSRPBindersIfNeeded();
                 VFXSRPBinder binder = null;
-                srpBinders.TryGetValue(GraphicsSettings.renderPipelineAsset == null ? "None" : GraphicsSettings.renderPipelineAsset.GetType().Name, out binder);
+                srpBinders.TryGetValue(GraphicsSettings.currentRenderPipeline == null ? "None" : GraphicsSettings.currentRenderPipeline.GetType().Name, out binder);
 
                 if (binder == null)
-                    throw new NullReferenceException("The SRP was not registered in VFX: " + GraphicsSettings.renderPipelineAsset.GetType());
+                    throw new NullReferenceException("The SRP was not registered in VFX: " + GraphicsSettings.currentRenderPipeline.GetType());
 
                 return binder;
             }
         }
+
+        private static LibrarySentinel m_Sentinel = null;
 
         private static volatile List<VFXModelDescriptor<VFXContext>> m_ContextDescs;
         private static volatile List<VFXModelDescriptor<VFXOperator>> m_OperatorDescs;

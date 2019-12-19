@@ -70,13 +70,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614540}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -84,6 +85,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &114131763552434164
@@ -143,7 +146,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &114206037049139666
@@ -205,7 +214,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &114340500867371532
@@ -285,7 +301,7 @@ MonoBehaviour:
   m_UISuperCollapsed: 0
   m_UIInfos: {fileID: 114340500867371532}
   m_ParameterInfo: []
-  m_GraphVersion: 2
+  m_GraphVersion: 4
   m_saved: 1
   m_SubgraphDependencies: []
   m_CategoryPath: 
@@ -456,7 +472,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -705,7 +721,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -747,7 +763,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -1359,7 +1375,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1405,7 +1421,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1476,7 +1492,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1522,7 +1538,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1593,7 +1609,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1639,7 +1655,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1710,7 +1726,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1756,7 +1772,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -1833,13 +1849,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614586}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -1847,6 +1864,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614582
@@ -1880,7 +1899,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614585
@@ -2251,7 +2276,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614597
@@ -2291,7 +2323,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -2432,7 +2464,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -2925,7 +2957,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -2990,7 +3022,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3036,7 +3068,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3107,7 +3139,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3153,7 +3185,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3224,7 +3256,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3270,7 +3302,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3341,7 +3373,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3387,7 +3419,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -3497,7 +3529,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614632
@@ -3537,7 +3576,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -3678,7 +3717,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -4137,13 +4176,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614656}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -4151,6 +4191,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614652
@@ -4184,7 +4226,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614655
@@ -4625,7 +4673,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -4690,7 +4738,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -4736,7 +4784,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -4807,7 +4855,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -4853,7 +4901,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -4924,7 +4972,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -4970,7 +5018,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -5041,7 +5089,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -5087,7 +5135,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -5163,7 +5211,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614683
@@ -5203,7 +5258,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -5344,7 +5399,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -5803,13 +5858,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614707}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -5817,6 +5873,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614703
@@ -5850,7 +5908,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614706
@@ -6291,7 +6355,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -6356,7 +6420,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6402,7 +6466,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6473,7 +6537,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6519,7 +6583,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6590,7 +6654,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6636,7 +6700,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6707,7 +6771,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6753,7 +6817,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -6829,7 +6893,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614734
@@ -6869,7 +6940,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -7010,7 +7081,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -7469,13 +7540,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614758}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -7483,6 +7555,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614754
@@ -7516,7 +7590,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614757
@@ -7922,7 +8002,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -7987,7 +8067,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8033,7 +8113,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8104,7 +8184,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8150,7 +8230,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8221,7 +8301,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8267,7 +8347,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8338,7 +8418,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8384,7 +8464,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -8460,7 +8540,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614785
@@ -8500,7 +8587,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -8641,7 +8728,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -9100,13 +9187,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614809}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -9114,6 +9202,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614805
@@ -9147,7 +9237,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614808
@@ -9588,7 +9684,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -9653,7 +9749,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -9699,7 +9795,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -9770,7 +9866,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -9816,7 +9912,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -9887,7 +9983,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -9933,7 +10029,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -10004,7 +10100,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -10050,7 +10146,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -10126,7 +10222,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614836
@@ -10166,7 +10269,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -10307,7 +10410,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -10766,13 +10869,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614860}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -10780,6 +10884,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614856
@@ -10813,7 +10919,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614859
@@ -11255,7 +11367,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -11320,7 +11432,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11366,7 +11478,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11437,7 +11549,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11483,7 +11595,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11554,7 +11666,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11600,7 +11712,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11671,7 +11783,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11717,7 +11829,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -11793,7 +11905,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614887
@@ -11833,7 +11952,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -11974,7 +12093,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -12433,13 +12552,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614911}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -12447,6 +12567,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614907
@@ -12480,7 +12602,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614910
@@ -12921,7 +13049,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -12986,7 +13114,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13032,7 +13160,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13103,7 +13231,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13149,7 +13277,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13220,7 +13348,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13266,7 +13394,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13337,7 +13465,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13383,7 +13511,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -13459,7 +13587,14 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: The culling bounds of this system. The Visual Effect is only visible
+        if the bounding box specified here is visible to the camera.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614938
@@ -13499,7 +13634,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The centre of the box.
+      m_Tooltip: Sets the center of the box.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -13640,7 +13775,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: The size of the box along each axis.
+      m_Tooltip: Sets the size of the box along each axis.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -14099,13 +14234,14 @@ MonoBehaviour:
   m_OutputFlowSlot:
   - link: []
   blendMode: 0
+  useAlphaClipping: 0
   generateMotionVector: 0
   m_SubOutputs:
   - {fileID: 8926484042661614962}
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  colorMappingMode: 0
+  colorMapping: 0
   uvMode: 0
   useSoftParticle: 0
   sortPriority: 0
@@ -14113,6 +14249,8 @@ MonoBehaviour:
   indirectDraw: 0
   castShadows: 0
   useExposureWeight: 0
+  shaderGraph: {fileID: 0}
+  shadergraphGUID: 
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614958
@@ -14146,7 +14284,13 @@ MonoBehaviour:
     m_serializedType:
       m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    attributes: []
+    attributes:
+    - m_Type: 3
+      m_Min: -Infinity
+      m_Max: Infinity
+      m_Tooltip: Specifies the base color (RGB) and opacity (A) of the particle.
+      m_Regex: 
+      m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
 --- !u!114 &8926484042661614961
@@ -14554,7 +14698,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Spawn Rate (in number per seconds)
+      m_Tooltip: Sets the number of particles to be spawned per second.
       m_Regex: 
       m_RegexMaxLength: 0
   m_Direction: 0
@@ -14619,7 +14763,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -14665,7 +14809,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -14736,7 +14880,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -14782,7 +14926,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -14853,7 +14997,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -14899,7 +15043,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -14970,7 +15114,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Count for each burst
+      m_Tooltip: Sets the number of particles to be spawned with each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1
@@ -15016,7 +15160,7 @@ MonoBehaviour:
     - m_Type: 3
       m_Min: -Infinity
       m_Max: Infinity
-      m_Tooltip: Delay between each burst
+      m_Tooltip: Sets the delay in seconds between each burst.
       m_Regex: 
       m_RegexMaxLength: 0
     - m_Type: 1

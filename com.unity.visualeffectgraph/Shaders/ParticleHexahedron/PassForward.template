@@ -67,7 +67,8 @@ Pass
 	o.rimSettings = float4(rimColor.rgb,rimCoef);
 #endif
 	${VFXEnd}
-				
+
+	${VFXPassForwardDefine}
 	${VFXInclude("Shaders/ParticleHexahedron/Pass.template")}	
 		
 	#pragma fragment frag
@@ -97,6 +98,7 @@ Pass
 		o.color = VFXApplyFog(o.color,i);
 		VFXClipFragmentColor(o.color.a,i);
 		o.color.a = saturate(o.color.a);
+        o.color = VFXTransformFinalColor(o.color);
 		return o;
 	}
 	ENDHLSL

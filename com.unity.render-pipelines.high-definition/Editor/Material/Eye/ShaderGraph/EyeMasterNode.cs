@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor.Graphing;
 using UnityEditor.ShaderGraph;
 using UnityEditor.ShaderGraph.Drawing.Controls;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.Rendering.HighDefinition;
@@ -19,7 +20,8 @@ namespace UnityEditor.Rendering.HighDefinition
     [Title("Master", "HDRP/Eye (Experimental)")]
     class EyeMasterNode : MasterNode<IEyeSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
     {
-        public const string PositionSlotName = "Position";
+        public const string PositionSlotName = "Vertex Position";
+        public const string PositionSlotDisplayName = "Vertex Position";
         public const int PositionSlotId = 0;
 
         public const string AlbedoSlotName = "Albedo";
@@ -49,6 +51,7 @@ namespace UnityEditor.Rendering.HighDefinition
         public const int MaskSlotId = 8;
 
         public const string DiffusionProfileHashSlotName = "DiffusionProfileHash";
+        public const string DiffusionProfileHashSlotDisplayName = "Diffusion Profile";
         public const int DiffusionProfileHashSlotId = 9;
 
         public const string SubsurfaceMaskSlotName = "SubsurfaceMask";
@@ -75,6 +78,12 @@ namespace UnityEditor.Rendering.HighDefinition
         public const int DepthOffsetSlotId = 17;
         public const string DepthOffsetSlotName = "DepthOffset";
 
+        public const string VertexNormalSlotName = "Vertex Normal";
+         public const int VertexNormalSlotID = 18;
+
+        public const string VertexTangentSlotName = "Vertex Tangent";
+        public const int VertexTangentSlotID = 19;
+
         public enum MaterialType
         {
             Eye,
@@ -95,6 +104,8 @@ namespace UnityEditor.Rendering.HighDefinition
         {
             None = 0,
             Position = 1 << PositionSlotId,
+            VertexNormal = 1 << VertexNormalSlotID,
+            VertexTangent = 1 << VertexTangentSlotID,
             Albedo = 1 << AlbedoSlotId,
             SpecularOcclusion = 1 << SpecularOcclusionSlotId,
             Normal = 1 << NormalSlotId,
@@ -114,7 +125,7 @@ namespace UnityEditor.Rendering.HighDefinition
             DepthOffset = 1 << DepthOffsetSlotId,
         }
 
-        const SlotMask EyeSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.SpecularOcclusion | SlotMask.Normal | SlotMask.IrisNormal | SlotMask.Smoothness | SlotMask.IOR | SlotMask.Occlusion | SlotMask.Mask | SlotMask.DiffusionProfile | SlotMask.SubsurfaceMask | SlotMask.Emission | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.BentNormal | SlotMask.BakedGI | SlotMask.DepthOffset;
+        const SlotMask EyeSlotMask = SlotMask.Position | SlotMask.VertexNormal | SlotMask.VertexTangent | SlotMask.Albedo | SlotMask.SpecularOcclusion | SlotMask.Normal | SlotMask.IrisNormal | SlotMask.Smoothness | SlotMask.IOR | SlotMask.Occlusion | SlotMask.Mask | SlotMask.DiffusionProfile | SlotMask.SubsurfaceMask | SlotMask.Emission | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.BentNormal | SlotMask.BakedGI | SlotMask.DepthOffset;
         const SlotMask EyeCinematicSlotMask = EyeSlotMask;
 
         // This could also be a simple array. For now, catch any mismatched data.
@@ -277,7 +288,7 @@ namespace UnityEditor.Rendering.HighDefinition
                     return;
 
                 m_DoubleSidedMode = value;
-                Dirty(ModificationScope.Graph);
+                Dirty(ModificationScope.Topological);
             }
         }
 
@@ -455,6 +466,36 @@ namespace UnityEditor.Rendering.HighDefinition
             }
         }
 
+        [SerializeField]
+        bool m_SupportLodCrossFade;
+
+        public ToggleData supportLodCrossFade
+        {
+            get { return new ToggleData(m_SupportLodCrossFade); }
+            set
+            {
+                if (m_SupportLodCrossFade == value.isOn)
+                    return;
+                m_SupportLodCrossFade = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Node);
+            }
+        }
+
+        [SerializeField]
+        int m_MaterialNeedsUpdateHash = 0;
+
+        int ComputeMaterialNeedsUpdateHash()
+        {
+            int hash = 0;
+
+            hash |= (alphaTest.isOn ? 0 : 1) << 0;
+            hash |= (receiveSSR.isOn ? 0 : 1) << 1;
+            hash |= (RequiresSplitLighting() ? 0 : 1) << 2;
+
+            return hash;
+        }
+
         public EyeMasterNode()
         {
             UpdateNodeAfterDeserialization();
@@ -476,8 +517,22 @@ namespace UnityEditor.Rendering.HighDefinition
             // Position
             if (MaterialTypeUsesSlotMask(SlotMask.Position))
             {
-                AddSlot(new PositionMaterialSlot(PositionSlotId, PositionSlotName, PositionSlotName, CoordinateSpace.Object, ShaderStageCapability.Vertex));
+                AddSlot(new PositionMaterialSlot(PositionSlotId, PositionSlotDisplayName, PositionSlotName, CoordinateSpace.Object, ShaderStageCapability.Vertex));
                 validSlots.Add(PositionSlotId);
+            }            
+
+            //Normal in Vertex
+            if (MaterialTypeUsesSlotMask(SlotMask.VertexNormal))
+            {
+                AddSlot(new NormalMaterialSlot(VertexNormalSlotID, VertexNormalSlotName, VertexNormalSlotName, CoordinateSpace.Object, ShaderStageCapability.Vertex));
+                validSlots.Add(VertexNormalSlotID);
+            }
+
+            //Tangent in Vertex
+            if (MaterialTypeUsesSlotMask(SlotMask.VertexTangent))
+            {
+                AddSlot(new TangentMaterialSlot(VertexTangentSlotID, VertexTangentSlotName, VertexTangentSlotName, CoordinateSpace.Object, ShaderStageCapability.Vertex));
+                validSlots.Add(VertexTangentSlotID);
             }
 
             // Albedo
@@ -546,7 +601,7 @@ namespace UnityEditor.Rendering.HighDefinition
             // Diffusion Profile
             if (MaterialTypeUsesSlotMask(SlotMask.DiffusionProfile) && subsurfaceScattering.isOn)
             {
-                AddSlot(new DiffusionProfileInputMaterialSlot(DiffusionProfileHashSlotId, DiffusionProfileHashSlotName, DiffusionProfileHashSlotName, ShaderStageCapability.Fragment));
+                AddSlot(new DiffusionProfileInputMaterialSlot(DiffusionProfileHashSlotId, DiffusionProfileHashSlotDisplayName, DiffusionProfileHashSlotName, ShaderStageCapability.Fragment));
                 validSlots.Add(DiffusionProfileHashSlotId);
             }
 
@@ -658,6 +713,7 @@ namespace UnityEditor.Rendering.HighDefinition
             // Fixup the material settings:
             previewMaterial.SetFloat(kSurfaceType, (int)(SurfaceType)surfaceType);
             previewMaterial.SetFloat(kDoubleSidedNormalMode, (int)doubleSidedMode);
+            previewMaterial.SetFloat(kUseSplitLighting, RequiresSplitLighting() ? 1.0f : 0.0f);
             previewMaterial.SetFloat(kDoubleSidedEnable, doubleSidedMode != DoubleSidedMode.Disabled ? 1.0f : 0.0f);
             previewMaterial.SetFloat(kAlphaCutoffEnabled, alphaTest.isOn ? 1 : 0);
             previewMaterial.SetFloat(kBlendMode, (int)HDSubShaderUtilities.ConvertAlphaModeToBlendMode(alphaMode));
@@ -670,6 +726,21 @@ namespace UnityEditor.Rendering.HighDefinition
             previewMaterial.renderQueue = (int)HDRenderQueue.ChangeType(renderingPass, offset: 0, alphaTest: alphaTest.isOn);
 
             EyeGUI.SetupMaterialKeywordsAndPass(previewMaterial);
+        }
+
+        public override object saveContext
+        {
+            get
+            {
+                int hash = ComputeMaterialNeedsUpdateHash();
+
+                bool needsUpdate = hash != m_MaterialNeedsUpdateHash;
+
+                if (needsUpdate)
+                    m_MaterialNeedsUpdateHash = hash;
+
+                return new HDSaveContext{ updateMaterials = needsUpdate };
+            }
         }
 
         public override void CollectShaderProperties(PropertyCollector collector, GenerationMode generationMode)

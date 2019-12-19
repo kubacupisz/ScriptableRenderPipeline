@@ -29,6 +29,8 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public float _MicroShadowOpacity;
 
+        public float _DirectionalTransmissionMultiplier;
+
         public uint _NumTileFtplX;
         public  uint _NumTileFtplY;
 
@@ -60,9 +62,6 @@ namespace UnityEngine.Rendering.HighDefinition
 
         // Uniform variables that defines if we shall be using the raytraced indirect diffuse
         public int _RaytracedIndirectDiffuse;
-
-        // Value that stores the size of the array
-        public uint _ScreenSpaceShadowArraySize;
     }
 }
 

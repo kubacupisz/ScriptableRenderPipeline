@@ -31,6 +31,7 @@ namespace UnityEditor.VFX.UI
         {
             if( model is VFXSubgraphOperator)
             {
+                model.UpdateOutputExpressions();
                 model.ResyncSlots(false);
             }
         }
@@ -48,13 +49,14 @@ namespace UnityEditor.VFX.UI
             get {return false; }
         }
 
-        public void ConvertToParameter()
+        public void ConvertToProperty(bool exposed = false)
         {
             var desc = VFXLibrary.GetParameters().FirstOrDefault(t => t.model.type == (model as VFXInlineOperator).type);
             if (desc == null)
                 return;
 
             var param = viewController.AddVFXParameter(Vector2.zero, desc); // parameters should have zero for position, position is help by the nodes
+            param.SetSettingValue("m_Exposed", exposed);
 
             VFXSlot.CopyLinks(param.GetOutputSlot(0), model.GetOutputSlot(0), false);
 

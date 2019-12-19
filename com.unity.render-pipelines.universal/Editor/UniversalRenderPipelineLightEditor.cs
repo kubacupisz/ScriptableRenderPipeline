@@ -51,15 +51,16 @@ namespace UnityEditor.Rendering.Universal
         public bool spotOptionsValue { get { return typeIsSame && lightProperty.type == LightType.Spot; } }
         public bool pointOptionsValue { get { return typeIsSame && lightProperty.type == LightType.Point; } }
         public bool dirOptionsValue { get { return typeIsSame && lightProperty.type == LightType.Directional; } }
-        public bool areaOptionsValue { get { return typeIsSame && lightProperty.type == LightType.Rectangle; } }
+        public bool areaOptionsValue { get { return typeIsSame && (lightProperty.type == LightType.Rectangle || lightProperty.type == LightType.Disc); } }
 
         // Point light realtime shadows not supported
         public bool runtimeOptionsValue { get { return typeIsSame && (lightProperty.type != LightType.Rectangle && lightProperty.type != LightType.Point && !settings.isCompletelyBaked); } }
         public bool bakedShadowRadius { get { return typeIsSame && (lightProperty.type == LightType.Point || lightProperty.type == LightType.Spot) && settings.isBakedOrMixed; } }
         public bool bakedShadowAngle { get { return typeIsSame && lightProperty.type == LightType.Directional && settings.isBakedOrMixed; } }
         public bool shadowOptionsValue { get { return shadowTypeIsSame && lightProperty.shadows != LightShadows.None; } }
-
+#pragma warning disable 618
         public bool bakingWarningValue { get { return !UnityEditor.Lightmapping.bakedGI && lightmappingTypeIsSame && settings.isBakedOrMixed; } }
+#pragma warning restore 618
         public bool showLightBounceIntensity { get { return true; } }
 
         public bool isShadowEnabled { get { return settings.shadowsType.intValue != 0; } }
@@ -132,9 +133,16 @@ namespace UnityEditor.Rendering.Universal
 
             EditorGUILayout.Space();
 
+            CheckLightmappingConsistency();
             using (var group = new EditorGUILayout.FadeGroupScope(1.0f - m_AnimAreaOptions.faded))
                 if (group.visible)
-                    settings.DrawLightmapping();
+                {
+                    Light light = target as Light;
+                    if (light.type != LightType.Disc)
+                    {
+                        settings.DrawLightmapping();
+                    }
+                }
 
             settings.DrawIntensity();
 
@@ -159,6 +167,16 @@ namespace UnityEditor.Rendering.Universal
                 EditorGUILayout.HelpBox(s_Styles.DisabledLightWarning.text, MessageType.Warning);
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        void CheckLightmappingConsistency()
+        {
+            //Universal render-pipeline only supports baked area light, enforce it as this inspector is the universal one.
+            if (settings.isAreaLightType && settings.lightmapping.intValue != (int)LightmapBakeType.Baked)
+            {
+                settings.lightmapping.intValue = (int)LightmapBakeType.Baked;
+                serializedObject.ApplyModifiedProperties();
+            }
         }
 
         void SetOptions(AnimBool animBool, bool initialize, bool targetValue)
@@ -189,7 +207,7 @@ namespace UnityEditor.Rendering.Universal
 
         void DrawSpotAngle()
         {
-            EditorGUILayout.Slider(settings.spotAngle, 1f, 179f, s_Styles.SpotAngle);
+            settings.DrawInnerAndOuterSpotAngle();
         }
 
         void DrawAdditionalShadowData()
@@ -269,7 +287,7 @@ namespace UnityEditor.Rendering.Universal
                     settings.DrawBakedShadowAngle();
 
             // Runtime shadows - shadow strength, resolution and near plane offset
-            // Bias is handled differently in LWRP
+            // Bias is handled differently in UniversalRP
             using (var group = new EditorGUILayout.FadeGroupScope(show * m_AnimRuntimeOptions.faded))
             {
                 if (group.visible)
@@ -296,6 +314,56 @@ namespace UnityEditor.Rendering.Universal
                 EditorGUILayout.HelpBox(s_Styles.ShadowsNotSupportedWarning.text, MessageType.Warning);
 
             EditorGUILayout.Space();
+        }
+
+        protected override void OnSceneGUI()
+        {
+            if (!(GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset))
+                return;
+
+            Light light = target as Light;
+
+            switch (light.type)
+            {
+                case LightType.Spot:
+                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
+                    {
+                        CoreLightEditorUtilities.DrawSpotLightGizmo(light);
+                    }
+                    break;
+
+                case LightType.Point:
+                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, Quaternion.identity, Vector3.one)))
+                    {
+                        CoreLightEditorUtilities.DrawPointLightGizmo(light);
+                    }
+                    break;
+
+                case LightType.Rectangle:
+                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
+                    {
+                        CoreLightEditorUtilities.DrawRectangleLightGizmo(light);
+                    }
+                    break;
+
+                case LightType.Disc:
+                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
+                    {
+                        CoreLightEditorUtilities.DrawDiscLightGizmo(light);
+                    }
+                    break;
+
+                case LightType.Directional:
+                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
+                    {
+                        CoreLightEditorUtilities.DrawDirectionalLightGizmo(light);
+                    }
+                    break;
+                
+                default:
+                    base.OnSceneGUI();
+                    break;
+            }
         }
     }
 }

@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEditor.ShaderGraph.Drawing;
 using UnityEngine;
+using UnityEditor.ShaderGraph.Internal;
 
 namespace UnityEditor.ShaderGraph
 {
@@ -17,14 +18,14 @@ namespace UnityEditor.ShaderGraph
                 displayName = "Material Quality",
                 referenceName = "MATERIAL_QUALITY",
                 type = KeywordType.Enum,
-                definition = KeywordDefinition.ShaderFeature,
+                definition = KeywordDefinition.MultiCompile,
                 scope = KeywordScope.Global,
                 value = 0,
-                entries = new List<KeywordEntry>()
+                entries = new KeywordEntry[]
                 {
-                    new KeywordEntry(1, "High", "HIGH"),
-                    new KeywordEntry(2, "Medium", "MEDIUM"),
-                    new KeywordEntry(3, "Low", "LOW"),
+                    new KeywordEntry("High", "HIGH"),
+                    new KeywordEntry("Medium", "MEDIUM"),
+                    new KeywordEntry("Low", "LOW"),
                 },
             };
         }
@@ -32,12 +33,12 @@ namespace UnityEditor.ShaderGraph
 
     static class KeywordUtil
     {
-        public static IEnumerable<KeywordDescriptor> GetBuiltinKeywordDescriptors() => 
+        public static IEnumerable<KeywordDescriptor> GetBuiltinKeywordDescriptors() =>
             TypeCache.GetMethodsWithAttribute<BuiltinKeywordAttribute>()
             .Where(method => method.IsStatic && method.ReturnType == typeof(KeywordDescriptor))
             .Select(method =>
                 (KeywordDescriptor) method.Invoke(null, new object[0] { }));
-        
+
         public static ConcreteSlotValueType ToConcreteSlotValueType(this KeywordType keywordType)
         {
             switch(keywordType)
@@ -64,6 +65,25 @@ namespace UnityEditor.ShaderGraph
             }
         }
 
+        public static string ToDeclarationString(this KeywordDescriptor keyword)
+        {
+            // Get definition type using scope
+            string scopeString = keyword.scope == KeywordScope.Local ? "_local" : string.Empty;
+            string definitionString = $"{keyword.definition.ToDeclarationString()}{scopeString}";
+
+            switch(keyword.type)
+            {
+                case KeywordType.Boolean:
+                    return $"#pragma {definitionString} _ {keyword.referenceName}";
+                case KeywordType.Enum:
+                    var enumEntryDefinitions = keyword.entries.Select(x => $"{keyword.referenceName}_{x.referenceName}");
+                    string enumEntriesString = string.Join(" ", enumEntryDefinitions);
+                    return $"#pragma {definitionString} {enumEntriesString}";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         public static int GetKeywordPermutationCount(this GraphData graph)
         {
             // Gather all unique keywords from the Graph including Sub Graphs
@@ -71,6 +91,10 @@ namespace UnityEditor.ShaderGraph
             var subGraphNodes = graph.GetNodes<SubGraphNode>();
             foreach(SubGraphNode subGraphNode in subGraphNodes)
             {
+                if (subGraphNode.asset == null)
+                {
+                    continue;
+                }
                 allKeywords = allKeywords.Union(subGraphNode.asset.keywords);
             }
             allKeywords = allKeywords.Distinct();
@@ -95,10 +119,10 @@ namespace UnityEditor.ShaderGraph
 
             for(int i = 0; i < permutationSet.Count; i++)
             {
-                // Subsequent permutation predicates require ||                
+                // Subsequent permutation predicates require ||
                 if(i != 0)
                     sb.Append(" || ");
-                
+
                 // Append permutation
                 sb.Append($"defined(KEYWORD_PERMUTATION_{permutationSet[i]})");
             }
@@ -110,7 +134,7 @@ namespace UnityEditor.ShaderGraph
         {
             if (permutations.Count == 0)
                 return;
-            
+
             for(int p = 0; p < permutations.Count; p++)
             {
                 // ShaderStringBuilder.Append doesnt apply indentation
@@ -126,18 +150,18 @@ namespace UnityEditor.ShaderGraph
                 {
                     sb.Append("#else");
                     isLast = true;
-                } 
+                }
                 else
                 {
                     sb.Append("#elif ");
-                }    
+                }
 
                 // Last permutation is always #else
                 if(!isLast)
                 {
                     // Track whether && is required
                     bool appendAnd = false;
-                    
+
                     // Iterate all keywords that are part of the permutation
                     for(int i = 0; i < permutations[p].Count; i++)
                     {

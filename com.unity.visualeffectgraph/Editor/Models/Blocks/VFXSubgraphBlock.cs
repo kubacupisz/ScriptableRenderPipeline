@@ -47,7 +47,7 @@ namespace UnityEditor.VFX
                     if (m_SubChildren == null && subgraph != null) // if the subasset exists but the subchildren has not been recreated yet, return the existing slots
                         RecreateCopy();
 
-                    foreach (var param in GetParameters(t => InputPredicate(t)))
+                    foreach (var param in GetParameters(t => InputPredicate(t)).OrderBy(t => t.order))
                     {
                         yield return VFXSubgraphUtility.GetPropertyFromInputParameter(param);
                     }
@@ -152,6 +152,9 @@ namespace UnityEditor.VFX
             {
                 child.hideFlags = HideFlags.HideAndDontSave;
             }
+
+            foreach (var subgraphBlocks in m_SubBlocks.OfType<VFXSubgraphBlock>())
+                subgraphBlocks.RecreateCopy();
             SyncSlots(VFXSlot.Direction.kInput,true);
             PatchInputExpressions();
         }
@@ -162,12 +165,12 @@ namespace UnityEditor.VFX
 
             var inputExpressions = new List<VFXExpression>();
 
-            foreach (var slot in inputSlots.SelectMany(t => t.GetVFXValueTypeSlots()))
+            foreach (var slot in inputSlots.SelectMany(t=>t.GetExpressionSlots()))
             {
                 inputExpressions.Add(slot.GetExpression());
             }
 
-            VFXSubgraphUtility.TransferExpressionToParameters(inputExpressions, GetParameters(t => VFXSubgraphUtility.InputPredicate(t)));
+            VFXSubgraphUtility.TransferExpressionToParameters(inputExpressions, GetParameters(t => VFXSubgraphUtility.InputPredicate(t)).OrderBy(t => t.order));
         }
 
         protected override void OnInvalidate(VFXModel model, InvalidationCause cause)
@@ -193,7 +196,7 @@ namespace UnityEditor.VFX
         {
             get
             {
-                return m_SubBlocks == null || !isValid? Enumerable.Empty<VFXBlock>() : (m_SubBlocks.SelectMany(t => t is VFXSubgraphBlock ? (t as VFXSubgraphBlock).recursiveSubBlocks : Enumerable.Repeat(t, 1)));
+                return m_SubBlocks == null || !isActive ? Enumerable.Empty<VFXBlock>() : (m_SubBlocks.SelectMany(t => t is VFXSubgraphBlock ? (t as VFXSubgraphBlock).recursiveSubBlocks : Enumerable.Repeat(t, 1)));
             }
         }
         public override bool isValid

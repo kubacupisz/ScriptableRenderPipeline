@@ -9,6 +9,7 @@ using UnityEditor.Graphs;
 
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.ShaderGraph.Drawing.Colors;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine.UIElements;
 using Edge = UnityEditor.Experimental.GraphView.Edge;
 using Node = UnityEditor.Experimental.GraphView.Node;
@@ -538,6 +539,10 @@ namespace UnityEditor.ShaderGraph.Drawing
             // If deleting a Sub Graph node whose asset contains Keywords test variant limit
             foreach(SubGraphNode subGraphNode in nodesToDelete.OfType<SubGraphNode>())
             {
+                if (subGraphNode.asset == null)
+                {
+                    continue;
+                }
                 if(subGraphNode.asset.keywords.Count > 0)
                 {
                     keywordsDirty = true;
@@ -582,7 +587,7 @@ namespace UnityEditor.ShaderGraph.Drawing
             return EditorUtility.IsPersistent(obj) && (
                 obj is Texture2D ||
                 obj is Cubemap ||
-                obj is SubGraphAsset asset && !asset.descendents.Contains(graph.assetGuid) ||
+                obj is SubGraphAsset asset && !asset.descendents.Contains(graph.assetGuid) && asset.assetGuid != graph.assetGuid ||
                 obj is Texture2DArray ||
                 obj is Texture3D);
         }

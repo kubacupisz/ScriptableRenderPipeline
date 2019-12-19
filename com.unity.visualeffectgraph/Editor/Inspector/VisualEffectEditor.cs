@@ -16,7 +16,7 @@ using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.VFX
 {
-    public static class VisualEffectControl
+    static class VisualEffectControl
     {
         public static void ControlStop(this VisualEffect effect)
         {
@@ -53,16 +53,16 @@ namespace UnityEditor.VFX
     }
 
 
-    public class VisualEffectEditor : Editor
+    class VisualEffectEditor : Editor
     {
         const string kGeneralFoldoutStatePreferenceName = "VFX.VisualEffectEditor.Foldout.General";
         const string kRendererFoldoutStatePreferenceName = "VFX.VisualEffectEditor.Foldout.Renderer";
-        const string kParameterFoldoutStatePreferenceName = "VFX.VisualEffectEditor.Foldout.Parameter";
+        const string kPropertyFoldoutStatePreferenceName = "VFX.VisualEffectEditor.Foldout.Properties";
 
         bool showGeneralCategory;
 
         bool showRendererCategory;
-        bool showParameterCategory;
+        bool showPropertyCategory;
 
         protected SerializedProperty m_VisualEffectAsset;
         SerializedProperty m_ReseedOnPlay;
@@ -91,7 +91,7 @@ namespace UnityEditor.VFX
         protected void OnEnable()
         {
             m_SingleSerializedObject = targets.Length == 1 ? serializedObject : new SerializedObject(targets[0]);
-            showParameterCategory = EditorPrefs.GetBool(kParameterFoldoutStatePreferenceName, true);
+            showPropertyCategory = EditorPrefs.GetBool(kPropertyFoldoutStatePreferenceName, true);
             showRendererCategory = EditorPrefs.GetBool(kRendererFoldoutStatePreferenceName, true);
             showGeneralCategory = EditorPrefs.GetBool(kGeneralFoldoutStatePreferenceName, true);
 
@@ -115,10 +115,12 @@ namespace UnityEditor.VFX
             m_RendererEditor = new RendererEditor(renderers);
 
             s_FakeObjectSerializedCache = new SerializedObject(targets[0]);
+            SceneView.duringSceneGui += OnSceneViewGUI;
         }
 
         protected void OnDisable()
         {
+            SceneView.duringSceneGui -= OnSceneViewGUI;
             VisualEffect effect = ((VisualEffect)targets[0]);
             if (effect != null)
             {
@@ -146,6 +148,11 @@ namespace UnityEditor.VFX
 
         bool DisplayProperty(ref VFXParameterInfo parameter, GUIContent nameContent, SerializedProperty overridenProperty, SerializedProperty valueProperty,bool overrideMixed,bool valueMixed, out bool overriddenChanged)
         {
+            if (parameter.realType == typeof(Matrix4x4).Name)
+            {
+                overriddenChanged = false;
+                return false;
+            }
             EditorGUILayout.BeginHorizontal();
 
             var height = 16f;
@@ -252,7 +259,7 @@ namespace UnityEditor.VFX
                         {
                             Vector4 result = EditorGUI.Vector4Field(rect, nameContent, Vector4.zero);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.vector4Value = result;
                                 changed = true;
                             }
@@ -262,7 +269,7 @@ namespace UnityEditor.VFX
                         {
                             Vector3 result = EditorGUI.Vector3Field(rect, nameContent, Vector3.zero);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.vector3Value = result;
                                 changed = true;
                             }
@@ -272,7 +279,7 @@ namespace UnityEditor.VFX
                         {
                             Vector2 result = EditorGUI.Vector2Field(rect, nameContent, Vector2.zero);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.vector2Value = result;
                                 changed = true;
                             }
@@ -294,7 +301,7 @@ namespace UnityEditor.VFX
                             }
                             UnityObject result = EditorGUI.ObjectField(rect, nameContent, null, objTyp, false);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.objectReferenceValue = result;
                                 changed = true;
                             }
@@ -305,7 +312,7 @@ namespace UnityEditor.VFX
                         {
                             float value = EditorGUI.Slider(rect, nameContent, 0, parameter.min, parameter.max);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.floatValue = value;
                                 changed = true;
                             }
@@ -314,7 +321,7 @@ namespace UnityEditor.VFX
                         {
                             float value = EditorGUI.FloatField(rect, nameContent, 0);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.floatValue = value;
                                 changed = true;
                             }
@@ -325,7 +332,7 @@ namespace UnityEditor.VFX
                         {
                             int value = EditorGUI.IntSlider(rect, nameContent, 0, (int)parameter.min, (int)parameter.max);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.intValue = value;
                                 changed = true;
                             }
@@ -334,7 +341,7 @@ namespace UnityEditor.VFX
                         {
                             int value = EditorGUI.IntField(rect, nameContent, 0);
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.intValue = value;
                                 changed = true;
                             }
@@ -343,14 +350,14 @@ namespace UnityEditor.VFX
                     default:
                         if(parameter.realType == typeof(Gradient).Name )
                         {
-                            Gradient newGradient = EditorGUI.GradientField(rect, nameContent, null, true);
+                            Gradient newGradient = EditorGUI.GradientField(rect, nameContent, s_DefaultGradient, true);
 
                             if (GUI.changed)
-                            { 
+                            {
                                 valueProperty.gradientValue = newGradient;
                                 changed = true;
                             }
-                            
+
                         }
                         break;
                 }
@@ -360,6 +367,8 @@ namespace UnityEditor.VFX
 
             return changed;
         }
+
+        static Gradient s_DefaultGradient = new Gradient();
 
         protected static object GetObjectValue(SerializedProperty prop)
         {
@@ -430,8 +439,10 @@ namespace UnityEditor.VFX
         protected virtual void SceneViewGUICallback(UnityObject target, SceneView sceneView)
         {
             VisualEffect effect = ((VisualEffect)targets[0]);
+            if (effect == null)
+                return;
 
-            var buttonWidth = GUILayout.Width(50);
+            var buttonWidth = GUILayout.Width(52);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(Contents.GetIcon(Contents.Icon.Stop), buttonWidth))
             {
@@ -466,12 +477,12 @@ namespace UnityEditor.VFX
             float playRate = effect.playRate * VisualEffectControl.playRateToValue;
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Contents.playRate, GUILayout.Width(44));
+            GUILayout.Label(Contents.playRate, GUILayout.Width(46));
             playRate = EditorGUILayout.PowerSlider("", playRate, VisualEffectControl.minSlider, VisualEffectControl.maxSlider, VisualEffectControl.sliderPower, GUILayout.Width(124));
             effect.playRate = playRate * VisualEffectControl.valueToPlayRate;
 
             var eventType = Event.current.type;
-            if (EditorGUILayout.DropdownButton(Contents.setPlayRate, FocusType.Passive, GUILayout.Width(36)))
+            if (EditorGUILayout.DropdownButton(Contents.setPlayRate, FocusType.Passive, GUILayout.Width(40)))
             {
                 GenericMenu menu = new GenericMenu();
                 foreach (var value in VisualEffectControl.setPlaybackValues)
@@ -487,7 +498,7 @@ namespace UnityEditor.VFX
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            
+
             GUILayout.Label("Show Bounds", GUILayout.Width(192));
 
             VisualEffectUtility.renderBounds = EditorGUILayout.Toggle(VisualEffectUtility.renderBounds, GUILayout.Width(18));
@@ -508,7 +519,7 @@ namespace UnityEditor.VFX
             effect.playRate = rate;
         }
 
-        protected virtual void OnSceneGUI()
+        protected virtual void OnSceneViewGUI(SceneView sv)
         {
             SceneViewOverlay.Window(Contents.headerPlayControls, SceneViewGUICallback, (int)SceneViewOverlay.Ordering.ParticleEffect, SceneViewOverlay.WindowDisplayOption.OneWindowPerTitle);
         }
@@ -694,7 +705,7 @@ namespace UnityEditor.VFX
             //bool currentState = EditorGUILayout.Toggle(GUIContent.none, prevState, Styles.foldoutStyle);
 
             float height = Styles.foldoutStyle.CalcHeight(nameContent, 4000) + 3;
-            
+
             Rect rect = GUILayoutUtility.GetRect(1, height);
 
             rect.width += rect.x;
@@ -721,6 +732,14 @@ namespace UnityEditor.VFX
                 EditorPrefs.SetBool(kGeneralFoldoutStatePreferenceName, newShowGeneralCategory);
                 showGeneralCategory = newShowGeneralCategory;
             }
+            m_SingleSerializedObject.Update();
+            if (m_OtherSerializedObjects != null) // copy the set value to all multi selection by hand, because it might not be at the same array index or already present in the property sheet
+            {
+                foreach (var serobj in m_OtherSerializedObjects)
+                {
+                    serobj.Update();
+                }
+            }
 
             if(showGeneralCategory)
             {
@@ -746,10 +765,10 @@ namespace UnityEditor.VFX
             {
                 m_asset = component.visualEffectAsset;
                 if (m_asset != null)
-                {
                     m_graph = m_asset.GetResource().GetOrCreateGraph();
-                }
             }
+            if (m_asset == null)
+                m_graph = null;
 
             GUI.enabled = true;
             if (m_graph != null)
@@ -761,20 +780,20 @@ namespace UnityEditor.VFX
 
                 if (m_graph.m_ParameterInfo != null)
                 {
-                    bool newShowParameterCategory = ShowHeader(Contents.headerParameters, true, showParameterCategory);
-                    if( newShowParameterCategory != showParameterCategory)
+                    bool newShowParameterCategory = ShowHeader(Contents.headerProperties, true, showPropertyCategory);
+                    if( newShowParameterCategory != showPropertyCategory)
                     {
-                        EditorPrefs.SetBool(kParameterFoldoutStatePreferenceName, newShowParameterCategory);
-                        showParameterCategory = newShowParameterCategory;
+                        EditorPrefs.SetBool(kPropertyFoldoutStatePreferenceName, newShowParameterCategory);
+                        showPropertyCategory = newShowParameterCategory;
                     }
 
-                    if(showParameterCategory)
+                    if(showPropertyCategory)
                     {
                         var stack = new List<int>();
                         int currentCount = m_graph.m_ParameterInfo.Length;
                         if (currentCount == 0)
                         {
-                            GUILayout.Label("No Parameter exposed in the asset");
+                            GUILayout.Label("No Property exposed in the Visual Effect Graph");
                         }
                         else
                         {
@@ -1077,7 +1096,7 @@ namespace UnityEditor.VFX
             }
 
             if(showRendererCategory)
-                m_RendererEditor.OnInspectorGUI();     
+                m_RendererEditor.OnInspectorGUI();
         }
 
         private class RendererEditor
@@ -1112,7 +1131,7 @@ namespace UnityEditor.VFX
 
                 if (m_RenderingLayerMask != null)
                 {
-                    RenderPipelineAsset srpAsset = GraphicsSettings.renderPipelineAsset;
+                    RenderPipelineAsset srpAsset = GraphicsSettings.currentRenderPipeline;
                     if (srpAsset != null)
                     {
                         var layerNames = srpAsset.renderingLayerMaskNames;
@@ -1170,14 +1189,14 @@ namespace UnityEditor.VFX
         {
             public static readonly GUIContent headerPlayControls =  EditorGUIUtility.TrTextContent("Play Controls");
             public static readonly GUIContent headerGeneral =       EditorGUIUtility.TrTextContent("General");
-            public static readonly GUIContent headerParameters =    EditorGUIUtility.TrTextContent("Parameters");
+            public static readonly GUIContent headerProperties =    EditorGUIUtility.TrTextContent("Properties");
             public static readonly GUIContent headerRenderer =      EditorGUIUtility.TrTextContent("Renderer");
 
-            public static readonly GUIContent assetPath =           EditorGUIUtility.TrTextContent("Asset Template");
-            public static readonly GUIContent randomSeed =          EditorGUIUtility.TrTextContent("Random Seed");
-            public static readonly GUIContent reseedOnPlay =        EditorGUIUtility.TrTextContent("Reseed on play");
-            public static readonly GUIContent openEditor =          EditorGUIUtility.TrTextContent("Edit");
-            public static readonly GUIContent setRandomSeed =       EditorGUIUtility.TrTextContent("Reseed");
+            public static readonly GUIContent assetPath =           EditorGUIUtility.TrTextContent("Asset Template", "Sets the Visual Effect Graph asset to be used in this component.");
+            public static readonly GUIContent randomSeed =          EditorGUIUtility.TrTextContent("Random Seed", "Sets the value used when determining the randomness of the graph. Using the same seed will make the Visual Effect play identically each time.");
+            public static readonly GUIContent reseedOnPlay =        EditorGUIUtility.TrTextContent("Reseed on play", "When enabled, a new random seed value will be used each time the effect is played. Enable to randomize the look of this Visual Effect.");
+            public static readonly GUIContent openEditor =          EditorGUIUtility.TrTextContent("Edit", "Opens the currently assigned template for editing within the Visual Effect Graph window.");
+            public static readonly GUIContent setRandomSeed =       EditorGUIUtility.TrTextContent("Reseed", "When clicked, if ‘Reseed on play’ is disabled a new random seed will be generated.");
             public static readonly GUIContent resetInitialEvent =   EditorGUIUtility.TrTextContent("Default");
             public static readonly GUIContent setPlayRate =         EditorGUIUtility.TrTextContent("Set");
             public static readonly GUIContent playRate =            EditorGUIUtility.TrTextContent("Rate");
@@ -1230,7 +1249,7 @@ namespace UnityEditor.VFX
 
             public static readonly GUIStyle categoryHeader;
 
-            public static readonly GUILayoutOption MiniButtonWidth = GUILayout.Width(48);
+            public static readonly GUILayoutOption MiniButtonWidth = GUILayout.Width(56);
             public static readonly GUILayoutOption PlayControlsHeight = GUILayout.Height(24);
 
             static Styles()
@@ -1248,8 +1267,9 @@ namespace UnityEditor.VFX
                 categoryHeader.padding.left = 32;
                 categoryHeader.padding.top = 2;
                 categoryHeader.border.right = 2;
+
                 //TODO change to editor resources calls
-                categoryHeader.normal.background = Resources.Load<Texture2D>(EditorGUIUtility.isProSkin ? "VFX/cat-background-dark" : "VFX/cat-background-light");
+                categoryHeader.normal.background = (Texture2D)AssetDatabase.LoadAssetAtPath<Texture2D>(VisualEffectGraphPackageInfo.assetPackagePath +"/Editor Default Resources/" +(EditorGUIUtility.isProSkin ? "VFX/cat-background-dark.png" : "VFX/cat-background-light.png"));
             }
         }
     }
