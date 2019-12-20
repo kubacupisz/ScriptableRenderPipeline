@@ -27,7 +27,7 @@ namespace UnityEngine.Rendering.HighDefinition
         MissingMesh = 0x10
     }
 
-    class HDRayTracingLights
+    public class HDRayTracingLights
     {
         // The list of non-directional lights in the sub-scene
         public List<HDAdditionalLightData> hdPointLightArray = new List<HDAdditionalLightData>();
