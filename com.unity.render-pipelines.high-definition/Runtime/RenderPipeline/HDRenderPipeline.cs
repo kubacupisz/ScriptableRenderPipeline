@@ -1916,7 +1916,8 @@ namespace UnityEngine.Rendering.HighDefinition
                 cmd.SetGlobalTexture(HDShaderIDs._SkyTexture, CoreUtils.magentaCubeTextureArray);
 
 #if ENABLE_RAYTRACING
-            HDRaytracingLightProbeBakeManager.PreRender(hdCamera, cmd);
+            if (camera.cameraType == CameraType.SceneView || camera.cameraType == CameraType.Game)
+                HDRaytracingLightProbeBakeManager.PreRender(hdCamera, cmd);
 #endif
 
             if (GL.wireframe)
@@ -2116,10 +2117,13 @@ namespace UnityEngine.Rendering.HighDefinition
                     {
                         if (HDRaytracingLightProbeBakeManager.IsEnabled)
                         {
-                            RayTracingAccelerationStructure accelerationStructure = RequestAccelerationStructure();
-                            HDRaytracingLightCluster lightCluster = RequestLightCluster();
-                            Texture skyTexture = m_SkyManager.GetSkyReflection(hdCamera);
-                            HDRaytracingLightProbeBakeManager.Bake(hdCamera, cmd, accelerationStructure, lightCluster, skyTexture);
+                            if (camera.cameraType == CameraType.SceneView || camera.cameraType == CameraType.Game)
+                            {
+                                RayTracingAccelerationStructure accelerationStructure = RequestAccelerationStructure();
+                                HDRaytracingLightCluster lightCluster = RequestLightCluster();
+                                Texture skyTexture = m_SkyManager.GetSkyReflection(hdCamera);
+                                HDRaytracingLightProbeBakeManager.Bake(hdCamera, cmd, accelerationStructure, lightCluster, skyTexture);
+                            }
                         }
                         else
                         {
