@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 
-namespace UnityEngine.Experimental.Rendering.HighDefinition
+namespace UnityEngine.Experimental.Rendering
 {
 #if ENABLE_RAYTRACING
 
