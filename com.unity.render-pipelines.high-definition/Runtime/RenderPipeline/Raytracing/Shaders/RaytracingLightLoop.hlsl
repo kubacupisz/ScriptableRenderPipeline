@@ -2,23 +2,6 @@
 
 #define USE_LIGHT_CLUSTER 
 
-    // Grab the light count
-    lightStart = lightCategory == 0 ? 0 : (lightCategory == 1 ? GetPunctualLightClusterCellCount(cellIndex) : GetAreaLightClusterCellCount(cellIndex));
-    lightEnd = lightCategory == 0 ? GetPunctualLightClusterCellCount(cellIndex) : (lightCategory == 1 ? GetAreaLightClusterCellCount(cellIndex) : GetEnvLightClusterCellCount(cellIndex));
-}
-
-LightData FetchClusterLightIndex(int cellIndex, uint lightIndex)
-{
-    int absoluteLightIndex = GetLightClusterCellLightByIndex(cellIndex, lightIndex);
-    return _LightDatasRT[absoluteLightIndex];
-}
-
-EnvLightData FetchClusterEnvLightIndex(int cellIndex, uint lightIndex)
-{
-    int absoluteLightIndex = GetLightClusterCellLightByIndex(cellIndex, lightIndex);
-    return _EnvLightDatasRT[absoluteLightIndex];
-}
-
 #if defined(RT_SUN_OCC)
 RaytracingAccelerationStructure raytracingAccelStruct;
 #endif
@@ -288,7 +271,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
 #ifdef USE_RTPV
     {
         float3 wpos = GetAbsolutePositionWS(posInput.positionWS);
-        aggregateLighting.direct.diffuse += sampleIrradiance(wpos, bsdfData.normalWS, -WorldRayDirection(), bsdfData.normalWS);
+        aggregateLighting.direct.diffuse += sampleIrradiance(wpos, bsdfData.normalWS, -WorldRayDirection(), bsdfData.normalWS, true);
     }
 #endif
 
