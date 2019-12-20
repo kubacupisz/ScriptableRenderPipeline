@@ -989,7 +989,9 @@ namespace UnityEngine.Rendering.HighDefinition
                 if (hdCamera.frameSettings.IsEnabled(FrameSettingsField.RayTracing))
                 {
                     bool validIndirectDiffuse = ValidIndirectDiffuseState(hdCamera);
+#if ENABLE_RAYTRACING
                     validIndirectDiffuse &= !HDRaytracingLightProbeBakeManager.IsEnabled;
+#endif
                     cmd.SetGlobalInt(HDShaderIDs._RaytracedIndirectDiffuse, validIndirectDiffuse ? 1 : 0);
                 }
                 cmd.SetGlobalFloat(HDShaderIDs._ContactShadowOpacity, m_ContactShadows.opacity.value);
@@ -2115,6 +2117,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     bool validIndirectDiffuse = ValidIndirectDiffuseState(hdCamera);
                     if (validIndirectDiffuse)
                     {
+#if ENABLE_RAYTRACING
                         if (HDRaytracingLightProbeBakeManager.IsEnabled)
                         {
                             if (camera.cameraType == CameraType.SceneView || camera.cameraType == CameraType.Game)
@@ -2126,6 +2129,7 @@ namespace UnityEngine.Rendering.HighDefinition
                             }
                         }
                         else
+#endif
                         {
                             RenderIndirectDiffuse(hdCamera, cmd, renderContext, m_FrameCount);
                         }
