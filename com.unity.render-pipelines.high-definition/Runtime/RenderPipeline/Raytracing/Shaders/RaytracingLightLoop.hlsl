@@ -271,7 +271,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
 #ifdef USE_RTPV
     {
         float3 wpos = GetAbsolutePositionWS(posInput.positionWS);
-        aggregateLighting.direct.diffuse += sampleIrradiance(wpos, bsdfData.normalWS, -WorldRayDirection(), bsdfData.normalWS, true);
+        aggregateLighting.direct.diffuse += 0.95f * sampleIrradiance(wpos, bsdfData.normalWS, -WorldRayDirection(), bsdfData.normalWS, true);
     }
 #endif
 
