@@ -12,6 +12,17 @@ float4x4 GetProbeVolumeWorldToObject()
 // Else we have lightprobe for dynamic/moving entity. Either SH9 per object lightprobe or SH4 per pixel per object volume probe
 float3 SampleBakedGI(float3 positionRWS, float3 normalWS, float2 uvStaticLightmap, float2 uvDynamicLightmap)
 {
+#if defined(USE_RTPV_RASTER_ON)
+    {
+        float3 wpos = GetAbsolutePositionWS(positionRWS);
+        return sampleIrradiance(wpos, normalWS, normalize(-positionRWS), normalWS, false);
+    }
+#elif defined(USE_RTPV_RASTER_OFF)
+    {
+        return float3(0, 0, 0);
+    }
+#endif
+
     // If there is no lightmap, it assume lightprobe
 #if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTMAP_ON)
 
