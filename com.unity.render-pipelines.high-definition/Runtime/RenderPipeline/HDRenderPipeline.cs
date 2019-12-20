@@ -989,6 +989,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 if (hdCamera.frameSettings.IsEnabled(FrameSettingsField.RayTracing))
                 {
                     bool validIndirectDiffuse = ValidIndirectDiffuseState(hdCamera);
+                    validIndirectDiffuse &= !HDRaytracingLightProbeBakeManager.IsEnabled;
                     cmd.SetGlobalInt(HDShaderIDs._RaytracedIndirectDiffuse, validIndirectDiffuse ? 1 : 0);
                 }
                 cmd.SetGlobalFloat(HDShaderIDs._ContactShadowOpacity, m_ContactShadows.opacity.value);
@@ -2113,7 +2114,17 @@ namespace UnityEngine.Rendering.HighDefinition
                     bool validIndirectDiffuse = ValidIndirectDiffuseState(hdCamera);
                     if (validIndirectDiffuse)
                     {
-                        RenderIndirectDiffuse(hdCamera, cmd, renderContext, m_FrameCount);
+                        if (HDRaytracingLightProbeBakeManager.IsEnabled)
+                        {
+                            RayTracingAccelerationStructure accelerationStructure = RequestAccelerationStructure();
+                            HDRaytracingLightCluster lightCluster = RequestLightCluster();
+                            Texture skyTexture = m_SkyManager.GetSkyReflection(hdCamera);
+                            HDRaytracingLightProbeBakeManager.Bake(hdCamera, cmd, accelerationStructure, lightCluster, skyTexture);
+                        }
+                        else
+                        {
+                            RenderIndirectDiffuse(hdCamera, cmd, renderContext, m_FrameCount);
+                        }
                     }
                 }
 
