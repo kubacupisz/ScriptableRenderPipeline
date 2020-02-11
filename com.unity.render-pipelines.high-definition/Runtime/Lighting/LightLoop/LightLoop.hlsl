@@ -8,6 +8,23 @@
 // LightLoop
 // ----------------------------------------------------------------------------
 
+// Copied from VolumeVoxelization.compute
+float ProbeVolumeComputeFadeFactor(
+    float3 samplePositionBoxNDC,
+    float depthWS,
+    float3 rcpPosFaceFade,
+    float3 rcpNegFaceFade,
+    float rcpDistFadeLen,
+    float endTimesRcpDistFadeLen)
+{
+    float3 posF = Remap10(samplePositionBoxNDC, rcpPosFaceFade, rcpPosFaceFade);
+    float3 negF = Remap01(samplePositionBoxNDC, rcpNegFaceFade, 0);
+    float  dstF = Remap10(depthWS, rcpDistFadeLen, endTimesRcpDistFadeLen);
+    float  fade = posF.x * posF.y * posF.z * negF.x * negF.y * negF.z;
+
+    return dstF * fade;
+}
+
 void ApplyDebug(LightLoopContext context, PositionInputs posInput, BSDFData bsdfData, inout float3 diffuseLighting, inout float3 specularLighting)
 {
 #ifdef DEBUG_DISPLAY
@@ -92,6 +109,11 @@ void ApplyDebug(LightLoopContext context, PositionInputs posInput, BSDFData bsdf
         }
 
         diffuseLighting = SAMPLE_TEXTURE2D_LOD(_DebugMatCapTexture, s_linear_repeat_sampler, UV, 0).rgb * (_MatcapMixAlbedo > 0  ? defaultColor.rgb * _MatcapViewScale : 1.0f);
+    }
+	else if (_DebugLightingMode == DEBUGLIGHTINGMODE_PROBE_VOLUME)
+    {
+        // Debug info is written to diffuseColor inside of light loop.
+        specularLighting = float3(0.0, 0.0, 0.0);
     }
 
     // We always apply exposure when in debug mode. The exposure value will be at a neutral 0.0 when not needed.
@@ -408,6 +430,174 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
         }
     }
 #endif
+
+	// TODO(Nicholas): verify this copy-pasted code against the source.
+    if (featureFlags & LIGHTFEATUREFLAGS_PROBE_VOLUME)
+    {
+        float probeVolumeHierarchyWeight = 0.0; // Max: 1.0
+        float3 probeVolumeDiffuseLighting = 0.0;
+
+        uint probeVolumeStart, probeVolumeCount;
+
+        bool fastPath = false;
+        // Fetch first probe volume to provide the scene proxy for screen space computation
+#ifndef LIGHTLOOP_DISABLE_TILE_AND_CLUSTER
+        GetCountAndStart(posInput, LIGHTCATEGORY_PROBE_VOLUME, probeVolumeStart, probeVolumeCount);
+
+    #if SCALARIZE_LIGHT_LOOP
+        // Fast path is when we all pixels in a wave is accessing same tile or cluster.
+        uint probeVolumeStartFirstLane = WaveReadLaneFirst(probeVolumeStart);
+        fastPath = WaveActiveAllTrue(probeVolumeStart == probeVolumeStartFirstLane);
+    #endif
+
+#else   // LIGHTLOOP_DISABLE_TILE_AND_CLUSTER
+        probeVolumeCount = _ProbeVolumeCount;
+        probeVolumeStart = 0;
+#endif
+
+        // Reflection probes are sorted by volume (in the increasing order).
+
+        // context.sampleReflection = SINGLE_PASS_CONTEXT_SAMPLE_REFLECTION_PROBES;
+    #if SCALARIZE_LIGHT_LOOP
+        if (fastPath)
+        {
+            probeVolumeStart = probeVolumeStartFirstLane;
+        }
+    #endif
+
+        // Scalarized loop, same rationale of the punctual light version
+        uint v_probeVolumeListOffset = 0;
+        uint v_probeVolumeIdx = probeVolumeStart;
+        while (v_probeVolumeListOffset < probeVolumeCount)
+        {
+            v_probeVolumeIdx = FetchIndex(probeVolumeStart, v_probeVolumeListOffset);
+            uint s_probeVolumeIdx = v_probeVolumeIdx;
+
+        #if SCALARIZE_LIGHT_LOOP
+            if (!fastPath)
+            {
+                s_probeVolumeIdx = WaveActiveMin(v_probeVolumeIdx);
+                // If we are not in fast path, s_probeVolumeIdx is not scalar
+               // If WaveActiveMin returns 0xffffffff it means that all lanes are actually dead, so we can safely ignore the loop and move forward.
+               // This could happen as an helper lane could reach this point, hence having a valid v_lightIdx, but their values will be ignored by the WaveActiveMin
+                if (s_probeVolumeIdx == -1)
+                {
+                    break;
+                }
+            }
+            // Note that the WaveReadLaneFirst should not be needed, but the compiler might insist in putting the result in VGPR.
+            // However, we are certain at this point that the index is scalar.
+            s_probeVolumeIdx = WaveReadLaneFirst(s_probeVolumeIdx);
+
+        #endif
+
+            // Scalar load.
+            ProbeVolumeEngineData s_probeVolumeData = _ProbeVolumeDatas[s_probeVolumeIdx];
+            OrientedBBox s_probeVolumeBounds = _ProbeVolumeBounds[s_probeVolumeIdx];
+
+            // If current scalar and vector light index match, we process the light. The v_envLightListOffset for current thread is increased.
+            // Note that the following should really be ==, however, since helper lanes are not considered by WaveActiveMin, such helper lanes could
+            // end up with a unique v_envLightIdx value that is smaller than s_envLightIdx hence being stuck in a loop. All the active lanes will not have this problem.
+            if (s_probeVolumeIdx >= v_probeVolumeIdx)
+            {
+                v_probeVolumeListOffset++;
+                if (probeVolumeHierarchyWeight < 1.0)
+                {
+                    // TODO: Implement light layer support for probe volumes.
+                    // if (IsMatchingLightLayer(s_probeVolumeData.lightLayers, builtinData.renderingLayers)) { EVALUATE_BSDF_ENV_SKY(s_probeVolumeData, TYPE, type) }
+
+                    // TODO: Implement per-probe user defined max weight.
+                    float weight = 0.0;
+                    float4 sampleShAr = 0.0;
+                    float4 sampleShAg = 0.0;
+                    float4 sampleShAb = 0.0;
+                    {
+                        float3x3 obbFrame = float3x3(s_probeVolumeBounds.right, s_probeVolumeBounds.up, cross(s_probeVolumeBounds.right, s_probeVolumeBounds.up));
+                        float3 obbExtents = float3(s_probeVolumeBounds.extentX, s_probeVolumeBounds.extentY, s_probeVolumeBounds.extentZ);
+
+                        // TODO: Need to adjust tile / cluster culling code to handle this bias off the surface position.
+                        // One option is to conservatively dilate the volumes in the tile / cluster culling + assignment phase based on the normal bias.
+                        float3 samplePositionWS = bsdfData.normalWS * _ProbeVolumeNormalBiasWS + posInput.positionWS;
+                        float3 samplePositionBS = mul(obbFrame, samplePositionWS - s_probeVolumeBounds.center);
+                        float3 samplePositionBCS = samplePositionBS * rcp(obbExtents);
+
+                        // TODO: Verify if this early out is actually improving performance.
+                        bool isInsideProbeVolume = max(abs(samplePositionBCS.x), max(abs(samplePositionBCS.y), abs(samplePositionBCS.z))) < 1.0;
+                        if (!isInsideProbeVolume) { continue; }
+
+                        float3 samplePositionBNDC = samplePositionBCS * 0.5 + 0.5;
+
+                        float fadeFactor = ProbeVolumeComputeFadeFactor(
+                            samplePositionBNDC,
+                            posInput.linearDepth,
+                            s_probeVolumeData.rcpPosFaceFade,
+                            s_probeVolumeData.rcpNegFaceFade,
+                            s_probeVolumeData.rcpDistFadeLen,
+                            s_probeVolumeData.endTimesRcpDistFadeLen
+                        );
+
+                        // Alpha composite: weight = (1.0f - probeVolumeHierarchyWeight) * fadeFactor;
+                        weight = probeVolumeHierarchyWeight * -fadeFactor + fadeFactor;
+                        if (weight > 0.0)
+                        {
+                            // TODO: Cleanup / optimize this math.
+                            float3 probeVolumeUVW = clamp(samplePositionBNDC.xyz, 0.5 * s_probeVolumeData.resolutionInverse, 1.0 - s_probeVolumeData.resolutionInverse * 0.5);
+                            float3 probeVolumeTexel3D = probeVolumeUVW * s_probeVolumeData.resolution;
+                            float2 probeVolumeTexel2DBack = float2(
+                                max(0.0, floor(probeVolumeTexel3D.z - 0.5)) * s_probeVolumeData.resolution.x + probeVolumeTexel3D.x,
+                                probeVolumeTexel3D.y
+                            );
+
+                            float2 probeVolumeTexel2DFront = float2(
+                                max(0.0, floor(probeVolumeTexel3D.z + 0.5)) * s_probeVolumeData.resolution.x + probeVolumeTexel3D.x,
+                                probeVolumeTexel3D.y
+                            );
+
+                            float2 probeVolumeAtlasUV2DBack = probeVolumeTexel2DBack * _ProbeVolumeAtlasResolutionAndInverse.zw + s_probeVolumeData.scaleBias.zw;
+                            float2 probeVolumeAtlasUV2DFront = probeVolumeTexel2DFront * _ProbeVolumeAtlasResolutionAndInverse.zw + s_probeVolumeData.scaleBias.zw;
+                            float lerpZ = frac(probeVolumeTexel3D.z - 0.5);
+                            sampleShAr = lerp(
+                                SAMPLE_TEXTURE2D_ARRAY_LOD(_ProbeVolumeAtlasSH, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack,  0, 0),
+                                SAMPLE_TEXTURE2D_ARRAY_LOD(_ProbeVolumeAtlasSH, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 0, 0),
+                                lerpZ
+                            );
+                            sampleShAg = lerp(
+                                SAMPLE_TEXTURE2D_ARRAY_LOD(_ProbeVolumeAtlasSH, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack,  1, 0),
+                                SAMPLE_TEXTURE2D_ARRAY_LOD(_ProbeVolumeAtlasSH, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 1, 0),
+                                lerpZ
+                            );
+                            sampleShAb = lerp(
+                                SAMPLE_TEXTURE2D_ARRAY_LOD(_ProbeVolumeAtlasSH, s_linear_clamp_sampler, probeVolumeAtlasUV2DBack,  2, 0),
+                                SAMPLE_TEXTURE2D_ARRAY_LOD(_ProbeVolumeAtlasSH, s_linear_clamp_sampler, probeVolumeAtlasUV2DFront, 2, 0),
+                                lerpZ
+                            );
+                        }
+                    }
+
+                    float3 sampleOutgoingRadiance = SHEvalLinearL0L1(bsdfData.normalWS, sampleShAr, sampleShAg, sampleShAb);
+
+                    // TODO: Sample irradiance data from atlas and integrate against diffuse BRDF.
+                    // probeVolumeDiffuseLighting += s_probeVolumeData.debugColor * sample * weight;
+                    probeVolumeDiffuseLighting += sampleOutgoingRadiance * weight * bsdfData.diffuseColor;
+                    probeVolumeHierarchyWeight = probeVolumeHierarchyWeight + weight;
+
+                }
+            }
+        }
+
+    #ifdef DEBUG_DISPLAY
+        if (_DebugLightingMode == DEBUGLIGHTINGMODE_PROBE_VOLUME)
+        {
+            builtinData.bakeDiffuseLighting = 0.0;
+        }
+    #endif
+
+        // Lerp down any baked diffuse lighting where probe volume lighting data is present.
+        // This allows us to fallback to lightmaps and / or legacy probes for distant features (such as terrain).
+        // TODO: We may want to elect to fully disable the code paths + memory for baked diffuse lighting and simply anticipate a low resolution
+        // global volume will always be present. Needs discussion. For now, this lerp between baked and probe volumes is the least invasive approach.
+        builtinData.bakeDiffuseLighting = builtinData.bakeDiffuseLighting * (1.0 - probeVolumeHierarchyWeight) + probeVolumeDiffuseLighting;
+    }
 
     // Also Apply indiret diffuse (GI)
     // PostEvaluateBSDF will perform any operation wanted by the material and sum everything into diffuseLighting and specularLighting

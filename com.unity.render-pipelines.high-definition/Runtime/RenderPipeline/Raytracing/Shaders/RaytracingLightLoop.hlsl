@@ -2,6 +2,21 @@
 
 #define USE_LIGHT_CLUSTER 
 
+#if defined(RT_SUN_OCC)
+RaytracingAccelerationStructure raytracingAccelStruct;
+#endif
+
+float3 offsetRay(float3 p, float3 n)
+{
+    float  kOrigin     = 1.0f / 32.0f;
+    float  kFloatScale = 1.0f / 65536.0f;
+    float  kIntScale   = 256.0f;
+    int3   of_i        = n * kIntScale;
+    float3 p_i         = asfloat(asint(p) + ((p < 0) ? -of_i : of_i));
+
+    return abs(p) < kOrigin ? (p + kFloatScale * n) : p_i;
+}
+
 void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BSDFData bsdfData, BuiltinData builtinData, 
             float reflectionHierarchyWeight, float refractionHierarchyWeight, float3 reflection, float3 transmission,
 			out float3 diffuseLighting,
@@ -16,6 +31,36 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
     // Initialize the contactShadow and contactShadowFade fields
     InvalidateConctactShadow(posInput, context);
     
+#if defined(RT_SUN_OCC)
+    // Evaluate sun shadows.
+    if (_DirectionalShadowIndex >= 0)
+    {
+        DirectionalLightData light = _DirectionalLightDatas[_DirectionalShadowIndex];
+        if (dot(bsdfData.normalWS, -light.forward) > 0.0)
+        {
+            const float kTMin = 1e-6f;
+            const float kTMax = 1e10f;
+            RayDesc rayDescriptor;
+            rayDescriptor.Origin    = offsetRay(GetAbsolutePositionWS(posInput.positionWS), bsdfData.normalWS);
+            rayDescriptor.Direction = -light.forward;
+            rayDescriptor.TMin      = kTMin;
+            rayDescriptor.TMax      = kTMax;
+
+            RayIntersection rayIntersection;
+            rayIntersection.color             = float3(0.0, 0.0, 0.0);
+            rayIntersection.incidentDirection = rayDescriptor.Direction;
+            rayIntersection.origin            = rayDescriptor.Origin;
+            rayIntersection.t                 = -1.0f;
+            rayIntersection.cone.spreadAngle  = 0;
+            rayIntersection.cone.width        = 0;
+
+            const uint missShaderIndex = 1; // See the inspector of the BakeProbes.raytrace shader.
+            TraceRay(raytracingAccelStruct, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 1, missShaderIndex, rayDescriptor, rayIntersection);
+
+            context.shadowValue = rayIntersection.t < kTMax ? 0.0 : 1.0;
+        }
+    }
+#else
     // Evaluate sun shadows.
     if (_DirectionalShadowIndex >= 0)
     {
@@ -34,6 +79,7 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
                                                                   light.shadowIndex, L);
         }
     }
+#endif	
 
     AggregateLighting aggregateLighting;
     ZERO_INITIALIZE(AggregateLighting, aggregateLighting); // LightLoop is in charge of initializing the structure
@@ -220,6 +266,13 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
             #endif
         }
     }
+
+#ifdef USE_RTPV
+    {
+        float3 wpos = GetAbsolutePositionWS(posInput.positionWS);
+        aggregateLighting.direct.diffuse += 0.95f * sampleIrradiance(wpos, bsdfData.normalWS, -WorldRayDirection(), bsdfData.normalWS, true);
+    }
+#endif
 
     PostEvaluateBSDF(context, V, posInput, preLightData, bsdfData, builtinData, aggregateLighting, diffuseLighting, specularLighting);
 }

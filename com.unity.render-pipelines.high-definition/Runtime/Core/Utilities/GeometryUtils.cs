@@ -66,7 +66,7 @@ namespace UnityEngine.Rendering.HighDefinition
     } // struct Frustum
 
     [GenerateHLSL]
-    struct OrientedBBox
+    public struct OrientedBBox
     {
         // 3 x float4 = 48 bytes.
         // TODO: pack the axes into 16-bit UNORM per channel, and consider a quaternionic representation.
@@ -95,12 +95,15 @@ namespace UnityEngine.Rendering.HighDefinition
         }
     } // struct OrientedBBox
 
-    static class GeometryUtils
+    public static class GeometryUtils
     {
         // Returns 'true' if the OBB intersects (or is inside) the frustum, 'false' otherwise.
-        public unsafe static bool Overlap(OrientedBBox obb, Frustum frustum, int numPlanes, int numCorners)
+        public unsafe static bool Overlap(OrientedBBox obb, Frustum frustum)
         {
             bool overlap = true;
+
+            int numPlanes = frustum.planes.Length;
+            int numCorners = frustum.corners.Length;
 
             // Test the OBB against frustum planes. Frustum planes are inward-facing.
             // The OBB is outside if it's entirely behind one of the frustum planes.

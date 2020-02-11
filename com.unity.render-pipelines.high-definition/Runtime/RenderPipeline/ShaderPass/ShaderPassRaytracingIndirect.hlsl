@@ -15,10 +15,10 @@ void ClosestHitMain(inout RayIntersection rayIntersection : SV_RayPayload, Attri
 
     // Compute the view vector
     float3 viewWS = -rayIntersection.incidentDirection;
-    float3 pointWSPos = GetAbsolutePositionWS(fragInput.positionRWS);
 
     // Make sure to add the additional travel distance
-    float travelDistance = length(GetAbsolutePositionWS(fragInput.positionRWS) - rayIntersection.origin);
+    float3 pointWSPos = GetAbsolutePositionWS(fragInput.positionRWS);
+    float travelDistance = length(pointWSPos - rayIntersection.origin);
     rayIntersection.t = travelDistance;
     rayIntersection.cone.width += travelDistance * rayIntersection.cone.spreadAngle;
 

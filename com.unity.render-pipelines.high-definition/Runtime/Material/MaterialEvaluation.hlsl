@@ -168,6 +168,11 @@ void PostEvaluateBSDFDebugDisplay(  AmbientOcclusionFactor aoFactor, BuiltinData
             specularLighting = float3(0, 0, 0);
             #endif
             break ;
+			
+        case DEBUGLIGHTINGMODE_PROBE_VOLUME:
+            diffuseLighting = builtinData.bakeDiffuseLighting;
+            specularLighting = float3(0, 0, 0);
+            break;
         }
     }
     else if (_DebugMipMapMode != DEBUGMIPMAPMODE_NONE)

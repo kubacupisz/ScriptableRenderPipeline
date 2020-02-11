@@ -866,6 +866,14 @@ namespace UnityEditor.Rendering.HighDefinition
                 --EditorGUI.indentLevel;
             }
 
+            EditorGUILayout.PropertyField(serialized.renderPipelineSettings.supportProbeVolume, Styles.SupportProbeVolumeContent);
+            using (new EditorGUI.DisabledScope(!serialized.renderPipelineSettings.supportProbeVolume.boolValue))
+            {
+                ++EditorGUI.indentLevel;
+                // TODO: Add Probe Volume render pipeline settings here.
+                --EditorGUI.indentLevel;
+            }
+
             EditorGUILayout.Space(); //to separate with following sub sections
         }
 
@@ -960,6 +968,7 @@ namespace UnityEditor.Rendering.HighDefinition
             AppendSupport(builder, serialized.renderPipelineSettings.supportTransparentDepthPrepass, Styles.supportTransparentDepthPrepass);
             AppendSupport(builder, serialized.renderPipelineSettings.supportTransparentDepthPostpass, Styles.supportTransparentDepthPostpass);
             AppendSupport(builder, serialized.renderPipelineSettings.supportRayTracing, Styles.supportRaytracing);
+			AppendSupport(builder, serialized.renderPipelineSettings.supportProbeVolume, Styles.SupportProbeVolumeContent);
 
             EditorGUILayout.HelpBox(builder.ToString(), MessageType.Info, wide: true);
         }

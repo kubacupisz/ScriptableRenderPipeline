@@ -41,7 +41,7 @@ namespace UnityEngine.Rendering.HighDefinition
         RGBA3
     }
 
-    class HDRayTracingLights
+    public class HDRayTracingLights
     {
         // The list of non-directional lights in the sub-scene
         public List<HDAdditionalLightData> hdPointLightArray = new List<HDAdditionalLightData>();

@@ -134,6 +134,7 @@ namespace UnityEngine.Rendering.HighDefinition
     class Texture2DAtlas
     {
         protected RTHandle m_AtlasTexture = null;
+        protected bool isAtlasTextureOwner = false;
         protected int m_Width;
         protected int m_Height;
         protected bool m_UseMipMaps;
@@ -171,6 +172,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 autoGenerateMips: false,
                 name: name
             );
+			isAtlasTextureOwner = true;
 
             // We clear on create to avoid garbage data to be present in the atlas
             int mipCount = useMipMap ? GetTextureMipmapCount(m_Width, m_Height) : 1;
@@ -182,11 +184,23 @@ namespace UnityEngine.Rendering.HighDefinition
 
             m_AtlasAllocator = new AtlasAllocator(width, height, powerOfTwoPadding);
         }
+		
+        public Texture2DAtlas(int width, int height, RTHandle atlasTexture, bool powerOfTwoPadding = false)
+        {
+            m_Width = width;
+            m_Height = height;
+            m_Format = atlasTexture.rt.graphicsFormat;
+            m_AtlasTexture = atlasTexture;
+            isAtlasTextureOwner = false;
+
+            m_AtlasAllocator = new AtlasAllocator(width, height, powerOfTwoPadding);
+        }
+
 
         public void Release()
         {
             ResetAllocator();
-            RTHandles.Release(m_AtlasTexture);
+            if (isAtlasTextureOwner) { RTHandles.Release(m_AtlasTexture); }
         }
 
         public void ResetAllocator()
@@ -328,6 +342,17 @@ namespace UnityEngine.Rendering.HighDefinition
                 return false;
 
             return AllocateTexture(cmd, ref scaleOffset, texture, texture.width, texture.height);
+        }
+
+        public bool EnsureTextureSlot(out bool isUploadNeeded, ref Vector4 scaleBias, int key, int width, int height)
+        {
+            isUploadNeeded = false;
+            if (m_AllocationCache.TryGetValue(key, out scaleBias)) { return true; }
+            if (!m_AtlasAllocator.Allocate(ref scaleBias, width, height)) { return false; }
+            isUploadNeeded = true;
+            scaleBias.Scale(new Vector4(1.0f / m_Width, 1.0f / m_Height, 1.0f / m_Width, 1.0f / m_Height));
+            m_AllocationCache.Add(key, scaleBias);
+            return true;
         }
 
         public virtual bool UpdateTexture(CommandBuffer cmd, Texture oldTexture, Texture newTexture, ref Vector4 scaleOffset, Vector4 sourceScaleOffset, bool updateIfNeeded = true, bool blitMips = true)

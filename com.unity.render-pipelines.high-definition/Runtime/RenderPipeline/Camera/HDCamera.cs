@@ -180,7 +180,8 @@ namespace UnityEngine.Rendering.HighDefinition
         internal Rect                   finalViewport; // This will have the correct viewport position and the size will be full resolution (ie : not taking dynamic rez into account)
         internal int                    colorPyramidHistoryMipCount = 0;
         internal VBufferParameters[]    vBufferParams; // Double-buffered; needed even if reprojection is off
-        // Currently the frame count is not increase every render, for ray tracing shadow filtering. We need to have a number that increases every render
+        internal ProbeVolumeSystem.ProbeVolumeSystemParameters probeVolumeSystemParams;
+		// Currently the frame count is not increase every render, for ray tracing shadow filtering. We need to have a number that increases every render
         internal uint                   cameraFrameCount = 0;
         internal bool                   animateMaterials;
         internal float                  lastTime;

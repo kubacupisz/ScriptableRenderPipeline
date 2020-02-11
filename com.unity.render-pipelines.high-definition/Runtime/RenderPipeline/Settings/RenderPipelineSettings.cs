@@ -183,6 +183,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public bool supportDitheringCrossFade;
         /// <summary>Support terrain holes.</summary>
         public bool supportTerrainHole;
+		public bool supportProbeVolume;
         /// <summary>Support ray tracing.</summary>
         public bool supportRayTracing;
 

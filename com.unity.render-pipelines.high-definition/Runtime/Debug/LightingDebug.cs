@@ -27,7 +27,8 @@ namespace UnityEngine.Rendering.HighDefinition
         /// <summary>Display indirect diffuse occlusion.</summary>
         IndirectDiffuseOcclusion,
         /// <summary>Display indirect specular occlusion.</summary>
-        IndirectSpecularOcclusion
+        IndirectSpecularOcclusion,
+		ProbeVolume
     }
 
     /// <summary>
@@ -123,6 +124,13 @@ namespace UnityEngine.Rendering.HighDefinition
         SingleShadow,
     }
 
+    [GenerateHLSL]
+    public enum ProbeVolumeDebugMode
+    {
+        None,
+        VisualizeAtlas
+    }
+
     /// <summary>
     /// Lighting Debug Settings.
     /// </summary>
@@ -143,7 +151,8 @@ namespace UnityEngine.Rendering.HighDefinition
                 || overrideAmbientOcclusion
                 || overrideSpecularColor
                 || overrideEmissiveColor
-                || shadowDebugMode == ShadowMapDebugMode.SingleShadow;
+                || shadowDebugMode == ShadowMapDebugMode.SingleShadow
+				|| probeVolumeDebugMode == ProbeVolumeDebugMode.VisualizeAtlas;
         }
 
         /// <summary>Current Light Filtering.</summary>
@@ -152,6 +161,9 @@ namespace UnityEngine.Rendering.HighDefinition
         public DebugLightingMode    debugLightingMode = DebugLightingMode.None;
         /// <summary>Current Shadow Maps debug mode.</summary>
         public ShadowMapDebugMode   shadowDebugMode = ShadowMapDebugMode.None;
+        public ProbeVolumeDebugMode probeVolumeDebugMode = ProbeVolumeDebugMode.None;
+        public float                probeVolumeMinValue = 0.0f;
+        public float                probeVolumeMaxValue = 1.0f;
         /// <summary>True if Shadow Map debug mode should be displayed for the currently selected light.</summary>
         public bool                 shadowDebugUseSelection = false;
         /// <summary>Index in the list of currently visible lights of the shadow map to display.</summary>

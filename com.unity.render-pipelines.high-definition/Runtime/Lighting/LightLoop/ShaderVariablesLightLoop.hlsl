@@ -5,6 +5,8 @@
 #else
 
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightDefinition.cs.hlsl"
+	#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Core/Utilities/GeometryUtils.cs.hlsl"
+    #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/ProbeVolume/ProbeVolumeSystem.cs.hlsl"
 
     // don't support Buffer yet in unity
     StructuredBuffer<uint>  g_vBigTileLightList;
@@ -19,6 +21,8 @@
     StructuredBuffer<DirectionalLightData> _DirectionalLightDatas;
     StructuredBuffer<LightData>            _LightDatas;
     StructuredBuffer<EnvLightData>         _EnvLightDatas;
+    StructuredBuffer<OrientedBBox>         _ProbeVolumeBounds;
+    StructuredBuffer<ProbeVolumeEngineData> _ProbeVolumeDatas;
 
     // Used by directional and spot lights
     TEXTURE2D(_CookieAtlas);
@@ -40,5 +44,9 @@
     // Indirect Diffuse Texture
     TEXTURE2D_X(_IndirectDiffuseTexture);
 #endif
+
+    TEXTURE2D_ARRAY(_ProbeVolumeAtlasSH);   
+    float4 _ProbeVolumeAtlasResolutionAndInverse;
+    float _ProbeVolumeNormalBiasWS;
 
 #endif
