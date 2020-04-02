@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Experimental.Rendering.HighDefinition;
+using static UnityEngine.Rendering.HighDefinition.HDRayTracingLights;
 
 namespace UnityEngine.Rendering.HighDefinition
 {
-    [GenerateHLSL]
     internal enum RayTracingRendererFlag
     {
         Opaque = 0x01,
@@ -41,8 +41,11 @@ namespace UnityEngine.Rendering.HighDefinition
         RGBA3
     }
 
+    [GenerateHLSL]
     public class HDRayTracingLights
     {
+
+        
         // The list of non-directional lights in the sub-scene
         public List<HDAdditionalLightData> hdPointLightArray = new List<HDAdditionalLightData>();
         public List<HDAdditionalLightData> hdLineLightArray = new List<HDAdditionalLightData>();
@@ -113,7 +116,7 @@ namespace UnityEngine.Rendering.HighDefinition
             m_RayTracingLightCluster.Initialize(this);
 
             // Allocate the direction and instance buffers
-            m_RayTracingDirectionBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, dimension: TextureXR.dimension, enableRandomWrite: true, useDynamicScale: true,useMipMap: false, name: "RaytracingDirectionBuffer");
+            m_RayTracingDirectionBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, dimension: TextureXR.dimension, enableRandomWrite: true, useDynamicScale: true, useMipMap: false, name: "RaytracingDirectionBuffer");
             m_RayTracingDistanceBuffer = RTHandles.Alloc(Vector2.one, TextureXR.slices, colorFormat: GraphicsFormat.R32_SFloat, dimension: TextureXR.dimension, enableRandomWrite: true, useDynamicScale: true, useMipMap: false, name: "RaytracingDistanceBuffer");
 
             // Allocate the intermediate buffers
@@ -351,7 +354,7 @@ namespace UnityEngine.Rendering.HighDefinition
                                 case AreaLightShape.Tube:
                                     m_RayTracingLights.hdLineLightArray.Add(hdLight);
                                     break;
-                                //TODO: case AreaLightShape.Disc:
+                                    //TODO: case AreaLightShape.Disc:
                             }
                             break;
                     }
@@ -383,6 +386,25 @@ namespace UnityEngine.Rendering.HighDefinition
             GlobalIllumination giSettings = hdCamera.volumeStack.GetComponent<GlobalIllumination>();
             RecursiveRendering recursiveSettings = hdCamera.volumeStack.GetComponent<RecursiveRendering>();
             PathTracing pathTracingSettings = hdCamera.volumeStack.GetComponent<PathTracing>();
+
+            // We need to process the emissive meshes of the rectangular area lights
+            for (var i = 0; i < m_RayTracingLights.hdRectLightArray.Count; i++)
+            {
+                // Fetch the current renderer of the rectangular area light (if any)
+                MeshRenderer currentRenderer = m_RayTracingLights.hdRectLightArray[i].emissiveMeshRenderer;
+
+                // If there is none it means that there is no emissive mesh for this light
+                if (currentRenderer == null) continue;
+
+                // This objects should be included into the RAS
+                AddInstanceToRAS(currentRenderer,
+                                rayTracedShadow,
+                                aoSettings.rayTracing.value, aoSettings.layerMask.value,
+                                reflSettings.rayTracing.value, reflSettings.layerMask.value,
+                                giSettings.rayTracing.value, giSettings.layerMask.value,
+                                recursiveSettings.enable.value, recursiveSettings.layerMask.value,
+                                pathTracingSettings.enable.value, pathTracingSettings.layerMask.value);
+            }
 
             LODGroup[] lodGroupArray = UnityEngine.GameObject.FindObjectsOfType<LODGroup>();
             for (var i = 0; i < lodGroupArray.Length; i++)
@@ -471,11 +493,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
         internal int RayTracingFrameIndex(HDCamera hdCamera)
         {
-        #if UNITY_HDRP_DXR_TESTS_DEFINE
+#if UNITY_HDRP_DXR_TESTS_DEFINE
             if (Application.isPlaying)
                 return 0;
             else
-        #endif
+#endif
             return hdCamera.IsTAAEnabled() ? hdCamera.taaFrameIndex : (int)m_FrameCount % 8;
         }
 

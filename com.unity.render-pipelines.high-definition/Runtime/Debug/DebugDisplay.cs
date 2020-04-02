@@ -157,6 +157,8 @@ namespace UnityEngine.Rendering.HighDefinition
             // They have repeating values, which caused issues when iterating through the enum, thus the need for explicit indices
             // Once we refactor material/engine debug to avoid repeating values, we should be able to remove that.
             //saved enum fields for when repainting
+
+			internal int probeVolumeDebugModeEnumIndex;
             internal int lightingDebugModeEnumIndex;
             internal int lightingFulscreenDebugModeEnumIndex;
             internal int materialValidatorDebugModeEnumIndex;
@@ -174,7 +176,6 @@ namespace UnityEngine.Rendering.HighDefinition
             internal int colorPickerDebugModeEnumIndex;
             internal int msaaSampleDebugModeEnumIndex;
             internal int debugCameraToFreezeEnumIndex;
-			internal int probeVolumeDebugModeEnumIndex;
 
             // When settings mutually exclusives enum values, we need to reset the other ones.
             internal void ResetExclusiveEnumIndices()
@@ -686,10 +687,6 @@ namespace UnityEngine.Rendering.HighDefinition
             });
 
             list.Add(new DebugUI.EnumField { displayName = "Shadow Debug Mode", getter = () => (int)data.lightingDebugSettings.shadowDebugMode, setter = value => SetShadowDebugMode((ShadowMapDebugMode)value), autoEnum = typeof(ShadowMapDebugMode), onValueChanged = RefreshLightingDebug, getIndex = () => data.shadowDebugModeEnumIndex, setIndex = value => data.shadowDebugModeEnumIndex = value });
-
-            list.Add(new DebugUI.EnumField { displayName = "Probe Volume Debug Mode", getter = () => (int)data.lightingDebugSettings.probeVolumeDebugMode, setter = value => SetProbeVolumeDebugMode((ProbeVolumeDebugMode)value), autoEnum = typeof(ProbeVolumeDebugMode), onValueChanged = RefreshLightingDebug, getIndex = () => data.probeVolumeDebugModeEnumIndex, setIndex = value => data.probeVolumeDebugModeEnumIndex = value });
-            list.Add(new DebugUI.FloatField { displayName = "Probe Volume Range Min Value", getter = () => data.lightingDebugSettings.probeVolumeMinValue, setter = value => data.lightingDebugSettings.probeVolumeMinValue = value });
-            list.Add(new DebugUI.FloatField { displayName = "Probe Volume Range Max Value", getter = () => data.lightingDebugSettings.probeVolumeMaxValue, setter = value => data.lightingDebugSettings.probeVolumeMaxValue = value });
 
             if (data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.VisualizeShadowMap || data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.SingleShadow)
             {

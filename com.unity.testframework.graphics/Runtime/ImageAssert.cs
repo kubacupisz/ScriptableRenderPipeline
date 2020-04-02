@@ -240,7 +240,7 @@ namespace UnityEngine.TestTools.Graphics
 
                 // There are 2 GC.Alloc overhead for calling Camera.CustomRender
                 int allocationCountOfRenderPipeline = gcAllocRecorder.sampleBlockCount - gcAllocThreshold;
-                
+
                 if (allocationCountOfRenderPipeline > 0)
                     throw new Exception($"Memory allocation test failed, {allocationCountOfRenderPipeline} allocations detected. Look for GraphicTests_GC_Alloc_Check in the profiler for more details");
 

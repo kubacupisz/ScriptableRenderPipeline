@@ -94,7 +94,6 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
   stickyNoteInfos: []
-  systemInfos: []
   categories: []
   uiBounds:
     serializedVersion: 2
@@ -150,42 +149,7 @@ VisualEffectResource:
   m_PrefabAsset: {fileID: 0}
   m_Name: CollisionSolid
   m_Graph: {fileID: 114350483966674976}
-  m_ShaderSources: []
   m_Infos:
-    m_Expressions:
-      m_Expressions: []
-      m_NeedsLocalToWorld: 0
-      m_NeedsWorldToLocal: 0
-      m_NeededMainCameraBuffers: 0
-    m_PropertySheet:
-      m_Float:
-        m_Array: []
-      m_Vector2f:
-        m_Array: []
-      m_Vector3f:
-        m_Array: []
-      m_Vector4f:
-        m_Array: []
-      m_Uint:
-        m_Array: []
-      m_Int:
-        m_Array: []
-      m_Matrix4x4f:
-        m_Array: []
-      m_AnimationCurve:
-        m_Array: []
-      m_Gradient:
-        m_Array: []
-      m_NamedObject:
-        m_Array: []
-      m_Bool:
-        m_Array: []
-    m_ExposedExpressions: []
-    m_Buffers: []
-    m_TemporaryBuffers: []
-    m_CPUBuffers: []
-    m_Events: []
-    m_RuntimeVersion: 10
     m_RendererSettings:
       motionVectorGenerationMode: 0
       shadowCastingMode: 0
@@ -197,7 +161,6 @@ VisualEffectResource:
     m_PreWarmDeltaTime: 0.05
     m_PreWarmStepCount: 0
     m_InitialEventName: OnPlay
-  m_Systems: []
 --- !u!114 &8926484042661614573
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1121,7 +1084,7 @@ MonoBehaviour:
   m_UISuperCollapsed: 0
   m_InputSlots:
   - {fileID: 8926484042661614618}
-  - {fileID: 8926484042661615104}
+  - {fileID: 8926484042661615108}
   - {fileID: 8926484042661614625}
   - {fileID: 8926484042661614626}
   - {fileID: 8926484042661614978}
@@ -2263,7 +2226,7 @@ MonoBehaviour:
   m_UISuperCollapsed: 0
   m_InputSlots:
   - {fileID: 8926484042661614718}
-  - {fileID: 8926484042661615105}
+  - {fileID: 8926484042661615109}
   - {fileID: 8926484042661614728}
   - {fileID: 8926484042661614729}
   - {fileID: 8926484042661615002}
@@ -4644,7 +4607,7 @@ MonoBehaviour:
   m_UISuperCollapsed: 0
   m_InputSlots:
   - {fileID: 8926484042661614840}
-  - {fileID: 8926484042661615106}
+  - {fileID: 8926484042661615110}
   - {fileID: 8926484042661614848}
   - {fileID: 8926484042661614849}
   - {fileID: 8926484042661615003}
@@ -6206,7 +6169,7 @@ MonoBehaviour:
   m_InputSlots:
   - {fileID: 8926484042661614943}
   - {fileID: 8926484042661615059}
-  - {fileID: 8926484042661615107}
+  - {fileID: 8926484042661615111}
   - {fileID: 8926484042661614958}
   - {fileID: 8926484042661614959}
   - {fileID: 8926484042661615004}
@@ -10409,7 +10372,7 @@ MonoBehaviour:
       m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
---- !u!114 &8926484042661615104
+--- !u!114 &8926484042661615108
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10426,7 +10389,7 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
-  m_MasterSlot: {fileID: 8926484042661615104}
+  m_MasterSlot: {fileID: 8926484042661615108}
   m_MasterData:
     m_Owner: {fileID: 8926484042661614617}
     m_Value:
@@ -10455,7 +10418,7 @@ MonoBehaviour:
       m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
---- !u!114 &8926484042661615105
+--- !u!114 &8926484042661615109
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10472,7 +10435,7 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
-  m_MasterSlot: {fileID: 8926484042661615105}
+  m_MasterSlot: {fileID: 8926484042661615109}
   m_MasterData:
     m_Owner: {fileID: 8926484042661614717}
     m_Value:
@@ -10501,7 +10464,7 @@ MonoBehaviour:
       m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
---- !u!114 &8926484042661615106
+--- !u!114 &8926484042661615110
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10518,7 +10481,7 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
-  m_MasterSlot: {fileID: 8926484042661615106}
+  m_MasterSlot: {fileID: 8926484042661615110}
   m_MasterData:
     m_Owner: {fileID: 8926484042661614839}
     m_Value:
@@ -10547,7 +10510,7 @@ MonoBehaviour:
       m_RegexMaxLength: 0
   m_Direction: 0
   m_LinkedSlots: []
---- !u!114 &8926484042661615107
+--- !u!114 &8926484042661615111
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10564,7 +10527,7 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
-  m_MasterSlot: {fileID: 8926484042661615107}
+  m_MasterSlot: {fileID: 8926484042661615111}
   m_MasterData:
     m_Owner: {fileID: 8926484042661614942}
     m_Value:

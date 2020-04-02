@@ -858,8 +858,8 @@ namespace UnityEditor.VFX.UI
                 title = "Title",
                 position = new Rect(position, Vector2.one * 100),
                 contents = "type something here",
-                theme = StickyNote.Theme.Classic.ToString(),
-                textSize = StickyNote.TextSize.Small.ToString()
+                theme = StickyNoteTheme.Classic.ToString(),
+                textSize = StickyNoteFontSize.Small.ToString()
             };
 
             if (ui.stickyNoteInfos != null)
@@ -1138,10 +1138,11 @@ namespace UnityEditor.VFX.UI
             return model;
         }
 
-        public VFXParameter AddVFXParameter(Vector2 pos, VFXModelDescriptorParameters desc)
+        public VFXParameter AddVFXParameter(Vector2 pos, VFXModelDescriptorParameters desc,bool parent = true)
         {
             var model = desc.CreateInstance();
-            AddVFXModel(pos, model);
+            if( parent)
+                AddVFXModel(pos, model);
 
             VFXParameter parameter = model as VFXParameter;
 
@@ -1978,8 +1979,7 @@ namespace UnityEditor.VFX.UI
             {
                 var contextToController = systems[i].Keys.Select(t => new KeyValuePair<VFXContextController, VFXContext>((VFXContextController)GetNodeController(t, 0), t)).Where(t => t.Key != null).ToDictionary(t => t.Value, t => t.Key);
                 m_Systems[i].contexts = contextToController.Values.ToArray();
-                m_Systems[i].title = graph.UIInfos.GetNameOfSystem(systems[i].Keys);
-
+                m_Systems[i].title = m_Graph.systemNames.GetUniqueSystemName(m_Systems[i].contexts.First().model.GetData());
                 VFXContextType type = VFXContextType.None;
                 VFXContext prevContext = null;
                 var orderedContexts = contextToController.Keys.OrderBy(t => t.contextType).ThenBy(t => systems[i][t]).ThenBy(t => t.position.x).ThenBy(t => t.position.y).ToArray();

@@ -447,6 +447,13 @@ namespace UnityEngine.Rendering.HighDefinition
                 return;
             }
 
+
+            // Also we need to build the light list data
+            if (m_LightDataGPUArray == null || m_LightDataGPUArray.count != rayTracingLights.lightCount)
+            {
+                ResizeLightDataBuffer(rayTracingLights.lightCount);
+            }
+
             m_LightDataCPUArray.Clear();
 
             // Build the data for every light

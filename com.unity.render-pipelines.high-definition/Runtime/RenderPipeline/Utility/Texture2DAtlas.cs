@@ -134,7 +134,7 @@ namespace UnityEngine.Rendering.HighDefinition
     class Texture2DAtlas
     {
         protected RTHandle m_AtlasTexture = null;
-        protected bool isAtlasTextureOwner = false;
+		protected bool isAtlasTextureOwner = false;
         protected int m_Width;
         protected int m_Height;
         protected bool m_UseMipMaps;

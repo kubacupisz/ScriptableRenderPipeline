@@ -82,7 +82,6 @@ MonoBehaviour:
   useExposureWeight: 0
   shaderGraph: {fileID: -5475051401550479605, guid: c7edbefd9ca231244bf53cec1c08f536,
     type: 3}
-  shadergraphGUID: c7edbefd9ca231244bf53cec1c08f536
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &114307113894698210
@@ -142,7 +141,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groupInfos: []
   stickyNoteInfos: []
-  systemInfos: []
   categories: []
   uiBounds:
     serializedVersion: 2
@@ -178,6 +176,7 @@ MonoBehaviour:
   m_UISuperCollapsed: 0
   m_UIInfos: {fileID: 114340500867371532}
   m_ParameterInfo: []
+  m_ImportDependencies: []
   m_GraphVersion: 4
   m_saved: 1
   m_SubgraphDependencies: []
@@ -645,42 +644,7 @@ VisualEffectResource:
   m_PrefabAsset: {fileID: 0}
   m_Name: SampleScene
   m_Graph: {fileID: 114350483966674976}
-  m_ShaderSources: []
   m_Infos:
-    m_Expressions:
-      m_Expressions: []
-      m_NeedsLocalToWorld: 0
-      m_NeedsWorldToLocal: 0
-      m_NeededMainCameraBuffers: 0
-    m_PropertySheet:
-      m_Float:
-        m_Array: []
-      m_Vector2f:
-        m_Array: []
-      m_Vector3f:
-        m_Array: []
-      m_Vector4f:
-        m_Array: []
-      m_Uint:
-        m_Array: []
-      m_Int:
-        m_Array: []
-      m_Matrix4x4f:
-        m_Array: []
-      m_AnimationCurve:
-        m_Array: []
-      m_Gradient:
-        m_Array: []
-      m_NamedObject:
-        m_Array: []
-      m_Bool:
-        m_Array: []
-    m_ExposedExpressions: []
-    m_Buffers: []
-    m_TemporaryBuffers: []
-    m_CPUBuffers: []
-    m_Events: []
-    m_RuntimeVersion: 10
     m_RendererSettings:
       motionVectorGenerationMode: 0
       shadowCastingMode: 0
@@ -692,7 +656,6 @@ VisualEffectResource:
     m_PreWarmDeltaTime: 0.05
     m_PreWarmStepCount: 0
     m_InitialEventName: OnPlay
-  m_Systems: []
 --- !u!114 &8926484042661614540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1265,7 +1228,6 @@ MonoBehaviour:
   useExposureWeight: 0
   shaderGraph: {fileID: -5475051401550479605, guid: 178440804e6cb1a42a8a0f0bfb953331,
     type: 3}
-  shadergraphGUID: 178440804e6cb1a42a8a0f0bfb953331
   materialType: 0
   onlyAmbientLighting: 0
   diffusionProfileAsset: {fileID: 0}
@@ -1648,7 +1610,6 @@ MonoBehaviour:
   useExposureWeight: 0
   shaderGraph: {fileID: -5475051401550479605, guid: bf0fead977fe89543863e05d1b22f0a7,
     type: 3}
-  shadergraphGUID: bf0fead977fe89543863e05d1b22f0a7
   primitiveType: 1
   useGeometryShader: 0
 --- !u!114 &8926484042661614611
@@ -2015,7 +1976,6 @@ MonoBehaviour:
   useExposureWeight: 0
   shaderGraph: {fileID: -5475051401550479605, guid: 3bd93277265740944b21c594c559f8ff,
     type: 3}
-  shadergraphGUID: 3bd93277265740944b21c594c559f8ff
   materialType: 0
   onlyAmbientLighting: 0
   diffusionProfileAsset: {fileID: 0}
@@ -2399,7 +2359,6 @@ MonoBehaviour:
   useExposureWeight: 0
   shaderGraph: {fileID: -5475051401550479605, guid: 6e56af5c92410424298ef2f22ac60a1b,
     type: 3}
-  shadergraphGUID: 6e56af5c92410424298ef2f22ac60a1b
 --- !u!114 &8926484042661614653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2829,7 +2788,6 @@ MonoBehaviour:
   useExposureWeight: 0
   shaderGraph: {fileID: -5475051401550479605, guid: 6ca08e748c1802846b950e86581ceb18,
     type: 3}
-  shadergraphGUID: 6ca08e748c1802846b950e86581ceb18
   materialType: 0
   onlyAmbientLighting: 0
   diffusionProfileAsset: {fileID: 0}

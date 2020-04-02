@@ -528,7 +528,8 @@ namespace UnityEditor.VFX
             Dictionary<VFXContext, VFXContextCompiledData> contextToCompiledData,
             Dictionary<VFXContext, int> contextSpawnToBufferIndex,
             VFXDependentBuffersData dependentBuffers,
-            Dictionary<VFXContext, List<VFXContextLink>[]> effectiveFlowInputLinks)
+            Dictionary<VFXContext, List<VFXContextLink>[]> effectiveFlowInputLinks,
+			VFXSystemNames systemNames = null)
         {
             bool hasKill = IsAttributeStored(VFXAttribute.Alive);
 
@@ -741,8 +742,14 @@ namespace UnityEditor.VFX
                 }
 
                 uniformMappings.Clear();
-                foreach (var uniform in contextData.uniformMapper.uniforms.Concat(contextData.uniformMapper.textures))
+                foreach (var uniform in contextData.uniformMapper.uniforms)
                     uniformMappings.Add(new VFXMapping(contextData.uniformMapper.GetName(uniform), expressionGraph.GetFlattenedIndex(uniform)));
+                foreach (var texture in contextData.uniformMapper.textures)
+                {
+                    // TODO At the moment issue all names sharing the same texture as different texture slots. This is not optimized as it required more texture binding than necessary
+                    foreach (var name in contextData.uniformMapper.GetNames(texture))
+                        uniformMappings.Add(new VFXMapping(name, expressionGraph.GetFlattenedIndex(texture)));
+                }
 
                 // Retrieve all cpu mappings at context level (-1)
                 var cpuMappings = contextData.cpuMapper.CollectExpression(-1).Select(exp => new VFXMapping(exp.name, expressionGraph.GetFlattenedIndex(exp.exp))).ToArray();
@@ -765,11 +772,18 @@ namespace UnityEditor.VFX
                 taskDescs.Add(taskDesc);
             }
 
+            string nativeName = string.Empty;
+            if (systemNames != null)
+                nativeName = systemNames.GetUniqueSystemName(this);
+            else
+                throw new InvalidOperationException("system names manager cannot be null");
+            
             outSystemDescs.Add(new VFXEditorSystemDesc()
             {
                 flags = systemFlag,
                 tasks = taskDescs.ToArray(),
                 capacity = capacity,
+                name = nativeName,
                 buffers = systemBufferMappings.ToArray(),
                 values = systemValueMappings.ToArray(),
                 type = VFXSystemType.Particle,
