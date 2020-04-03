@@ -1,5 +1,3 @@
-
-
 float2 GetIntersectionTextureCoordinates(FragInputs input, float4 uvMask, float2 tiling, float2 offset, float worldScale)
 {
 #if defined(_MAPPING_PLANAR) || defined(_MAPPING_TRIPLANAR)
